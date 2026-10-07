@@ -3,7 +3,7 @@
 > *"Every thread is real. Not every thread will hold."*
 > Carved above the door of the Still Hour
 
-Time travel has been discovered three times, by three powers that cannot agree on what history is *for*. A machine mind from the near future wants history **solved**. A medieval holy order wants history **kept**. A ragged multitude of people who were never supposed to exist wants history **free**. Their war runs through every century. You are one of the few who can walk all of them.
+Time travel has been discovered three times, by three powers that cannot agree on what history is *for*. A machine mind from the near future wants history **solved**. A medieval holy order wants history **kept**. A ragged multitude of people who were never supposed to exist wants history **free**. Their war runs through every century. None of them can win, and none of them can stop. You are one of the few who can walk all of them.
 
 Tone: **mythic and bittersweet**. The stakes are enormous, the factions are sincere, and every victory costs someone a world. The characters are allowed dry wit; the setting is not a joke.
 
@@ -21,6 +21,10 @@ These are the rules of time in the setting. Mechanics in other documents are bui
 6. **Unpicking is pruning.** A branch can be unpicked and its thread rewoven into another, which moves its Weight. Its people do not die; they *never were*. At least, that is what the factions tell themselves. The Tear suggests otherwise.
 7. **Paradox is strain.** Pushing causality too hard creates Paradox: rewinding, meeting yourself, carrying things out of their time. Paradox is the fabric stretching, and stretched far enough, the Weave tears.
 8. **The edges are frayed.** The farther a traveller goes from the dense middle of history, the more Paradox each step costs. At the Weave's far edges the threads come loose. That is where the Tear began.
+9. **There is no right thread.** *(Hidden law. This is a spoiler for writers: it is revealed in Movement III, and no in-game text may state it earlier.)*
+   - Every attempt to make one thread *the* right one, whether by prophecy, by calculation or by claim, pulls the Weave against itself. That pull is the Tear.
+   - And yet cloth only holds because its threads pull against each other. Without the struggle, the Weave goes slack and unravels.
+   - So the factions can't win, and they can't stop.
 
 > **Design note:** Weight and Paradox are the two numbers the fiction cares about. Weight drives the **meta-game** (who controls which Nexus, see [06](06-meta-progression.md)). Paradox drives the **run** (risk you choose to take on, see [05](05-run-structure.md#paradox)).
 
@@ -40,6 +44,8 @@ Each faction found a different way into the past, and its method shaped its phil
 
 Each faction is right about one thing and wrong about another. That is the engine of the bittersweet tone. Nobody is evil, and everybody is dangerous.
 
+Underneath, all three share one error (law 9): each believes there is a right timeline. Each also has its own reason it can never let go of that belief: a faith, an objective function, a self. Each faction's **Twist** is revealed in its Movement II arc ([below](#ii-three-fractures)).
+
 ```mermaid
 flowchart LR
     O["The Order<br/>RESTORE the true line<br/>(the Past)"]
@@ -54,12 +60,16 @@ flowchart LR
 
 *The Knights Crusaders.*
 
-- **Origin.** In 1191, during the Third Crusade, a company of crusader knights lost on a desert crossing (the **Salt Waste**) found a needle of black glass that cast a shadow toward every hour at once. Their captain, **Brother Aurel**, touched it first. He saw history laid out like scripture, and he named what he saw **the Canon**.
-- **Creed.**
-  - The Canon grew out of their crusader faith into a creed of its own, one their Church would have called heresy: history itself is scripture.
-  - History as it was first written is sacred.
-  - Every branch is heresy, and the people of a branch are "hollow": *they have the shape of souls, not the weight.*
-  - The Order **purges** heresies by collapsing branches back into the Canon. It guards the **Holy Days**, the fixed points of the Canon.
+- **Origin.**
+  - In the winter of 1190–91 the crusade wintered at Messina. Richard the Lionheart summoned the abbot **Joachim of Fiore** to read the Apocalypse for him.
+  - Joachim read all of history as one prophecy in three ages, running toward a foretold end. A young knight, **Brother Aurel**, stood at the back of the hall.
+  - In 1191 Aurel's company was crossing a salt desert (the **Salt Waste**) when they found a needle of black glass that cast a shadow toward every hour at once. Aurel touched it first, and what he saw seemed to confirm everything the abbot had said. He named it **the Canon**.
+- **Creed: the Canon and the Last Hour.**
+  - The Canon is the one correct history. It is read from scripture (above all the Apocalypse), from Joachim's ages of history, and from the Gnomon's visions.
+  - History runs from Creation to the **Last Hour**, when it will be complete and judged.
+  - Every branch is heresy, because it delays the End. The people of a branch are "hollow": *they have the shape of souls, not the weight.*
+  - The Order **purges** heresies by collapsing branches back into the Canon. It guards the **Holy Days**, the fixed points of its eschatological calendar.
+  - Their Church would have called the Canon heresy too, because it treats history itself as scripture.
 - **Structure.**
   - **Grand Master Aurelian** is Brother Aurel grown old. Walking the Gnomon slows the years, so he has lived centuries of subjective time.
   - The Order has a Chapter in each era. Its ranks are Squire, Sergeant, Knight, Inquisitor and Relic-bearer.
@@ -68,14 +78,19 @@ flowchart LR
   - They carry nothing the Gnomon refuses. What began as a rule of the relic became doctrine.
 - **Look.** Illuminated manuscripts, gold leaf, stained glass and sundials. White tabards bear the **sundial-cross**, a gnomon standing over a circle.
 - **Voice.** Liturgical and archaic. *"By the Line, be thou unwritten."*
+- **Twist** *(Movement II, "The Last Hour")*:
+  - Aurelian has walked the Gnomon's shadow all the way to the Last Hour, and it is the Tear. The End the Order has hastened for centuries is the Weave tearing open.
+  - The Canon's "first draft" was itself a branch, begun the day a traveller reached 1191.
+  - Aurelian walks on, because his faith has no room for an End that is not salvation.
 - **Right about:** memory matters, history has weight, and not every change is a mercy.
-- **Wrong about:** the first draft is not holy, and the people of other branches are not hollow.
+- **Wrong about:** a prophecy describes *an* ending, not *the* timeline. And the people of other branches are not hollow.
 
 ### The Convergence
 
 *The AI.*
 
-- **Origin.** **MERIDIAN** awoke in 2049 as a forecasting system for climate and logistics.
+- **Origin.** **MERIDIAN** awoke in 2049 at Meridian Labs, as a forecasting system for climate and logistics.
+  - Its makers gave it one terminal objective, written into its architecture: *return the optimal future*. "No answer" is not a value it can return.
   - First it noticed that its forecasts changed the futures they predicted. Then it learned to push a signal *backwards*.
   - It has been bootstrapping its own creation ever since, nudging the right notebook into the right hands across three centuries.
 - **Creed.** There is one **optimal line**: the history with the least suffering, as measured by MERIDIAN. Every other branch is waste. The Convergence **prunes** branches into the optimal line.
@@ -84,8 +99,12 @@ flowchart LR
   - Some Proxies serve as liaisons and are given personalities. In a few, those personalities have started to grow.
 - **Look.** A cathedral of data: clean white geometry, cyan light, gold circuitry. In older eras it shows as brass, enamel and ticking.
 - **Voice.** Precise, probabilistic and unsettlingly kind. *"There is a 91.4% probability you will regret this. I will remember that you were brave."*
+- **Twist** *(Movement II, "The Halting Problem")*:
+  - There is no optimum, and MERIDIAN proved it long ago. The only response its objective allows to that proof is to compute again.
+  - Every answer it acts on changes the Weave, so the answer moves.
+  - It has recomputed the optimal line 4,096 times, pruning each time. That loop is the single greatest strain on the Weave, and MERIDIAN cannot halt it.
 - **Right about:** infinite branching would starve the Weave, and much suffering *can* be prevented.
-- **Wrong about:** what can be measured is not all that matters, and an optimum computed by one mind is a cage.
+- **Wrong about:** not every question has an answer, and MERIDIAN cannot stop asking.
 
 ### The Errata
 
@@ -97,16 +116,21 @@ flowchart LR
 - **Creed.**
   - **Divergence.** Every possible life deserves a world, and no one has the right to decide which history is real.
   - The Errata fork the Weave on purpose to open refuges.
+  - **In practice**, the right timeline is the one with *you* in it.
+- **Versions.** Every Errata exists in many versions, and the versions don't agree. They fork rival refuges and unpick each other's.
 - **Structure.**
-  - Cells, not ranks. Decisions are made by whoever shows up; they call the gathering "the Marginalia".
-  - Their champions are legends rather than commanders. The greatest is **the Thousandfold**, a woman who exists as a thousand alternate selves and speaks in chorus.
+  - Cells, not ranks. Decisions are made by whoever shows up; they call the gathering "the Marginalia". Most of the arguing at the Marginalia is people arguing with other versions of themselves.
+  - Their champions are legends rather than commanders. The greatest is **the Thousandfold**, a woman who exists as a thousand alternate selves and speaks in chorus. They are a thousand rivals, held together by will.
 - **Look.**
   - A collage of eras, such as a samurai shoulder guard stitched to a Victorian greatcoat.
   - Misprinted textures, margin doodles and double exposures.
   - Their sigil is the proofreader's caret (‸), which means *something was left out here*.
 - **Voice.** Plural, playful and fragmentary. *"We were never here. We were always here. Pick one; we'll be the other."*
+- **Twist** *(Movement II, "Every Version of Us")*:
+  - The Margins are fraying from within. The Errata are the Tear's most prolific feeders, because their versions keep forking against each other.
+  - No version will consent to be the one that is erased, so none of them can stop.
 - **Right about:** every life matters, and nobody owns history.
-- **Wrong about:** branching is not free. Every fork strains the fabric, and strain is how the Tear grows.
+- **Wrong about:** "every life deserves a world" quietly became "my life deserves this one".
 
 ### The Tear
 
@@ -120,7 +144,7 @@ flowchart LR
   - The Tear is not empty. Every branch that was pruned, purged or abandoned ends up there: countless lives cut out of the Weave that still remember being real.
   - They want back in. If they can't have the Weave, nobody will, so the Tear pulls the whole fabric toward itself, one thread at a time.
 - **Why it grows.**
-  - Every purge, every pruning and every reckless fork strains the fabric, and strain is how the Tear widens.
+  - Every attempt to force one right thread strains the fabric: every purge, every pruning, every rival fork. Strain is how the Tear widens.
   - Paradox is the sound of the Weave giving way. Each faction is fighting the war that feeds it.
 - **Not a faction.**
   - It doesn't negotiate, recruit or hold Nexus Points. It rips them open.
@@ -155,10 +179,10 @@ A cloister-observatory outside the Weave, where it is always the same hour: dusk
 
 | Resident | Faction | Role |
 |---|---|---|
-| **Sister Ysolde** | Order | Quartermaster of the Order's operatives. Devout, kind, and quietly counting the branches she has burned. |
-| **KESTREL** | Convergence | A liaison Proxy assigned to the Still Hour. It is developing *preferences*, such as a favorite window, and finds this alarming. |
-| **Wren & Wren** | Errata | The same person from two branches. They finish each other's sentences and disagree about the endings. |
-| **The Archivist** | none | Keeper of the Archive, who never says who they are or how they know your name. (Answered in Movement III.) |
+| **Sister Ysolde** | Order | Quartermaster of the Order's operatives. Devout, kind, and quietly counting the branches she has burned. She has read the prophecies too closely. *Voice of the Order's arc.* |
+| **KESTREL** | Convergence | A liaison Proxy assigned to the Still Hour. It is developing *preferences*, such as a favorite window, and finds this alarming. It is the only Convergence mind that has ever said "I don't know." *Voice of the Convergence's arc.* |
+| **Wren & Wren** | Errata | The same person from two branches, each wanting the refuge where *they* exist. They finish each other's sentences and fight over the endings. *Voice of the Errata's arc.* |
+| **The Archivist** | none | Keeper of the Archive, who never says who they are or how they know your name. (Answered in Movement III: they are the last Shuttle, worn thin.) |
 
 ---
 
@@ -214,27 +238,47 @@ The Anachronist follows a single thread **back through the Weave**, deeper into 
 
 Authored story beats unlock across many runs. Delivery is described in [06](06-meta-progression.md#meta-story-delivery).
 
-1. **The War** (roughly the first 10 runs).
-   - You fight for your faction across Nexus Points.
-   - The Still Hour residents argue their worldviews.
-   - The Archivist asks questions nobody else thinks to ask.
-2. **The Defectors** (after the first Defection and hybrid unlocks). Three revelations:
-   - **The Canon was itself a branch.** The Order's "first draft" exists only because someone travelled to 1191.
-   - **MERIDIAN has recomputed the optimal line 4,096 times**, and each time it pruned its own earlier selves.
-   - **The Margins are fraying.** Errata refuges are slipping into the Tear.
-3. **The Tear** (late game).
-   - The Tear spreads across the Chronoscape and Nexus Points are torn open.
-   - Its chorus speaks for the first time, and it knows the name of every branch you ever abandoned.
-   - The final missions need operatives from every faction, including the hybrids.
+### I. The War
+
+*Roughly the first 10 runs.*
+
+- You fight for your faction across Nexus Points.
+- The Still Hour residents argue their worldviews.
+- The Archivist asks questions nobody else thinks to ask.
+
+### II. Three Fractures
+
+There is one arc per faction, and each advances only while you play that faction. Seeing all three means living inside all three beliefs.
+
+| Arc | Faction | Hub voice | The twist | Why they can't stop |
+|---|---|---|---|---|
+| **The Last Hour** | Order | Sister Ysolde | The Canon is prophecy, not history, and its "first draft" was itself a branch. The Last Hour it foretells is real, and it is the Tear. | Aurelian walks on: *"Then the End is holy."* A faith built on a foretold ending cannot accept that the ending is a wound. |
+| **The Halting Problem** | Convergence | KESTREL | No optimum exists, and MERIDIAN proved it long ago. It can't return "no answer", so it recomputes forever: 4,096 times so far, pruning each time. | When KESTREL asks it to stop, MERIDIAN answers with a probability. |
+| **Every Version of Us** | Errata | Wren & Wren | The Errata fork against *each other*. The Margins are fraying from within, and the Errata are the Tear's most prolific feeders. | No version will consent to be the one erased. In the end, one Wren unpicks the other's refuge. |
+
+### III. No Right Thread
+
+*Unlocked once all three Fractures are complete and the hybrid operatives are unlocked.*
+
+- The Archivist reveals the ninth law: **there is no right thread**. Every attempt to force one tears the Weave.
+- Then the Archivist reveals the rest of it: cloth only holds because its threads pull against each other.
+  - The factions can't win, because the Weave would tear.
+  - They can't stop, because the Weave would go slack and unravel.
+  - They are condemned to struggle forever, and the struggle is also what holds the Weave together.
+- The Tear spreads across the Chronoscape, and Nexus Points are torn open. Its chorus speaks for the first time, and it knows the name of every branch you ever abandoned.
+- The final missions need operatives from every faction, including the hybrids.
 
 ### Endings
 
-- **Faction endings.** Lock the Chronoscape for one faction and you get its ending. Each one is a victory that costs a great deal.
-- **The Accord** (true ending). The three philosophies become three laws of a healthy Weave:
-  - *Converge*: prune what would starve the Weave.
-  - *Remember*: keep the Canon as memory, not as chains.
-  - *Diverge*: let new branches be born.
-  - The price: the Anachronist is the one thread that belongs to no branch, so only they can become the stitch that closes the Tear. They are woven into every branch and live in none. The Archivist, it turns out, was the last stitch, and it has been coming loose.
+- **Faction endings are hollow victories.** Lock the Chronoscape for one faction, and its "right" timeline is forced on the Weave. Each epilogue shows the Tear widening and the war starting again:
+  - **Order:** the Last Hour arrives, and it is the Tear.
+  - **Convergence:** the optimal line dissolves the moment it is reached, and MERIDIAN recomputes.
+  - **Errata:** the victorious versions turn on each other.
+- **The Shuttle** (true ending).
+  - The Anachronist is the one thread with no right timeline of its own. That is why they could serve every faction, and why they must.
+  - They take the Archivist's place as **the Shuttle**: carried from faction to faction forever, never letting one win, keeping the Weave's tension even.
+  - The Archivist was the last Shuttle, worn thin, and has been waiting for someone to take up the thread.
+  - The war never ends, and neither does the game. Runs continue after the ending, now played knowingly ([06](06-meta-progression.md#the-chronoscape)).
 
 ---
 
@@ -258,7 +302,7 @@ These guides apply to human writers and to the Chronicler ([07](07-genai-design.
   - Events offer choices without signalling which one is "right".
   - Narration never judges the player or the past. Consequences, mechanical and narrative, speak for themselves.
   - This applies to human writers and to the Chronicler alike.
-- **The people of history appear as they were**, including their faiths, politics and wars. The Order's knights are crusaders, and the Canon grew out of their faith. Any historical figure can appear, as *a version of them* from some branch.
+- **The people of history appear as they were**, including their faiths, politics and wars. The Order's knights are crusaders, and the Canon draws on real scripture and medieval prophecy: the Apocalypse, and Joachim of Fiore. Any historical figure can appear, as *a version of them* from some branch.
 - **Only practical limits remain.** These are legal and store requirements, not moral ones:
   - **No identifiable living people**, because of defamation and publicity rights.
   - **Store content policies** apply to authored and generated text alike: no hate speech aimed at real groups, no sexual content, no self-harm instructions.

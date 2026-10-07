@@ -20,6 +20,11 @@ You are an **Anachronist**: someone whose own timeline faded away, which makes y
 
 The core feeling: **"I changed history, and the game noticed."**
 
+Underneath it all is the truth the game is built on, revealed only at the end: **there is no right timeline** ([02](02-world-and-lore.md#iii-no-right-thread)).
+
+- The factions can't win and can't stop, and the endless runs of a roguelike *are* their war.
+- Eventually you learn that your job is to keep any of them from winning.
+
 ---
 
 ## Design Pillars

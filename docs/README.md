@@ -23,7 +23,7 @@
 | # | Document | What's inside |
 |---|---|---|
 | 01 | [Vision](01-vision.md) | Pitch, pillars, what we keep and change from Dawncaster, audience, art, audio, accessibility |
-| 02 | [World and Lore](02-world-and-lore.md) | The laws of the Weave, the three factions and the Tear, the player's role, eras, Nexus Points, the MVP mission, the meta-story, content principles |
+| 02 | [World and Lore](02-world-and-lore.md) | The laws of the Weave, the three factions and their twists, the Tear, the player's role, eras, Nexus Points, the MVP mission, the meta-story and endings, content principles |
 | 03 | [Factions and Operatives](03-factions-and-operatives.md) | Faction identities, the 3 MVP operatives with starter decks and sample cards, later and hybrid operatives, enemy rosters, bosses |
 | 04 | [Combat](04-combat.md) | Zones, rounds, energy (Reservoir, Borrow, Attuned), **the Track**, the 25 keywords, statuses, worked examples, mobile UX |
 | 05 | [Run Structure](05-run-structure.md) | Missions, the Weft, Returning Moments, Anchors and Rewind, Paradox, rewards, Imprints, Artifacts, Defection, events, the Causality Ledger |
@@ -58,7 +58,7 @@
 | **Branch Pool** | Where unchosen Moments wait to return | [05](05-run-structure.md#returning-moments) |
 | **Branch Variant** | A permanent second face for a card, created by the Forge | [08](08-card-dsl.md#the-forge) |
 | **Calculated** | Keyword: a bonus if the card is Known | [04](04-combat.md#keywords) |
-| **Canon** | The Order's creed: history as first written is sacred | [02](02-world-and-lore.md#the-order-of-the-unbroken-line) |
+| **Canon** | The Order's sacred history, read from scripture, prophecy and the Gnomon's visions; it runs to the Last Hour | [02](02-world-and-lore.md#the-order-of-the-unbroken-line) |
 | **Canonize** | Keep a branch or a variant permanently in your Archive or Variant Pool | [06](06-meta-progression.md#variant-pool) |
 | **Causality Ledger** | Structured memory of a run's choices: flags, counters, Standing, Divergences | [05](05-run-structure.md#causality-ledger) |
 | **Chronicler** | The on-device generative AI system | [07](07-genai-design.md) |
@@ -94,6 +94,7 @@
 | **Inscribe** | A permanent card upgrade (about +30%) | [05](05-run-structure.md#other-upgrades) |
 | **Iterate +N** | Keyword: grows each time it's played this combat | [04](04-combat.md#keywords) |
 | **Known** | Card state: seen via Foresee before being drawn | [04](04-combat.md#card-states) |
+| **Last Hour** | The end of history foretold by the Canon. *Spoiler:* it is the Tear. | [02](02-world-and-lore.md#the-order-of-the-unbroken-line) |
 | **Litany** | Keyword: a bonus if the previous card this turn was of a given kind | [04](04-combat.md#keywords) |
 | **Lore Bible** | Structured, tagged lore snippets used by writers and the Chronicler | [07](07-genai-design.md#context-packets) |
 | **Margins** | The Errata's refuges in the gaps between branches | [02](02-world-and-lore.md#the-errata) |
@@ -103,6 +104,7 @@
 | **Moment** | A card in the Weft: Combat, Elite, Event, Anomaly, Antiquarian, Still Point, Shrine, Cache | [05](05-run-structure.md#the-weft) |
 | **Neutral** | White ○ energy from income; pays only generic pips | [04](04-combat.md#colors) |
 | **Nexus Point** | A pivotal moment where Weight flows; every mission ends at one | [02](02-world-and-lore.md#nexus-points) |
+| **Ninth Law** | The hidden law of the Weave: there is no right thread. *Spoiler:* revealed in Movement III. | [02](02-world-and-lore.md#the-laws-of-the-weave) |
 | **Observe** | Collapse a Forked intent to its outcome early | [04](04-combat.md#faction-behavior) |
 | **Operative** | A playable class (Vowknight, Oracle, Splinter, ...) | [03](03-factions-and-operatives.md) |
 | **Order of the Unbroken Line** | The Knights Crusaders faction. Energy: Faith ☀. Zone: the Past. | [02](02-world-and-lore.md#the-order-of-the-unbroken-line) |
@@ -124,6 +126,7 @@
 | **Schedule N** | Keyword: place an effect on the Track; it resolves before enemies | [04](04-combat.md#scheduled-effects) |
 | **Shift N** | Keyword: swap cards between your Present and your Other Hand | [04](04-combat.md#keywords) |
 | **Shrine** | A faction altar: a boon, Desecration, or Defection | [05](05-run-structure.md#shrines-and-defection) |
+| **Shuttle** | The Anachronist's true role, passing between the factions forever so none can win. *Spoiler:* the true ending. | [02](02-world-and-lore.md#endings) |
 | **Signature Action** | An operative's free once-per-turn action (Strike, Forecast, Shift) | [04](04-combat.md#signature-actions) |
 | **Standing** | Your relationship with each faction (−3 to +3) | [05](05-run-structure.md#standing) |
 | **Still Hour** | The hub, outside time | [02](02-world-and-lore.md#the-still-hour) |

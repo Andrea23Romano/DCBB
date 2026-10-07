@@ -27,7 +27,7 @@ There are two layers of conversation, and only the first can carry the plot:
 
 ## The Chronoscape
 
-The Chronoscape is a persistent map of the war: a vertical river of eras with **Nexus Points** marked along it. The MVP has 1 Nexus; launch targets 6–8.
+The Chronoscape is a persistent map of the war: a long strip of the Weave with eras woven in bands, and **Nexus Points** marked as knots. The MVP has 1 Nexus; launch targets 6–8.
 
 | Nexus state | Meaning |
 |---|---|
@@ -41,6 +41,11 @@ The Chronoscape is a persistent map of the war: a vertical river of eras with **
   - If another faction controls it, its squads are more common there (+1 combat per act).
   - Changes in control unlock **authored story beats** and new missions.
 - **Torn Nexus Points** (late game) offer Tear-heavy mission variants with unique rewards. Mending one restores it to Contested.
+- **After a faction ending**, the Chronoscape drifts back to Contested over the next runs, one Nexus at a time. The war resumes, as it always does ([02](02-world-and-lore.md#endings)).
+- **After the Shuttle ending**, the Chronoscape gains a **Balance** view showing how evenly the factions hold the Weave.
+  - "**Where the Weave needs you**" highlights the faction that holds the fewest Nexus Points.
+  - Runs played for that faction earn +50% Faction Rank XP and a Shuttle-thread cosmetic.
+  - No faction may ever win, and now the player is the one keeping it that way.
 
 ---
 
@@ -187,10 +192,12 @@ The three movements are described in [02](02-world-and-lore.md#the-meta-story-th
 | Movement | Triggered by | Delivered through |
 |---|---|---|
 | **I: The War** | First runs | Mission intros, hub beats, the Archivist's questions |
-| **II: The Defectors** | First Defection *and* 5+ wins | Hybrid unlock scenes, revelations about each faction, new missions |
-| **III: The Tear** | Hybrids unlocked *and* the Chronoscape at least half controlled | Torn Nexus Points, final missions, endings |
+| **II: Three Fractures** | Per faction: hub beats at that faction's Rank 3 and 6, then a **revelation mission** at Rank 9 (*The Last Hour*, *The Halting Problem*, *Every Version of Us*) | That faction's hub voice (Ysolde, KESTREL, Wren & Wren), the revelation mission, and its Nexus boss's new behavior |
+| **III: No Right Thread** | All three Fractures complete *and* the hybrid operatives unlocked | The Archivist's reveal, Torn Nexus Points, the Tear's chorus, final missions, endings |
+| **After the Shuttle ending** | The true ending | The Chronoscape's Balance view, and new hub beats acknowledging the endless war |
 
-**Rule:** every story-critical beat is **authored**. GenAI adds personal color *around* the beats, such as callbacks, chronicles and Echo lines. It never decides or reveals plot.
+- **Hybrids fit the arcs.** Hybrids unlock by Defecting ([Unlocks](#unlocks)), so a player usually meets the Fractures while crossing between factions. Seeing a faction from the inside, then leaving it, is the point.
+- **Rule:** every story-critical beat is **authored**. GenAI adds personal color *around* the beats, such as callbacks, chronicles and Echo lines. It never decides or reveals plot, and a spoiler guard stops it hinting at twists the player hasn't reached ([07](07-genai-design.md#validation-layers)).
 
 ---
 

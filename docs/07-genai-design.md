@@ -232,6 +232,7 @@ Each request has two parts:
 
 ```yaml
 task: NARRATE_EVENT                    # NARRATE_EVENT | CHRONICLE | BARKS | VARIANT_PLAN | SELECT_RIPPLE | ...
+story_stage: { movement: 2, fractures_done: [order], shuttle: false }   # gates lore and reveals
 era: london_1843
 location: "Fleet Street print shop, night"
 pov: { faction: order, operative: vowknight, defected_to: null }
@@ -249,6 +250,7 @@ avoid: ["modern slang", "game terms", "numbers", "moralizing"]
 ```
 
 - **Lore Bible.** Factions, eras, places, characters, glossary and voice guides are stored as **tagged, structured snippets**. The context builder selects 2–4 snippets by tag (era, faction, NPC). No vector database is needed, because the corpus is small and curated.
+- **Spoiler gating.** Every snippet carries an `unlock` tag: for example `movement_2.order`, `movement_3` or `shuttle`. The context builder only selects snippets the player's `story_stage` has reached. The model can't leak what it was never shown, such as the Last Hour being the Tear, MERIDIAN's proof, or the ninth law.
 - **Persona sheets** for every speaking character contain: voice, three facts, one secret, and words they never use.
 - **Budgets:**
 
@@ -284,6 +286,7 @@ Every output passes through these layers in order. Any failure means one retry, 
    - blocks the names of living people, using a curated list (a legal limit; historical figures of any era are fine)
    - flags wrong-era anachronisms unless the speaker is a traveller
    - keeps the faction's name list consistent
+   - **spoiler guard:** blocks reveal phrases for twists the player hasn't unlocked yet (a curated list per arc, for example "no right thread" before Movement III)
 4. **Safety filter:** an on-device blocklist plus a small toxicity classifier for what store policy prohibits: slurs and hate speech aimed at real groups, sexual content, and self-harm instructions. History itself (wars, faiths, politics, atrocities) is subject matter, not a filter category.
 5. **Repetition guard:** n-gram overlap against the last 20 outputs of the same template.
 6. **Fallback.** Authored, procedural or seeded. It is always available and always valid.
