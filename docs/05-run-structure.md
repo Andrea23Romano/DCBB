@@ -34,9 +34,9 @@ flowchart LR
 
 ---
 
-## The Timestream
+## The Weft
 
-This is DC's "pick 1 of 3 event cards", deepened. At each step you are dealt **3 Moments** from the act's **Era Deck** and choose one.
+This is DC's "pick 1 of 3 event cards", deepened. In weaving, the weft is the thread drawn across the loom, and each pass of it is called a *pick*. Here each step is one pick: you are dealt **3 Moments** from the act's **Era Deck** and choose one.
 
 ### Era Deck composition
 
@@ -44,7 +44,7 @@ Example for an 8-step act (24 cards):
 
 | Moment | Count | What it is |
 |---|---|---|
-| Combat | 10 | A normal fight: era natives, faction squads or the Hush |
+| Combat | 10 | A normal fight: era natives, faction squads or the Tear |
 | Elite | 2 | A hard fight with better rewards (guaranteed Artifact) |
 | Event | 5 | A narrative choice, including at least **1 Divergence** |
 | Anomaly | 1 | Time weirdness ([below](#services)) |
@@ -59,8 +59,8 @@ Example for an 8-step act (24 cards):
 - At least one Antiquarian appears between steps 3 and 6.
 - The act's Divergence event appears between steps 4 and 7. In Act III it appears between steps 3 and 5.
 - An act holds at most 2 Elites, not counting Returning Moments.
-- When Paradox is Frayed or worse, **Hush Moments** are shuffled in ([Paradox](#paradox)).
-- Fights draw from **era natives, the Hush, and factions you don't belong to**. Your own faction's squads only hunt you when your Standing with them is negative, as an apostate.
+- When Paradox is Frayed or worse, **Tear Moments** are shuffled in ([Paradox](#paradox)).
+- Fights draw from **era natives, the Tear, and factions you don't belong to**. Your own faction's squads only hunt you when your Standing with them is negative, as an apostate.
 
 ### What a Moment card shows
 
@@ -160,18 +160,20 @@ Paradox is a **run-wide meter from 0 to 10** that represents strain on causality
 | Paradox | State | Effect |
 |---|---|---|
 | 0–3 | **Stable** | n/a |
-| 4–6 | **Frayed** | Hush Moments join the Era Deck (+2 per act). Errata cards with "Paradox ≥ 4" conditions light up. |
+| 4–6 | **Frayed** | Tear Moments join the Era Deck (+2 per act). Errata cards with "Paradox ≥ 4" conditions light up. |
 | 7–9 | **Unstable** | All of the above, plus Elites gain +1 Might, and one Moment per step is an Anomaly |
 | 10 | **Unravel** | Resolves immediately, then Paradox resets to 5 (see below) |
 
 ### Unravel
 
+At 10 Paradox the Weave tears open around you.
+
 - **In combat:**
   - every card in your Present becomes a random **Misprint** for the rest of the combat (from the [Misprint tables](08-card-dsl.md#misprint-tables))
-  - a **Hush Wisp** joins the enemies
+  - a **Loose End** crawls through the Tear and joins the enemies
 - **Outside combat:**
   - two random cards in your deck gain a permanent Misprint face
-  - the next step is a **Hush ambush**
+  - the next step is a **Tear ambush**
 - **Errata:** the Splinter's *Unstable Equilibrium* Imprint moves Unravel to 12. Errata cards spend Paradox as fuel.
 
 > **Design intent:** Paradox is the run's push-your-luck dial. Rewinding, Glimpsing and Defecting are all *good* moves with a real price. Errata players live at 6–9 on purpose.
@@ -419,7 +421,7 @@ In a Divergence you **change history**.
 | Burn the notes | `london.notes_burned` | **The Engine Never Built**: Convergence enemies −10% HP this run · **The Order Takes Credit**: Order squads gain +1 Plate · **Ash in the Margins**: your next Anomaly is a Rift |
 | Copy them for the Order | `london.notes_to_order` | **Canon of Engines**: Relic cards −25% at Antiquarians · **Holy Calculation**: Order enemies are Predictive in Act II · **Scriptorium**: Inscribe costs −20 Hours |
 | Give them to the stranger from 2049 | `london.notes_to_stranger` | **Bootstrapped**: Convergence cards appear twice as often in rewards, but Proxies gain +1 Might · **Signal Loop**: +1 Foresight per act, +1 Paradox · **A Debt Owed**: MERIDIAN Ascendant cannot be your Nexus champion this run |
-| Let history run | `london.notes_untouched` | **As Written**: Order Standing +1 · **The Hush Notices**: +1 Paradox, and the next Cache is upgraded |
+| Let history run | `london.notes_untouched` | **As Written**: Order Standing +1 · **The Tear Notices**: +1 Paradox, and the next Cache is upgraded |
 
 **Divergence Report example:**
 

@@ -194,10 +194,10 @@ Elites and bosses may hold two intents on the Track at once, for example a jab e
 | Guard N | shield | Gain N Block (lasts until the next enemy phase starts, so it protects them during your turn) |
 | Buff | arrow-up | Gain Might, Plate, etc. |
 | Debuff | broken pip | Apply Weak, Exposed, Glitch, etc. |
-| Summon | portal | Reinforcement arrives from upstream |
+| Summon | portal | Reinforcement arrives through the Weave |
 | Charge | hourglass | A multi-round windup (countdown ②+) |
 | Disrupt | crossed clock | Delay your Scheduled effects |
-| Unsay | blank | Hush effects: Blank a card, Erase the top of your Future |
+| Unpick | torn edge | Tear effects: Blank a card, Erase the top of your Future |
 
 ### Faction behavior
 
@@ -208,7 +208,7 @@ Enemy behavior is how the faction triangle shows up in combat.
 | **The Order** | **Fixed** charging hits, Plate, slow and heavy | Precise planning (Convergence: Foresee and Scheduled timing) |
 | **The Convergence** | **Predictive** intents set at Dawn by reading your Present, plus Disrupt | Changing your hand after they read it (Errata: Shift and Fork) |
 | **The Errata** | **Forked** intents with two possible outcomes, plus Doubles that copy your last card | Steady defense that covers both outcomes (Order: Block, Plate, Vows) |
-| **The Hush** | Unsay: Blank cards, Erase your Future, silence Constants | Big decks, Recall, killing them fast |
+| **The Tear** | Unpick: Blank cards, Erase your Future, snip Constants | Big decks, Recall, killing them fast |
 | **Era natives** | Straightforward attackers, like bandits, constables or plague-doctors | Anything |
 
 - **Forked intents.** These show both outcomes, for example *A: Attack 12 / B: Weak 2*. Each has a 50% chance unless the intent says otherwise. The outcome is rolled when the intent resolves. Some cards **Observe**, which collapses a Forked intent to its rolled outcome early.
@@ -269,7 +269,7 @@ The glossary is capped at **25 keywords** at launch. Long-pressing any keyword o
 | State | Meaning |
 |---|---|
 | **Known** | Seen via Foresee. Cleared on reshuffle. |
-| **Blank** | Unsaid by the Hush. Can't be played. Restored after combat. |
+| **Blank** | Its thread cut by the Tear. Can't be played. Restored after combat. |
 | **Misprinted** | Showing a temporary alternate face for this combat. |
 
 ### Card types
@@ -277,7 +277,7 @@ The glossary is capped at **25 keywords** at launch. Long-pressing any keyword o
 - **Attack**
 - **Skill**
 - **Constant:** Vow, Relic or Subroutine (3 slots)
-- **Hazard cards:** added by enemies or Unravel, for example Hush Static, which is unplayable and Erases itself at Dusk.
+- **Hazard cards:** added by enemies or Unravel, for example a Loose Thread, which is unplayable and Erases itself at Dusk.
 
 ---
 

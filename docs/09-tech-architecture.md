@@ -80,7 +80,7 @@ flowchart TB
 
 | Module | Responsibility |
 |---|---|
-| `core-rules` | Game state, the action reducer, combat (zones, energy, Track), run (Timestream, Anchors, Paradox, ledger), DSL interpreter, rules-text rendering, RNG streams, serialization. **No Android dependencies.** |
+| `core-rules` | Game state, the action reducer, combat (zones, energy, Track), run (Weft, Anchors, Paradox, ledger), DSL interpreter, rules-text rendering, RNG streams, serialization. **No Android dependencies.** |
 | `content` | Cards, enemies, events, Artifacts, Imprints, Lore Bible snippets, Misprint tables, and authored fallback text, as YAML compiled to a binary bundle. Also the **validator CLI** (schemas, budgets, references). |
 | `sim` | Headless JVM simulator with bots (greedy heuristic and MCTS for combat) for balance reports, Pressure and Delay abuse detection, and calibrating the [08](08-card-dsl.md) cost table |
 | `genai` | The `LlmBackend` interface, context builder, versioned prompt templates, the generation queue, the cache, all validators ([07](07-genai-design.md#validation-layers)), and fallbacks |
@@ -259,7 +259,7 @@ flowchart LR
 | LLM eval | The [07](07-genai-design.md#evaluation) gates on every model, adapter or prompt change |
 | UI | Compose UI tests for the core flows, and screenshot tests for card rendering |
 | Device lab | Per-tier performance, thermal and memory runs (Firebase Test Lab plus physical reference phones) |
-| Accessibility | Scripted TalkBack passes through a full combat and a full Timestream step |
+| Accessibility | Scripted TalkBack passes through a full combat and a full Weft step |
 
 ## Security and Privacy
 

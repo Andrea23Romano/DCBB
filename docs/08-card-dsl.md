@@ -103,7 +103,7 @@ Each condition has a **difficulty category**, which sets its budget multiplier.
 | `calculated` | this card is Known | medium |
 | `vow_kept` | you have an unbroken Vow | medium |
 | `paradox_at_least: n` | Paradox ≥ n | n ≤ 4 medium · n ≥ 7 hard |
-| `enemy_faction: [..]` | target is Errata or Hush | hard |
+| `enemy_faction: [..]` | target is Errata or Tear | hard |
 | `hp_below_pct: n` | your HP below n% | n ≥ 50 easy · n < 50 medium |
 | `constants_at_least: n` | n+ Constants in play | n = 1 easy · n ≥ 2 medium |
 | `shifted_this_turn` | you Shifted at least once this turn | medium |
@@ -372,4 +372,4 @@ When a card is **Forked** in combat (for example by *Split the Moment*), it gets
 
 ## Enemies Use the Same Primitives
 
-Enemy intents are written with a subset of the same primitives: `damage`, `block`, `apply_*`, `delay` (Disrupt), and Hush ops such as `blank_card`. Enemies are **not** priced by the card budget. Encounters use their own difficulty model, an HP × damage-rate curve per act, tuned in simulation. Sharing the grammar still means one interpreter and one rules-text renderer.
+Enemy intents are written with a subset of the same primitives: `damage`, `block`, `apply_*`, `delay` (Disrupt), and Tear ops such as `blank_card`. Enemies are **not** priced by the card budget. Encounters use their own difficulty model, an HP × damage-rate curve per act, tuned in simulation. Sharing the grammar still means one interpreter and one rules-text renderer.

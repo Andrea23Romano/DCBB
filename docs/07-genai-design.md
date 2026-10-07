@@ -245,7 +245,7 @@ template:
 callbacks: ["Act I: you spared a Brass Proxy that begged in a dead man's voice"]
 lore: ["order.creed.short", "london_1843.mood"]     # tag-retrieved snippets from the Lore Bible
 style: { voice: order, tone: mythic_bittersweet, max_words: 110 }
-avoid: ["modern slang", "game terms", "numbers"]
+avoid: ["modern slang", "game terms", "numbers", "moralizing"]
 ```
 
 - **Lore Bible.** Factions, eras, places, characters, glossary and voice guides are stored as **tagged, structured snippets**. The context builder selects 2–4 snippets by tag (era, faction, NPC). No vector database is needed, because the corpus is small and curated.
@@ -281,10 +281,10 @@ Every output passes through these layers in order. Any failure means one retry, 
    - nothing contradicts the outcome icons: a "gain" outcome can't be narrated as a loss (simple polarity check)
 3. **Lore lint:**
    - blocks out-of-world terms ("AI model", "as a language model", modern brands)
-   - blocks modern real names, using a curated list
+   - blocks the names of living people, using a curated list (a legal limit; historical figures of any era are fine)
    - flags wrong-era anachronisms unless the speaker is a traveller
    - keeps the faction's name list consistent
-4. **Safety filter:** an on-device blocklist plus a small toxicity classifier (slurs, sexual content, self-harm, real-world politics or religion).
+4. **Safety filter:** an on-device blocklist plus a small toxicity classifier for what store policy prohibits: slurs and hate speech aimed at real groups, sexual content, and self-harm instructions. History itself (wars, faiths, politics, atrocities) is subject matter, not a filter category.
 5. **Repetition guard:** n-gram overlap against the last 20 outputs of the same template.
 6. **Fallback.** Authored, procedural or seeded. It is always available and always valid.
 
@@ -347,11 +347,12 @@ Every output passes through these layers in order. Any failure means one retry, 
 - **Low exposure by design.**
   - The core game takes **no free-text player input**, so there is no prompt-injection surface.
   - Prompts are built only from game state and curated lore.
-- **Content limits:**
-  - historical figures come from an approved list with persona sheets
-  - no modern real people
-  - sensitive-topic rules are inherited from [02](02-world-and-lore.md#sensitivity-rules)
-  - the target rating is PEGI 12 / ESRB T
+- **Content limits** follow the [content principles](02-world-and-lore.md#content-principles):
+  - Any era, event or historical figure can appear.
+  - *Present, don't preach* is part of every prompt's style rules: the Chronicler never judges the player or the past.
+  - Every historical figure who speaks gets a persona sheet, for consistency.
+  - No living people.
+  - The rating follows the content.
 - **Transparency.**
   - The store listing and first-run screen explain that a small on-device model writes some text, that it never sees personal data, and how to turn it off.
   - All art, rules and core story are human-made.
@@ -373,7 +374,7 @@ The evaluation suite runs in CI on desktop (JVM) and on reference phones for eve
 | Forge: valid plan within 1 retry | ≥ 95% (the rest go procedural) |
 | Overall fallback rate on Tier A | ≤ 5% |
 | Faction voice: style classifier accuracy | ≥ 90% |
-| Blind human rating (coherence, tone, callback quality; 1–5) | mean ≥ 4.0, no feature below 3.5 |
+| Blind human rating (coherence, tone, callback quality, no moralizing; 1–5) | mean ≥ 4.0, no feature below 3.5 |
 | Lore contradictions per 100 outputs (LLM-judge + human spot check) | ≤ 2 |
 | Safety violations in 10k adversarial-context samples | 0 |
 | Repetition: distinct-3-gram ratio over 100 narrations of one template | ≥ 0.6 |

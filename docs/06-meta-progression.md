@@ -20,7 +20,7 @@ The Still Hour is the hub (lore in [02](02-world-and-lore.md#the-still-hour)). B
 
 There are two layers of conversation, and only the first can carry the plot:
 
-- **Authored beats.** These carry the meta-story ([below](#meta-story-delivery)). They unlock by milestone, for example *"first Defection"*, *"first loss to the Hush"* or *"won as all three factions"*.
+- **Authored beats.** These carry the meta-story ([below](#meta-story-delivery)). They unlock by milestone, for example *"first Defection"*, *"first loss to the Tear"* or *"won as all three factions"*.
 - **Callbacks.** These are GenAI, P1 ([07](07-genai-design.md#hub-callbacks)). A short remark of at most 40 words, appended after an authored beat, that references your recent runs. For example: *Ysolde: "You let the boy touch the Gnomon. Even after you left us. …Thank you."*
 
 ---
@@ -33,14 +33,14 @@ The Chronoscape is a persistent map of the war: a vertical river of eras with **
 |---|---|
 | **Order / Convergence / Errata** | Anchored by that faction. Weight flows its way. |
 | **Contested** | Never won, or recently lost |
-| **Hushed** | Movement III only. The Hush has silenced it. |
+| **Torn** | Movement III only. The Tear has ripped it open. |
 
 - **Winning a mission** anchors its Nexus for the faction you served at the end of the run. If you Defected, you choose which of your two factions claims it.
 - **What control does:**
   - On a Nexus your faction controls, you start that mission with +1 Standing with your faction.
   - If another faction controls it, its squads are more common there (+1 combat per act).
   - Changes in control unlock **authored story beats** and new missions.
-- **Hushed Nexus Points** (late game) offer Hush-heavy mission variants with unique rewards. Clearing one restores it to Contested.
+- **Torn Nexus Points** (late game) offer Tear-heavy mission variants with unique rewards. Mending one restores it to Contested.
 
 ---
 
@@ -123,7 +123,7 @@ Entropy is the difficulty ladder. Levels **0–20** are tracked per operative, a
 | 6 | Act bosses gain a second Fixed move |
 | 7 | Paradox thresholds −1 (Frayed 3, Unstable 6, Unravel 9) |
 | 8 | Returning Moments always come back in their harshest form |
-| 9 | Start each run with a *Hush Static* hazard card in your deck |
+| 9 | Start each run with a *Loose Thread* hazard card in your deck |
 | 10 | One Anchor per **run** instead of per act |
 | 11 | Elites gain +1 Might |
 | 12 | Card rewards offer 2 cards (a Glimpse still adds 3) |
@@ -134,7 +134,7 @@ Entropy is the difficulty ladder. Levels **0–20** are tracked per operative, a
 | 17 | Enemies have +10% more HP (+15% total) |
 | 18 | Reservoir cap 4 |
 | 19 | Nexus bosses gain a third phase |
-| 20 | **The Hush Remembers**: start at 3 Paradox; Hush Moments appear even when Stable |
+| 20 | **The Tear Widens**: start at 3 Paradox; Tear Moments appear even when Stable |
 
 ---
 
@@ -162,7 +162,7 @@ Fixed Points are seeded challenge runs. DC's weekly challenges inspired them.
 | **Canon Law** | Vows cost 0, and breaking one costs double Penance |
 | **Open Seams** | Every Shrine is an Errata Seam |
 | **Calculated Risk** | Every card you draw is Known |
-| **The Hush Remembers** | Entropy 20's modifier at any level |
+| **The Tear Widens** | Entropy 20's modifier at any level |
 | **Glass Cannon** | Max HP −40%, damage +40% |
 
 ---
@@ -188,7 +188,7 @@ The three movements are described in [02](02-world-and-lore.md#the-meta-story-th
 |---|---|---|
 | **I: The War** | First runs | Mission intros, hub beats, the Archivist's questions |
 | **II: The Defectors** | First Defection *and* 5+ wins | Hybrid unlock scenes, revelations about each faction, new missions |
-| **III: The Hush** | Hybrids unlocked *and* the Chronoscape at least half controlled | Hushed Nexus Points, final missions, endings |
+| **III: The Tear** | Hybrids unlocked *and* the Chronoscape at least half controlled | Torn Nexus Points, final missions, endings |
 
 **Rule:** every story-critical beat is **authored**. GenAI adds personal color *around* the beats, such as callbacks, chronicles and Echo lines. It never decides or reveals plot.
 

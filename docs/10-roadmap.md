@@ -66,7 +66,7 @@ This is the Phase 2 vertical slice, reused by Phases 3–4.
 | Complexity creep (Track, Borrow, Reservoir, Paradox, Fork…) | New players bounce | Keyword cap of 25; progressive disclosure across the first runs; long-press explanations everywhere; the Archivist explainer |
 | Compose falls short on game feel | Product looks flat | VFX spike in Phase 2 with a go/no-go; Godot 4 as the documented fallback |
 | Scope | Never ships | MVP cut lines above; meta systems deferred to Phase 5; Movement III can slip past 1.0 |
-| Store policy (AI content, rating) | Launch blocked | In-app Report flow from day one; no free-text input; rating-driven content rules |
+| Store policy and regional rules (AI content, rating, historical symbols) | Launch blocked or delayed in some markets | In-app Report flow from day one; no free-text input; rate the content we actually ship; restricted historical symbols on swappable art layers |
 | Teacher-model terms or base-model licenses | Legal exposure | Verify terms before generating data; `ml/MODEL_LICENSES.md`; a model card per release |
 
 ---
@@ -85,3 +85,4 @@ This is the Phase 2 vertical slice, reused by Phases 3–4.
 | 8 | **Audio** | Faction leitmotifs ([01](01-vision.md#audio-direction)). Composer budget and adaptive music scope. |
 | 9 | **Parley experiment** | Revisit after 1.0? It is out of scope today ([07](07-genai-design.md#future-experiments)). |
 | 10 | **Player-named Anachronists** | Let players name their operatives (used by chronicles)? It needs a name filter. |
+| 11 | **Rating** | PEGI 12 or 16 depends on which dark chapters of history make the launch eras (the Somme, Los Alamos, ...). Decide when the eras are locked. |

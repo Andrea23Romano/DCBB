@@ -80,7 +80,7 @@ Time manipulation is the core verb at every layer, not a theme skin.
 | Colored energy carries over (cap 8) | **Reservoir** carryover (cap 6), plus **Borrow** up to 2 from next turn (**Debt**). Energy moves both ways in time. |
 | Basic-attack interplay | One **Signature Action** per operative (Strike, Forecast, Shift), modified by cards, Relics and Artifacts |
 | Talents on level-up | **Imprints**, with faction and deck requirements that make builds intentional |
-| Pick 1 of 3 event cards | The **Timestream**: 3 Moments, **Foresight** to peek ahead, **Returning Moments** (skipped branches come back changed), and **Anchors** with Rewind |
+| Pick 1 of 3 event cards | The **Weft**: 3 Moments, **Foresight** to peek ahead, **Returning Moments** (skipped branches come back changed), and **Anchors** with Rewind |
 | Weapons and enchantments | **Relics** and other Constants (3 slots), **Artifacts** (out-of-place historical objects), **Inscribe** upgrades |
 | Multi-color classes | Faction operatives plus one mid-run **Defection** that adds a second color, and a story to go with it |
 | Static event text | Designer-authored events narrated by the **Chronicler**, with **Causality Ledger** callbacks across eras |
@@ -121,7 +121,7 @@ Free demo plus a one-time unlock, with optional expansions and cosmetic supporte
   - **Order:** illuminated-manuscript borders, gold leaf, stained-glass light, the sundial-cross
   - **Convergence:** white porcelain geometry, cyan light, gold circuitry; brass and clockwork in older eras
   - **Errata:** a collage of eras, torn paper, risograph misprint offsets, margin doodles, the caret ‸
-  - **The Hush:** negative space, literal cut-outs in the paint
+  - **The Tear:** ragged rips through the painted canvas itself, with loose threads and darkness behind. When the Tear touches a card, the card's art tears.
 - **Era palettes:** London fog and soot · Milan fresco ochre · Salt Waste white salt and black glass.
 - **Branch Variants** reuse the original art with **shader treatments** (double exposure, chromatic offset, misprinted registration) and a variant frame. **No generated art.**
 - **Energy pips are shaped:** ☀ Faith, ⬡ Compute, ◎ Flux, ○ Neutral. Color is never the only signal.
@@ -133,7 +133,7 @@ Free demo plus a one-time unlock, with optional expansions and cosmetic supporte
 | **Order** | Plainchant, bells, organ drones |
 | **Convergence** | Clockwork ticks and music-box arpeggios that become synth arpeggios in later eras |
 | **Errata** | Tape loops, detuned strings, a chorus of overlapping voices |
-| **The Hush** | Removal. The mix ducks, and silence is the sound. |
+| **The Tear** | Ripping cloth, snapping strings, and wind through the hole that sounds almost like voices |
 
 - **Adaptive layers** add era instrumentation.
 - During enemy phases, **the Track ticks** as a rhythmic motif.

@@ -73,7 +73,7 @@ Lore for each faction is in [02](02-world-and-lore.md#the-factions). Rules for e
 | Litany of Steel | Skill | 1 | U | Gain 4 Block. Litany (Attack): draw 1. | 13.2 / 13.2 |
 | Gnomon Blade | Constant (Relic) | 1F+1 | U | Your Strike deals +3 and gives 2 Block. | 25.9 / 26.4 |
 | Oathkeeper's Stand | Skill | 2F | U | Gain 9 Block. If you have an unbroken Vow: gain Plate 2. | 27.6 / 26.4 |
-| Smite the Heretic | Attack | 1F+1 | U | Deal 10. Double damage against Errata and Hush enemies. | 28 / 26.4 |
+| Smite the Heretic | Attack | 1F+1 | U | Deal 10. Double damage against Errata and Tear enemies. | 28 / 26.4 |
 | Recite the Canon | Skill | 1F | U | Recall 1. Remember 5: Recall 2 instead. Retain. | 13.2 / 13.2 |
 | Vow of Silence | Constant (Vow) | 1F | R | Vow: never Borrow or Delay. While kept: at Dawn, gain 1 Faith. | 16 / 15 |
 | Verdict of the Line | Attack | 2F+1 | L | Deal 18, +1 per card in your Past (max +14). Erase. | 49 / 50.4 |
@@ -252,6 +252,8 @@ Enemy stats are prototype starting points. Intents use the vocabulary in [04](04
 
 ### Era natives
 
+Era natives can be anyone who lived in that era, on any side of its conflicts. In the Salt Waste, for example, that includes crusader and Ayyubid patrols as well as the stranger things the Fray leaves behind. They fight intruders from other times, whoever they are, and the game doesn't take sides.
+
 | Enemy | Era | HP | Intents (rotation) | Notes |
 |---|---|---|---|---|
 | Gaslight Footpad | London 1843 | 20 | Attack 6 ① → Attack 3 + Weak 1 ① | Often in pairs |
@@ -260,7 +262,7 @@ Enemy stats are prototype starting points. Intents use the vocabulary in [04](04
 | Condottiero | Milan 1495 | 32 | Guard 6 → Attack 8 → Charge Attack 16 ② | |
 | Plague Doctor | Milan 1495 | 24 | Burn 3 ① → Attack 5 + Exposed 1 ① | |
 | Sforza Crossbowman | Milan 1495 | 20 | Charge Attack 14 ② → Attack 5 ① | Kill it before it fires |
-| Salt Wraith | Salt Waste 1191 | 22 | Unsay: Blank a card ① → Attack 7 ① | Hush-touched |
+| Salt Wraith | Salt Waste 1191 | 22 | Unpick: Blank a card ① → Attack 7 ① | Tear-touched |
 | Sandglass Golem | Salt Waste 1191 | 40 | Plate 2 ① → Charge Attack 10 ② | |
 | Mirage | Salt Waste 1191 | 18 | Forked: Attack 9 / Guard 9 ① | Errata-touched |
 
@@ -281,9 +283,9 @@ Squads appear in any era, with era skins: a Brass Proxy is clockwork in 1495 and
 | Misprint | Errata | 21 | **Forked**: Attack 12 / Weak 2 ① |
 | Double | Errata | 24 | Copies the last card you played as its intent (damage → Attack, Block → Guard) |
 | **Seam-runner** (elite) | Errata | 44 | Untargetable every other round ("in the Margins") · Forked: Attack 15 / Steal a card from your Present (returned on death) |
-| Hush Wisp | Hush | 12 | Unsay: Blank a card in your Present ① |
-| Quiet Thing | Hush | 30 | Unsay: Erase the top card of your Future ① → Attack 8 ① |
-| **The Unsaid** (elite) | Hush | 60 | Silence: your Constants don't trigger next turn · Charge Attack 14 ② · Blank 2 |
+| Loose End | Tear | 12 | Unpick: Blank a card in your Present ① |
+| Ravel | Tear | 30 | Unpick: Erase the top card of your Future ① → Attack 8 ① |
+| **The Rent** (elite) | Tear | 60 | Snip: your Constants don't trigger next turn · Charge Attack 14 ② · Blank 2 |
 | Echo of You | (yours) | 60% of your max HP | Plays your deck (from a Rewind or from the Archive). Cards are mapped to intents deterministically: Attacks → Attack, Skills → Guard or Buff, Constants → passives. |
 
 ### Bosses
