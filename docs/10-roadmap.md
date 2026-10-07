@@ -1,0 +1,87 @@
+# 10: Roadmap
+
+**Design first, then build in thin, testable slices.** Every phase ends with a concrete exit check, so the fun is proven before the ambitious parts (GenAI, fine-tuning, meta) get built on top of it.
+
+---
+
+## Phases
+
+| Phase | Goal | Contents | Exit check |
+|---|---|---|---|
+| **0: Design** | This document set | Vision, lore, systems, GenAI, architecture | Reviewed; open questions triaged |
+| **1: Combat prototype** | Prove the combat is fun | `core-rules` for combat; 3 operatives (starter decks plus about 40 cards); about 10 enemies; Track, Pressure, Reservoir and Borrow; a text or desktop debug UI; `sim` bots with first balance reports | Playtesters want "one more fight". Sims show no dominant degenerate line (Delay-lock, infinite Borrow). Average turn under 20 s. |
+| **2: Android vertical slice** (no GenAI) | Prove the whole loop on a phone | The full MVP content below; Compose UI; saves and resume; progressive tutorial; **VFX spike** (card motion, Track animation, the branch shader) | The mission "The First Hour" is playable start to finish at 60 fps on a mid-range phone. The ADR-001 go/no-go on Compose game feel is made ([09](09-tech-architecture.md#stack-decision-adr-001)). |
+| **3: GenAI P0** | Prove the Chronicler | `genai` and `llm-service`; LiteRT-LM with **off-the-shelf** Gemma 4 E2B (prompt-only); event narration, Run Chronicle, barks; queue, cache, fallbacks, Report flow; AI pack delivery | All [07](07-genai-design.md#evaluation) gates except faction voice. Fallback rate ≤ 10%. No frame drops from generation. |
+| **4: Forge, fine-tuning and tiers** | Make it ours and make it scale down | The Forge pipeline; the `ml/` pipeline; multi-task LoRA for Tiers A and B; tier classification; the full eval suite | **All** 07 gates pass on the reference phones |
+| **5: Meta and content** | Make it a game you keep playing | Chronoscape, Archive and Echoes, Variant Pool, Entropy, Fixed Points, Codex, the Movement I hub story; content grown toward launch targets; closed beta | Retention and difficulty curves are healthy in the beta. Crash-free sessions ≥ 99.5%. |
+| **6: Launch and beyond** | Ship 1.0 | Launch content; then expansions (missions, operatives, hybrids, Movements II and III) | n/a |
+
+## MVP Content
+
+This is the Phase 2 vertical slice, reused by Phases 3–4.
+
+| Content | Count |
+|---|---|
+| Operatives | 3 (Vowknight, Oracle, Splinter) |
+| Cards | ~120 (about 30 per faction plus about 30 neutral and era cards) |
+| Enemies | ~25, including 4 elites |
+| Bosses | 2 act bosses + 3 Nexus champions |
+| Events | ~20, including 3 Divergences (one per act) |
+| Artifacts | ~25, including 3 boss Artifacts |
+| Imprints | ~24 (6 per faction plus 6 universal) |
+| Missions / eras | 1 ("The First Hour") / 3 |
+
+## Launch Targets (1.0)
+
+| Content | Count |
+|---|---|
+| Operatives | 9 + 3 hybrids |
+| Cards | ~320 |
+| Enemies | ~70 |
+| Missions / eras | 4–6 / 8 |
+| Events | ~80 |
+| Artifacts | ~70 |
+| Story | Movements I–II complete; Movement III in the first major update, or at launch if scope allows |
+
+---
+
+## Business Model
+
+- **Free to download, with a real demo:** Act I of *The First Hour* with the Vowknight. A **one-time purchase** unlocks the full game.
+- **Optional paid expansions** add missions, operatives and eras. **Supporter packs** are cosmetic only.
+- **No ads, no pay-to-win, no energy timers, no loot boxes.**
+- **Why this works with GenAI.** Inference runs on the player's phone, so there are **no per-player server costs**. A one-time price is sustainable without subscriptions, and the game never needs to "phone home".
+
+---
+
+## Risks and Mitigations
+
+| Risk | Impact | Mitigation |
+|---|---|---|
+| On-device inference too slow or hot on mid-range phones | Features feel laggy; battery complaints | Device tiers; prefetching in natural pauses; the 1.5 s rule with fallbacks; thermal step-down; Off mode is a complete game |
+| Model download size (≈ 1.5–2 GB on Tier A) | Players skip it | Optional on-demand AI pack; Wi-Fi default; clear value preview; Tier B's smaller model |
+| Generated text quality or consistency | Immersion breaks; lore drift | Fine-tuning on our Lore Bible; small, structured packets; validators; authored fallbacks; human-rated eval gates |
+| Forge variants are unbalanced | Runs trivialized or ruined | One DSL and one budget; auto-tune; capped ops; at most 3 Forks per run; simulation checks against source cards |
+| Player sentiment about GenAI | Review-bombing; distrust | Transparency (quill marks, a store disclosure); all art, rules and core story made by humans; an Off switch; no AI art |
+| Complexity creep (Track, Borrow, Reservoir, Paradox, Fork…) | New players bounce | Keyword cap of 25; progressive disclosure across the first runs; long-press explanations everywhere; the Archivist explainer |
+| Compose falls short on game feel | Product looks flat | VFX spike in Phase 2 with a go/no-go; Godot 4 as the documented fallback |
+| Scope | Never ships | MVP cut lines above; meta systems deferred to Phase 5; Movement III can slip past 1.0 |
+| Store policy (AI content, rating) | Launch blocked | In-app Report flow from day one; no free-text input; rating-driven content rules |
+| Teacher-model terms or base-model licenses | Legal exposure | Verify terms before generating data; `ml/MODEL_LICENSES.md`; a model card per release |
+
+---
+
+## Open Questions
+
+| # | Question | Notes |
+|---|---|---|
+| 1 | **Final title?** | Working title *Anachronist*. Alternatives in [01](01-vision.md#title-ideas). Needs a trademark check. |
+| 2 | **Art direction and budget** | How many illustrators? Card art count for the MVP is about 120 cards plus about 30 enemies. |
+| 3 | **Price point** | Benchmark against premium mobile deckbuilders. |
+| 4 | **iOS and PC (Steam)?** | Compose Multiplatform and LiteRT-LM make this plausible. Decide after Phase 3. |
+| 5 | **Localization** | Gemma models are multilingual, so narration could be localized cheaply. The authored fallbacks and rules templates still need professional localization. Which languages at launch? |
+| 6 | **Online features** | Fixed Points leaderboards (server-side replay verification) and variant share codes. Worth a backend? |
+| 7 | **Number of operatives at launch** | 9 + 3 is the target. Cut to 6 + 3 if the schedule slips? |
+| 8 | **Audio** | Faction leitmotifs ([01](01-vision.md#audio-direction)). Composer budget and adaptive music scope. |
+| 9 | **Parley experiment** | Revisit after 1.0? It is out of scope today ([07](07-genai-design.md#future-experiments)). |
+| 10 | **Player-named Anachronists** | Let players name their operatives (used by chronicles)? It needs a name filter. |
