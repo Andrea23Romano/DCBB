@@ -1,6 +1,7 @@
 package dcbb.core
 
 import dcbb.core.budget.Budget
+import dcbb.core.content.Variants
 import dcbb.core.model.CardType
 import dcbb.core.text.RulesText
 import kotlin.math.abs
@@ -12,11 +13,30 @@ class BudgetAndTextTest {
 
     @Test
     fun `every prototype card is within 10 percent of its budget or has a documented exception`() {
-        val off = content.cards.values.map { Budget.report(it) }.filter { !it.acceptable }
+        val off = content.authored.map { Budget.report(it) }.filter { !it.acceptable }
         assertTrue(off.isEmpty(), "Out of budget: " + off.joinToString { "${it.cardId} ${"%.2f".format(it.ratio)}" })
-        val exceptions = content.cards.values.filter { it.budgetException != null }
+        val exceptions = content.authored.filter { it.budgetException != null }
         assertTrue(exceptions.all { !it.budgetException.isNullOrBlank() })
         assertTrue(exceptions.size <= 3, "Exceptions are for a few reviewed cards, not a habit: ${exceptions.map { it.id }}")
+    }
+
+    @Test
+    fun `every card has an Inscribed version at 1_30 times its target, within 10 percent`() {
+        val off = content.authored.mapNotNull { base ->
+            val up = content.card(Variants.inscribedId(base.id))
+            val ratio = Budget.points(up) / Variants.inscribedTarget(base)
+            if (abs(ratio - 1) <= Budget.TOLERANCE + 1e-9 || up.budgetException != null) null else "${up.id} ${"%.2f".format(ratio)}"
+        }
+        assertTrue(off.isEmpty(), "Inscribed versions out of budget: $off")
+        assertEquals("Line Strike+", content.card("order.line_strike+").name)
+        assertEquals("Deal 7. Attuned: +2.", RulesText.card(content.card("order.line_strike+")))
+    }
+
+    @Test
+    fun `Misprinted versions roll from the Misprint table for their type and cost`() {
+        val m = content.card(Variants.misprintedId("order.line_strike"))
+        assertEquals(content.misprintFaces(CardType.ATTACK, 1), m.misprintFaces)
+        assertTrue(Variants.misprintedId("order.vow_of_the_sword") !in content.cards, "Constants have no Misprint table")
     }
 
     @Test

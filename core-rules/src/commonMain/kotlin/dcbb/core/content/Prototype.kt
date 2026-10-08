@@ -19,6 +19,8 @@ import dcbb.core.model.Face
 import dcbb.core.model.Faction
 import dcbb.core.model.IntentSpec
 import dcbb.core.model.Kind
+import dcbb.core.model.LatticeAi
+import dcbb.core.model.LatticeSub
 import dcbb.core.model.MultiSlotAi
 import dcbb.core.model.OperativeDef
 import dcbb.core.model.PredictiveAi
@@ -39,15 +41,46 @@ import dcbb.core.text.RulesText
 object Prototype {
 
     val content: Content by lazy {
+        val authored = cards()
+        val tables = misprintTables()
+        val misprintFaces = { type: CardType, cost: Int ->
+            tables[(if (type == CardType.ATTACK) CardType.ATTACK else CardType.SKILL) to cost.coerceIn(0, 3)]
+        }
         Content(
-            cards = cards(),
+            cards = authored,
             enemies = enemies(),
             operatives = operatives(),
             encounters = encounters(),
-            misprintTables = misprintTables(),
+            misprintTables = tables,
             decks = decks(),
+            variants = authored.map { Variants.inscribe(it, inscribedTweaks[it.id]) } +
+                authored.mapNotNull { Variants.misprint(it, misprintFaces) },
         )
     }
+
+    /**
+     * Authored Inscribed versions, for cards whose generated upgrade misses ×1.30 of budget or reads badly
+     * (docs/08 "Budget Targets"). Each one adjusts the generated upgrade.
+     */
+    private val inscribedTweaks: Map<String, (CardDef) -> CardDef> = mapOf(
+        "conv.optimal_path" to { it.copy(retain = true) },
+        "conv.proof_of_meridian" to { it.copy(constant = it.constant?.copy(dusk = listOf(Effect.Foresee(2), Effect.Draw(1)))) },
+        "conv.rollback" to { it.copy(eraseAfterPlay = false) },
+        "conv.watchdog" to { it.copy(constant = it.constant?.copy(dusk = listOf(block(2), Effect.Foresee(1)))) },
+        "errata.paradox_engine" to {
+            it.copy(budgetException = "Inscribed: losing one Paradox per Dawn is the natural upgrade, 2% over the window")
+        },
+        "errata.split_the_moment" to { it.copy(effects = listOf(Effect.ForkCard, Effect.Draw(1), Effect.Shift(1))) },
+        "errata.thousand_doors" to {
+            it.copy(constant = it.constant?.copy(onShiftIn = ShiftInRule(forkShifted = true, firstShiftDiscount = 2)))
+        },
+        "milan.codex_sketch" to { it.copy(effects = listOf(Effect.GrantRetain, Effect.ReduceCostThisTurn(1), Effect.Draw(1))) },
+        "neutral.hold_the_hour" to { it.copy(effects = listOf(Effect.Delay(1), Effect.Foresee(3))) },
+        "order.vow_of_silence" to {
+            it.copy(constant = it.constant?.copy(dawn = listOf(Effect.GainEnergy(EnergyColor.FAITH, Amount(1)), Effect.Foresee(1))))
+        },
+        "saltwaste.mirage_step" to { it.copy(effects = listOf(block(1), Effect.Shift(1), Effect.Foresee(1))) },
+    )
 
     // ---- effect shorthands ------------------------------------------------------------------------------------
 
@@ -483,6 +516,25 @@ object Prototype {
             ),
             elite = true,
         ),
+        // Act boss, London 1843
+        EnemyDef(
+            "london.lattice_engine", "The Lattice Engine", Faction.CONVERGENCE, 85,
+            LatticeAi(
+                subs = listOf(
+                    LatticeSub("Bulwark.sub", listOf(guard(4))),
+                    LatticeSub("Lance.sub", listOf(attack(3))),
+                    LatticeSub("Jacquard.sub", listOf(debuff(StatusType.GLITCH, 1))),
+                    LatticeSub("Overclock.sub", listOf(buff(StatusType.MIGHT, 1))),
+                ),
+                render = RulesText::intent,
+                installAttack = 5,
+                guardedBlock = 6,
+                guardedAttack = 5,
+                openAttack = 10,
+                cascadePer = 5,
+            ),
+            elite = true,
+        ),
     )
 
     private fun encounters(): List<Encounter> = listOf(
@@ -500,6 +552,20 @@ object Prototype {
         Encounter("inquisitor", "The Inquisitor", listOf("order.inquisitor"), elite = true),
         Encounter("pruner", "The Pruner", listOf("conv.pruner", "conv.drone"), elite = true),
         Encounter("the_rent", "The Rent", listOf("tear.the_rent", "tear.loose_end"), elite = true),
+        // London 1843, for the run (docs/05): single foes to open an act, a few heavier fights to close it.
+        Encounter("lone_footpad", "A Footpad in the Fog", listOf("london.gaslight_footpad")),
+        Encounter("rookery_tough", "A Rookery Tough", listOf("london.rookery_brawler")),
+        Encounter("fraying_street", "A Fraying Street", listOf("tear.loose_end", "tear.loose_end")),
+        Encounter("stray_proxy", "A Stray Proxy", listOf("conv.brass_proxy")),
+        Encounter("squire_errant", "A Squire Errant", listOf("order.squire")),
+        Encounter("lone_misprint", "A Misprint on Drury Lane", listOf("errata.misprint")),
+        Encounter("lamplighters", "The Lamplighters' Round", listOf("london.lamplighter", "london.gaslight_footpad")),
+        Encounter("rookery_gang", "The Rookery Gang", listOf("london.rookery_brawler", "london.gaslight_footpad")),
+        Encounter("brass_constables", "Brass Constables", listOf("conv.brass_proxy", "conv.brass_proxy")),
+        Encounter("line_in_fog", "The Line in the Fog", listOf("order.sergeant", "order.sergeant")),
+        Encounter("misprinted_quarter", "The Misprinted Quarter", listOf("errata.misprint", "errata.misprint")),
+        Encounter("unravelling", "The Unravelling", listOf("tear.ravel", "tear.loose_end", "tear.loose_end")),
+        Encounter("lattice_engine", "The Lattice Engine", listOf("london.lattice_engine"), elite = true),
     )
 
     // ---- operatives and decks ---------------------------------------------------------------------------------

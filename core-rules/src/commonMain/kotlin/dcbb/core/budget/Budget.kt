@@ -131,6 +131,7 @@ object Budget {
         StatusType.MIGHT -> 8.0 * n
         StatusType.PLATE -> 5.0 * n
         StatusType.GLITCH -> 4.0 * n
+        StatusType.SUBROUTINES -> 0.0 // enemy only
     }
 
     /** Expected magnitude: base plus conditional bonuses (discounted) plus scaling bonuses (expected value). */

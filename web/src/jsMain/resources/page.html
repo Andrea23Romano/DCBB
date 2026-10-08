@@ -1,4 +1,4 @@
-<title>Anachronist Combat Lab</title>
+<title>Anachronist Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&family=IM+Fell+English+SC&display=swap">
@@ -239,6 +239,52 @@ details[open] { display: grid; gap: 8px; }
 .fs-card b { font-family: var(--font-display); font-weight: 400; font-size: 18px; color: var(--fc); }
 .fs-btns { display: flex; flex-wrap: wrap; gap: 6px; }
 
+/* Runs */
+.lab-head { font-family: var(--font-display); font-weight: 400; font-size: 22px; border-top: 1px solid var(--line); padding-top: 14px; }
+.lab-head span { font-family: var(--font-body); font-size: 13px; color: var(--muted); }
+.runstart { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; }
+.runbar { display: grid; gap: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 12px; }
+.rb-row { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
+.rb-op { font-family: var(--font-display); font-weight: 400; font-size: 21px; color: var(--fc); }
+.rb-hp { display: inline-grid; grid-template-columns: 110px auto; gap: 8px; align-items: center; }
+.rb-hp .meter span { background: var(--good); }
+.rb-pdx { display: inline-flex; gap: 8px; align-items: center; }
+.rb-sub { font-size: 13px; }
+.chiplet { display: inline-block; max-width: 100%; padding: 2px 8px; border-radius: 8px; border: 1px solid var(--line); font-size: 12px; }
+.chiplet b { font-weight: 700; }
+.chiplet small { color: var(--muted); }
+.chiplet.is-ripple { border-color: color-mix(in srgb, var(--flux) 50%, var(--line)); }
+.run { display: grid; gap: 14px; }
+.run-title { font-family: var(--font-display); font-weight: 400; font-size: 26px; }
+.moments { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.moment { text-align: left; display: grid; gap: 4px; align-content: start; min-height: 120px; padding: 12px 14px; border-radius: var(--radius); background: var(--panel); border: 1px solid color-mix(in srgb, var(--fc) 45%, var(--line)); border-top: 4px solid var(--fc); }
+.moments.is-peek .moment { min-height: 0; opacity: 0.85; border-style: dashed; border-top-style: solid; }
+.m-top { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.m-type { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fc); font-weight: 700; }
+.threat { font-size: 12px; letter-spacing: 2px; color: var(--bad); }
+.m-title { font-family: var(--font-display); font-size: 20px; line-height: 1.15; }
+.m-hint { font-size: 13px; color: var(--muted); }
+.m-detail { font-size: 13px; font-weight: 700; }
+.m-hidden { font-size: 12px; color: var(--muted); font-style: italic; }
+.t-elite, .t-boss { background: color-mix(in srgb, var(--bad) 6%, var(--panel)); }
+.lines { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.price { font-family: var(--font-data); font-size: 13px; font-weight: 600; color: var(--accent); }
+.price.is-sold { color: var(--muted); }
+.shoplist { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
+.ware { text-align: left; display: grid; gap: 3px; align-content: start; padding: 10px 12px; }
+.ware-name { font-weight: 700; }
+.ware-text { font-size: 13px; color: var(--muted); }
+.event { border-left: 4px solid var(--fc); padding-left: 12px; }
+.scene { font-size: 16px; max-width: 62ch; }
+.options { display: grid; gap: 8px; }
+.option { text-align: left; display: grid; gap: 3px; padding: 10px 12px; }
+.o-text { font-weight: 700; }
+.o-fx { font-family: var(--font-data); font-size: 13px; color: var(--accent); }
+.o-ripple { font-size: 13px; color: var(--flux); }
+.o-blocked { font-size: 12px; color: var(--bad); }
+.result.is-won .run-title { color: var(--good); }
+.result.is-lost .run-title { color: var(--bad); }
+
 @media (max-width: 640px) {
   .lanes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .brand { font-size: 26px; }
@@ -249,5 +295,5 @@ details[open] { display: grid; gap: 8px; }
 }
 </style>
 <!--BODY-->
-<div id="app"><p class="muted">Loading the combat prototype…</p></div>
+<div id="app"><p class="muted">Loading the prototype…</p></div>
 <!--APP_JS-->

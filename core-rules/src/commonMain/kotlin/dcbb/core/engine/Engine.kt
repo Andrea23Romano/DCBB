@@ -4,6 +4,7 @@ import dcbb.core.content.Content
 import dcbb.core.model.Amount
 import dcbb.core.model.Bonus
 import dcbb.core.model.CardType
+import dcbb.core.model.CombatMods
 import dcbb.core.model.Cond
 import dcbb.core.model.ConstantKind
 import dcbb.core.model.ConstantSpec
@@ -11,6 +12,7 @@ import dcbb.core.model.Cost
 import dcbb.core.model.Counter
 import dcbb.core.model.Effect
 import dcbb.core.model.EnemyAction
+import dcbb.core.model.EnemyDef
 import dcbb.core.model.EnergyColor
 import dcbb.core.model.Face
 import dcbb.core.model.Signature
@@ -45,6 +47,10 @@ data class CombatSetup(
     val roundCap: Int = 60,
     /** Debt still owed from the previous combat. It is repaid at this combat's first Dawn. */
     val debt: Map<EnergyColor, Int> = emptyMap(),
+    /** Max HP when the run has changed it; the operative's printed max HP otherwise. */
+    val maxHp: Int? = null,
+    /** Rule changes the run brings in: Artifacts, Ripples, Paradox thresholds, Ambush. */
+    val mods: CombatMods = CombatMods.NONE,
 )
 
 data class Outcome(val state: CombatState, val events: List<GameEvent>, val error: String? = null)
@@ -70,7 +76,7 @@ class Engine(val content: Content) {
     companion object {
         const val HAND_LIMIT = 10
         const val DRAW_PER_TURN = 5
-        const val RESERVOIR_CAP = 6
+        const val RESERVOIR_CAP = CombatMods.DEFAULT_RESERVOIR_CAP
         const val BORROW_LIMIT = 2
 
         /** Extra Debt the first time you Borrow in a turn: Borrow 1 and owe 2, Borrow 2 and owe 3. */
@@ -90,25 +96,24 @@ class Engine(val content: Content) {
 
     fun start(setup: CombatSetup): Outcome {
         val op = content.operative(setup.operativeId)
+        val mods = setup.mods
         var rng = Rng.seeded(setup.seed)
         var uid = 1
         val deck = setup.deck.map { CardInst(uid++, content.card(it).id) }
         val (future, shuffledRng) = rng.shuffled(deck, Stream.SHUFFLE)
         rng = shuffledRng
-        val enemies = setup.enemies.map { id ->
-            val d = content.enemy(id)
-            EnemyState(uid++, d.id, d.maxHp, d.maxHp)
-        }
+        val enemies = setup.enemies.map { id -> newEnemy(content.enemy(id), uid++, mods) }
+        val maxHp = setup.maxHp ?: op.maxHp
         val player = PlayerState(
             operativeId = op.id,
-            hp = setup.hp ?: op.maxHp,
-            maxHp = op.maxHp,
+            hp = (setup.hp ?: maxHp).coerceAtMost(maxHp),
+            maxHp = maxHp,
             future = future,
             paradox = setup.paradox,
             debt = setup.debt.filterValues { it > 0 },
         )
         val initial = CombatState(
-            round = 1,
+            round = if (mods.ambush) 0 else 1,
             phase = Phase.PLAYER_TURN,
             player = player,
             enemies = enemies,
@@ -116,12 +121,32 @@ class Engine(val content: Content) {
             nextUid = uid,
             nextOrder = 1,
             roundCap = setup.roundCap,
+            mods = mods,
         )
         val run = Run(initial)
+        if (mods.installSubroutine) run.installRandomSubroutine()
         run.rearm(predictive = false)
-        run.pushFront(Work.Step(TurnStep.DAWN))
+        if (mods.ambush) {
+            run.emit(GameEvent.Info("Ambush! The enemies act before your first turn."))
+            run.pushFront(Work.Step(TurnStep.ENEMY_PHASE))
+        } else {
+            run.pushFront(Work.Step(TurnStep.DAWN))
+        }
+        if (mods.startEffects.isNotEmpty()) {
+            // After the opening Dawn: the queue drains the Dawn (or the Ambush round) first.
+            run.pushBack(Work.Fx(mods.startEffects, FxCtx(faction = op.faction)))
+        }
         run.drain()
         return run.outcome()
+    }
+
+    /** An enemy as it enters a fight, with the run's HP changes and starting statuses. */
+    private fun newEnemy(def: EnemyDef, uid: Int, mods: CombatMods): EnemyState {
+        val pct = mods.enemyHpPct[def.faction] ?: 100
+        val hp = max(1, (def.maxHp * pct + 50) / 100)
+        val statuses = mods.enemyBoosts.filter { it.matches(def) }
+            .fold(emptyMap<StatusType, Int>()) { acc, b -> acc.plusOne(b.status, b.n) }
+        return EnemyState(uid, def.id, hp, hp, statuses = statuses)
     }
 
     fun apply(state: CombatState, action: Action): Outcome {
@@ -217,8 +242,15 @@ class Engine(val content: Content) {
         val enemy = item.enemyUid?.let { state.enemy(it) } ?: return 0
         val actions = if (outcome == 1) item.alt ?: return 0 else item.actions
         val mult = 1.0 + 0.25 * item.pressure
-        return actions.filterIsInstance<EnemyAction.Attack>().sumOf { a ->
-            perHitToPlayer(state.player, enemy, a.damage, mult) * a.hits
+        return actions.sumOf { a ->
+            when (a) {
+                is EnemyAction.Attack -> perHitToPlayer(state, enemy, a.damage, mult, item.fixed) * a.hits
+                is EnemyAction.AttackPer -> {
+                    val base = a.per * enemy.status(a.status)
+                    if (base > 0) perHitToPlayer(state, enemy, base, mult, item.fixed) else 0
+                }
+                else -> 0
+            }
         }
     }
 
@@ -233,11 +265,12 @@ class Engine(val content: Content) {
             }
         }
 
-    private fun perHitToPlayer(player: PlayerState, enemy: EnemyState, base: Int, mult: Double): Int {
+    private fun perHitToPlayer(state: CombatState, enemy: EnemyState, base: Int, mult: Double, fixed: Boolean): Int {
         val pressured = ceil((base + enemy.status(StatusType.MIGHT)) * mult - 1e-9)
         var d = pressured
         if (enemy.status(StatusType.WEAK) > 0) d *= 0.75
-        if (player.status(StatusType.EXPOSED) > 0) d *= 1.5
+        if (state.player.status(StatusType.EXPOSED) > 0) d *= 1.5
+        if (fixed) d = d * state.mods.fixedDamagePct / 100.0
         return max(0, floor(d + 1e-9).toInt())
     }
 
@@ -260,6 +293,10 @@ class Engine(val content: Content) {
 
         fun enemyUpdate(uid: Int, f: (EnemyState) -> EnemyState) {
             s = s.copy(enemies = s.enemies.map { if (it.uid == uid) f(it) else it })
+        }
+
+        fun pushBack(w: Work) {
+            s = s.copy(queue = s.queue + w)
         }
 
         fun pushFront(vararg w: Work) = pushFront(w.toList())
@@ -287,6 +324,15 @@ class Engine(val content: Content) {
 
         fun name(inst: CardInst) = content.card(inst.defId).name
         fun enemyName(e: EnemyState) = content.enemy(e.defId).name
+
+        /** Lovelace's Notes: a random Subroutine from the Future is installed for free before the first Dawn. */
+        fun installRandomSubroutine() {
+            val subs = p.future.filter { constantSpec(it)?.kind == ConstantKind.SUBROUTINE }
+            if (subs.isEmpty() || p.constants.size >= CONSTANT_SLOTS) return
+            val pick = subs[rand(subs.size, Stream.MISC)]
+            player { it.copy(future = it.future.filter { c -> c.uid != pick.uid }, constants = it.constants + pick) }
+            emit(GameEvent.Info("Lovelace's Notes: ${name(pick)} is installed"))
+        }
 
         // ---- the work loop -----------------------------------------------------------------------------------
 
@@ -444,6 +490,7 @@ class Engine(val content: Content) {
                 recallUids = a.recallUids,
                 shiftPairs = a.shiftPairs,
                 iterations = inst.iterations,
+                attack = face.type == CardType.ATTACK,
             )
             pushFront(
                 Work.Fx(face.effects, ctx),
@@ -652,7 +699,9 @@ class Engine(val content: Content) {
         }
 
         private fun damage(e: Effect.Damage, ctx: FxCtx) {
-            fun value(t: EnemyState) = amount(e.amount, ctx, t)
+            val per = s.mods.attackPerParadox
+            val edge = if (ctx.attack && per > 0) p.paradox / per else 0
+            fun value(t: EnemyState) = amount(e.amount, ctx, t) + edge
             when (e.target) {
                 Tgt.CHOSEN_ENEMY -> repeat(e.hits) {
                     val t = ctx.targetEnemy?.let { s.enemy(it) }?.takeIf { it.alive } ?: return
@@ -793,7 +842,13 @@ class Engine(val content: Content) {
             val item = ctx.trackTarget?.let { s.trackItem(it) } ?: return
             if (item.kind == TrackKind.INTENT && item.fixed) return
             val isIntent = item.kind == TrackKind.INTENT
-            val updated = item.copy(countdown = item.countdown + n, pressure = if (isIntent) item.pressure + n else item.pressure)
+            val free = isIntent && s.mods.freeFirstDelay && !p.freeDelayUsed
+            if (free) {
+                player { it.copy(freeDelayUsed = true) }
+                emit(GameEvent.Info("Clockwork Sparrow: this Delay adds no Pressure"))
+            }
+            val pressure = if (isIntent && !free) item.pressure + n else item.pressure
+            val updated = item.copy(countdown = item.countdown + n, pressure = pressure)
             replaceTrack(updated)
             emit(GameEvent.Delayed(fullLabel(item), n, updated.pressure, isIntent))
         }
@@ -936,7 +991,7 @@ class Engine(val content: Content) {
             }
             player { it.copy(present = misprinted) }
             val def = content.enemy(LOOSE_END)
-            val spawned = EnemyState(newUid(), def.id, def.maxHp, def.maxHp)
+            val spawned = newEnemy(def, newUid(), s.mods)
             s = s.copy(enemies = s.enemies + spawned)
             rearm(predictive = def.ai.predictive, onlyUid = spawned.uid)
             val from = p.paradox
@@ -984,7 +1039,8 @@ class Engine(val content: Content) {
         /** Unspent energy carries over, up to the Reservoir cap. Neutral evaporates first, then the largest pool. */
         private fun evaporate() {
             var energy = p.energy.toMutableMap()
-            var excess = energy.values.sum() - RESERVOIR_CAP
+            val cap = s.mods.reservoirCap
+            var excess = energy.values.sum() - cap
             if (excess <= 0) return
             val lost = excess
             val neutral = min(excess, energy[EnergyColor.NEUTRAL] ?: 0)
@@ -997,7 +1053,7 @@ class Engine(val content: Content) {
             }
             energy = energy.filterValues { it > 0 }.toMutableMap()
             player { it.copy(energy = energy) }
-            emit(GameEvent.Info("$lost energy evaporates (Reservoir cap $RESERVOIR_CAP)"))
+            emit(GameEvent.Info("$lost energy evaporates (Reservoir cap $cap)"))
         }
 
         private fun enemyPhase() {
@@ -1039,7 +1095,13 @@ class Engine(val content: Content) {
                 when (act) {
                     is EnemyAction.Attack -> repeat(act.hits) {
                         val attacker = s.enemy(enemy.uid)?.takeIf { it.alive } ?: return
-                        hitPlayer(attacker, act.damage, mult, def.name)
+                        hitPlayer(attacker, act.damage, mult, def.name, item.fixed)
+                        if (p.hp <= 0) return
+                    }
+
+                    is EnemyAction.AttackPer -> {
+                        val base = act.per * cur.status(act.status)
+                        if (base > 0) hitPlayer(cur, base, mult, def.name, item.fixed)
                         if (p.hp <= 0) return
                     }
 
@@ -1064,8 +1126,8 @@ class Engine(val content: Content) {
 
         private fun scaled(n: Int, mult: Double): Int = ceil(n * mult - 1e-9).toInt()
 
-        private fun hitPlayer(enemy: EnemyState, base: Int, mult: Double, source: String) {
-            val dmg = perHitToPlayer(p, enemy, base, mult)
+        private fun hitPlayer(enemy: EnemyState, base: Int, mult: Double, source: String, fixed: Boolean) {
+            val dmg = perHitToPlayer(s, enemy, base, mult, fixed)
             val blocked = min(p.block, dmg)
             val through = dmg - blocked
             val statuses = if (through > 0 && p.status(StatusType.PLATE) > 0) p.statuses.dec(StatusType.PLATE) else p.statuses
@@ -1192,6 +1254,7 @@ class Engine(val content: Content) {
                         presentTypes = p.present.map { typeOf(it) },
                         lastCardDamage = p.lastCardDamage,
                         lastCardBlock = p.lastCardBlock,
+                        selfStatuses = cur.statuses,
                     )
                     val (spec, aiState) = def.ai.next(slot, cur.aiState, view)
                     val slow = cur.status(StatusType.SLOW) > 0

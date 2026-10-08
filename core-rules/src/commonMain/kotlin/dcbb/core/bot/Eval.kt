@@ -197,7 +197,7 @@ object Eval {
                     engine.intentDamage(s, item).toDouble()
                 }
                 t += dmg * if (item.countdown == 2) 0.7 else 0.5
-            } else if (item.actions.any { it !is EnemyAction.Attack && it !is EnemyAction.Guard }) {
+            } else if (item.actions.any { it !is EnemyAction.Attack && it !is EnemyAction.AttackPer && it !is EnemyAction.Guard }) {
                 t += 2.0
             }
         }
@@ -208,8 +208,9 @@ object Eval {
         val color = engine.content.operative(s.player.operativeId).color
         val own = s.player.energyOf(color)
         val other = s.player.energyTotal - own
-        val ownKept = minOf(own, Engine.RESERVOIR_CAP)
-        val otherKept = minOf(other, Engine.RESERVOIR_CAP - ownKept)
+        val cap = s.mods.reservoirCap
+        val ownKept = minOf(own, cap)
+        val otherKept = minOf(other, cap - ownKept)
         return ownKept * ENERGY_COLOR + otherKept * ENERGY_OTHER
     }
 

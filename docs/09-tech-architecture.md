@@ -82,8 +82,8 @@ flowchart TB
 |---|---|
 | `core-rules` | Game state, the action reducer, combat (zones, energy, Track), run (Weft, Anchors, Paradox, ledger), DSL interpreter, rules-text rendering, RNG streams, serialization. **No Android dependencies.** Kotlin Multiplatform: the JVM build feeds the tools and later Android, and the JS build feeds the web test client. |
 | `content` | Cards, enemies, events, Artifacts, Imprints, Lore Bible snippets, Misprint tables, and authored fallback text, as YAML compiled to a binary bundle. Also the **validator CLI** (schemas, budgets, references). |
-| `sim` | Headless JVM simulator with bots for balance reports, Pressure and Delay abuse detection, and calibrating the [08](08-card-dsl.md) cost table. Phase 1 has a turn planner (beam search over the turn, scored by playing out the enemy phase), a one-ply greedy bot and a random floor; MCTS can follow. |
-| `web` | Phase 1 test client: the combat prototype in a browser, built as one self-contained page from `core-rules` compiled to JavaScript |
+| `sim` | Headless JVM simulator with bots for balance reports, Pressure and Delay abuse detection, and calibrating the [08](08-card-dsl.md) cost table. Phase 1 has a turn planner (beam search over the turn, scored by playing out the enemy phase), a one-ply greedy bot and a random floor; MCTS can follow. A run bot plays whole runs (the planner in fights, heuristics between them) for run-level reports. |
+| `web` | Phase 1 test client: Act I of *The First Hour* and a combat lab in a browser, built as one self-contained page from `core-rules` compiled to JavaScript |
 | `genai` | The `LlmBackend` interface, context builder, versioned prompt templates, the generation queue, the cache, all validators ([07](07-genai-design.md#validation-layers)), and fallbacks |
 | `llm-service` | A bound service in its own process (`:llm`) that hosts the inference runtime. Isolates memory pressure and crashes from the game. |
 | `app` | Compose UI, navigation, animation event queue, audio and haptics, persistence, settings, TalkBack semantics, localization |
@@ -118,6 +118,7 @@ flowchart TB
   - recorded model decisions (Select and Compose results)
 - **Resume** loads the latest snapshot and replays the remaining actions. Model decisions are read from the log, never re-generated.
 - **Golden replays in CI:** (seed, actions) must produce a known state hash, which catches accidental nondeterminism.
+- **The prototype already works this way.** A run code (`r1 <operative> <seed> <era> <actions…>`) rebuilds a whole run, fights included, and a fight code (`a1 …`) rebuilds a single lab fight. The web client keeps the code of the run in progress, so a reload resumes it, and `sim --replay` plays either kind back.
 - **Versioning.** Saves pin the content version, and migrations are explicit. Branch Variants are stored as *(source card ID, VariantPlan)* and re-rendered on load.
 - **A future leaderboard** can verify scores by re-simulating a submitted seed and action log on a server, because the engine is deterministic.
 
@@ -280,7 +281,7 @@ Phase 1 created `core-rules`, `cli`, `sim`, `web` and `reports`. The rest is pla
 /genai          LLM abstraction, context builder, validators, queue, cache
 /llm-service    Bound service hosting the inference runtime (separate process)
 /sim            Headless simulator + bots (JVM)
-/web            Browser test client for the combat prototype (Kotlin/JS, Phase 1)
+/web            Browser test client: runs and a combat lab (Kotlin/JS, Phase 1)
 /reports        Generated simulation reports, committed so changes can be diffed
 /ml             Python: data generation, LoRA training, conversion, eval (dev only)
 /art            Art bible, prompts, golden set, masters, provenance (binaries in Git LFS; see 12)

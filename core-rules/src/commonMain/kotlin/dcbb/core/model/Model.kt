@@ -60,6 +60,9 @@ enum class StatusType(val label: String) {
     BURN("Burn"),
     SLOW("Slow"),
     GLITCH("Glitch"),
+
+    /** Enemy only: Subroutines the enemy has installed on itself (the Lattice Engine). */
+    SUBROUTINES("Subroutines"),
 }
 
 /** Card cost. `1F+1` = one Faith pip plus one generic pip. */

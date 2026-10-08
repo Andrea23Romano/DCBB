@@ -30,7 +30,7 @@ class Views(private val app: App) {
     // ---- setup screen ---------------------------------------------------------------------------------------
 
     fun setup(): String = buildString {
-        append(masthead("Pick an operative, a deck and an encounter. Every fight runs on the same rules engine as the simulator."))
+        append(masthead("Play Act I of The First Hour, or test single fights in the lab. Everything runs on the same rules engine as the simulator."))
         append(noticeBox())
         append("""<main class="setup">""")
 
@@ -48,6 +48,19 @@ class Views(private val app: App) {
         }
         append("</div></section>")
 
+        val era = app.runEngine.rc.eras.first()
+        append(
+            """<section class="block runstart"><h2 class="label">The First Hour · Act ${era.act}: ${esc(era.name)}</h2>""" +
+                """<p>${era.steps} steps on the Weft, then the act boss. HP, Paradox and Debt carry between fights; """ +
+                """rewards, the Antiquarian, Still Points, events and a Divergence shape your deck.</p>""" +
+                """<div class="start"><div class="seed"><label for="seed" class="label">Seed</label>""" +
+                """<input id="seed" type="number" inputmode="numeric" value="${app.setup.seed}">""" +
+                """<button type="button" data-act="reroll">New seed</button></div><div class="btns">""" +
+                (if (app.savedRun() != null) """<button type="button" data-act="run-resume">Resume your run</button>""" else "") +
+                """<button type="button" class="primary big" data-act="run-start">Start a run</button></div></div></section>""",
+        )
+
+        append("""<h2 class="lab-head">Combat lab <span>one fight, any deck and encounter</span></h2>""")
         val decks = content.decks.getValue(app.setup.op)
         append("""<section class="block"><h2 class="label">Deck</h2><div class="seg" role="group" aria-label="Deck">""")
         for ((name, list) in decks) {
@@ -87,15 +100,13 @@ class Views(private val app: App) {
         append("</div></section>")
 
         append(
-            """<section class="block start"><div class="seed"><label for="seed" class="label">Seed</label>""" +
-                """<input id="seed" type="number" inputmode="numeric" value="${app.setup.seed}">""" +
-                """<button type="button" data-act="reroll">New seed</button></div>""" +
-                """<button type="button" class="primary big" data-act="start">Start fight</button></section>""",
+            """<section class="block start"><p class="muted">Uses the seed above.</p>""" +
+                """<button type="button" class="primary" data-act="start">Start fight</button></section>""",
         )
 
         append(
-            """<details class="block"><summary>Replay a fight log</summary>""" +
-                """<p class="muted">Paste a log copied from this page (or just its replay code) to rebuild that fight exactly.</p>""" +
+            """<details class="block"><summary>Replay a run or fight log</summary>""" +
+                """<p class="muted">Paste a log copied from this page (or just its replay code) to rebuild that run or fight exactly.</p>""" +
                 """<textarea id="replay-code" rows="4" spellcheck="false"></textarea>""" +
                 """<button type="button" data-act="paste-code">Replay</button></details>""",
         )
@@ -105,12 +116,20 @@ class Views(private val app: App) {
     // ---- combat screen ----------------------------------------------------------------------------------------
 
     fun combat(): String {
-        val s = app.session ?: return ""
-        val st = s.state
+        val r = app.run
+        val s = app.session
+        val st = app.fightState ?: return ""
         val opDef = content.operative(st.player.operativeId)
         return buildString {
-            append(masthead("${opDef.name} · ${s.setup.deck} deck · ${content.encounter(s.setup.enc).name} · seed ${s.setup.seed} · round ${st.round}"))
-            append(tools(s.undo.isNotEmpty(), st.phase.over))
+            if (r != null) {
+                val fight = r.state.screen as dcbb.core.run.Screen.Fight
+                append(masthead("${opDef.name} · ${fight.moment.title} · step ${minOf(r.state.step, app.runEngine.era(r.state).steps)} · round ${st.round}", run = true))
+                append(app.runViews.runBar(r.state))
+                append(tools(r.undo.isNotEmpty(), st.phase.over, inRun = true))
+            } else if (s != null) {
+                append(masthead("${opDef.name} · ${s.setup.deck} deck · ${content.encounter(s.setup.enc).name} · seed ${s.setup.seed} · round ${st.round}"))
+                append(tools(s.undo.isNotEmpty(), st.phase.over, inRun = false))
+            }
             append(noticeBox())
             append("""<main class="board">""")
             append(enemies(st))
@@ -119,31 +138,41 @@ class Views(private val app: App) {
             append(present(st))
             if (opDef.otherHandSize > 0) append(otherHand(st))
             append(drawer(st))
-            append(logSection(s.log))
+            append(logSection(if (r != null) r.fightLog() else s?.log.orEmpty()))
+            if (r != null) append(app.runViews.runDrawer(r.state))
             append("</main>")
             app.pick?.let { append(sheet(st, it)) }
             if (st.pending != null) app.foresee?.let { append(foreseeModal(st, it)) }
-            if (st.phase.over && app.showResult) append(resultModal(st, s.actions.size))
+            if (st.phase.over && app.showResult) {
+                append(if (r != null) runResultModal(st) else resultModal(st, s?.actions?.size ?: 0))
+            }
             app.copyText?.let { append(copyModal(it)) }
         }
     }
 
-    private fun masthead(line: String) =
-        """<header class="masthead"><h1 class="brand">Anachronist <span>Combat Lab</span></h1><p class="where">${esc(line)}</p></header>"""
+    internal fun masthead(line: String, run: Boolean = false) =
+        """<header class="masthead"><h1 class="brand">Anachronist <span>${if (run) "The First Hour" else "Combat Lab"}</span></h1><p class="where">${esc(line)}</p></header>"""
 
-    private fun tools(canUndo: Boolean, over: Boolean) = buildString {
+    private fun tools(canUndo: Boolean, over: Boolean, inRun: Boolean) = buildString {
         append("""<nav class="tools" aria-label="Fight tools">""")
         append("""<button type="button" data-act="undo"${if (canUndo) "" else " disabled"}>Undo</button>""")
         append("""<button type="button" data-act="hint"${if (over) " disabled" else ""}>Hint</button>""")
         append("""<button type="button" data-act="bot-turn"${if (over) " disabled" else ""}>Bot plays turn</button>""")
-        append("""<button type="button" data-act="restart">Restart</button>""")
-        append("""<button type="button" data-act="new-seed">New seed</button>""")
-        append("""<button type="button" data-act="copy">Copy log</button>""")
-        append("""<button type="button" data-act="to-setup">Setup</button>""")
+        if (inRun) {
+            if (over) append("""<button type="button" class="primary" data-act="run-done">Continue</button>""")
+            if (!over) append(app.runViews.autoButtons(fight = true))
+            append("""<button type="button" data-act="copy">Copy run code</button>""")
+            append("""<button type="button" data-act="to-setup">Leave run</button>""")
+        } else {
+            append("""<button type="button" data-act="restart">Restart</button>""")
+            append("""<button type="button" data-act="new-seed">New seed</button>""")
+            append("""<button type="button" data-act="copy">Copy log</button>""")
+            append("""<button type="button" data-act="to-setup">Setup</button>""")
+        }
         append("</nav>")
     }
 
-    private fun noticeBox(): String {
+    internal fun noticeBox(): String {
         val hint = app.hint
         if (hint != null) {
             return """<div class="notice is-hint" role="status"><span>The planner bot would: <b>${esc(describe(hint))}</b></span>""" +
@@ -469,10 +498,10 @@ class Views(private val app: App) {
         return all.joinToString("") { c -> pip(c).repeat((pay.spend[c] ?: 0) + (pay.borrow[c] ?: 0)) }.ifEmpty { "nothing" }
     }
 
-    private fun choiceRow(label: String, body: String) =
+    internal fun choiceRow(label: String, body: String) =
         """<div class="choice-row"><span class="label">${esc(label)}</span><div class="choices">$body</div></div>"""
 
-    private fun choice(act: String, id: Int, on: Boolean, text: String, idText: String? = null) =
+    internal fun choice(act: String, id: Int, on: Boolean, text: String, idText: String? = null) =
         """<button type="button" class="pill${if (on) " is-on" else ""}" data-act="$act" data-id="${idText ?: id}" aria-pressed="$on">${esc(text)}</button>"""
 
     // ---- modals -------------------------------------------------------------------------------------------------
@@ -522,16 +551,35 @@ class Views(private val app: App) {
             """<button type="button" class="ghost" data-act="result-close">See the board</button></div></div></div>"""
     }
 
+    private fun runResultModal(st: CombatState): String {
+        val p = st.player
+        val (title, cls) = when (st.phase) {
+            Phase.WON -> "Victory" to "is-won"
+            Phase.LOST -> "Defeat" to "is-lost"
+            else -> "Stalemate" to "is-draw"
+        }
+        val line = when (st.phase) {
+            Phase.WON -> "Round ${st.round} · ${p.hp}/${p.maxHp} HP left. Your HP, Paradox and any Debt carry on."
+            Phase.LOST -> "You fell in round ${st.round}. The run ends here."
+            else -> "The fight hit the ${st.roundCap}-round cap."
+        }
+        return """<div class="modal" role="dialog" aria-label="$title"><div class="modal-box result $cls">""" +
+            """<h2 class="modal-title">$title</h2><p>${esc(line)}</p><div class="btns">""" +
+            """<button type="button" class="primary" data-act="run-done">Continue</button>""" +
+            """<button type="button" data-act="undo">Undo</button>""" +
+            """<button type="button" class="ghost" data-act="result-close">See the board</button></div></div></div>"""
+    }
+
     private fun copyModal(text: String) =
-        """<div class="modal" role="dialog" aria-label="Copy the fight log"><div class="modal-box">""" +
-            """<h2 class="modal-title">Copy the fight log</h2><p class="muted">Your browser blocked automatic copying. Select the text and copy it.</p>""" +
+        """<div class="modal" role="dialog" aria-label="Copy the log"><div class="modal-box">""" +
+            """<h2 class="modal-title">Copy the log</h2><p class="muted">Your browser blocked automatic copying. Select the text and copy it.</p>""" +
             """<textarea id="copy-text" rows="10" readonly spellcheck="false">${esc(text)}</textarea>""" +
             """<button type="button" class="primary" data-act="copy-close">Done</button></div></div>"""
 
     // ---- helpers ------------------------------------------------------------------------------------------------
 
     fun describe(a: Action): String {
-        val st = app.session?.state ?: return ""
+        val st = app.fightState ?: return ""
         return when (a) {
             EndTurn -> "End your turn"
             is ResolveForesee -> "Keep the Foresee order" + if (a.bottom.isNotEmpty()) " and send ${a.bottom.size} to the bottom" else ""
@@ -611,25 +659,25 @@ class Views(private val app: App) {
         }
     }
 
-    private fun statuses(map: Map<StatusType, Int>) =
+    internal fun statuses(map: Map<StatusType, Int>) =
         map.entries.sortedBy { it.key.ordinal }.joinToString("") { (k, v) -> """<span class="status s-${k.name.lowercase()}">${k.label} $v</span>""" }
 
-    private fun meter(value: Int, max: Int, label: String): String {
+    internal fun meter(value: Int, max: Int, label: String): String {
         val pct = if (max <= 0) 0 else (100 * value.coerceIn(0, max) / max)
         return """<span class="meter" role="img" aria-label="$label $value of $max"><span style="width:$pct%"></span></span>"""
     }
 
     private fun dial(n: Int) = """<span class="dial" aria-label="countdown $n">${if (n > 9) "9+" else n}</span>"""
 
-    private fun pip(c: EnergyColor) = """<span class="pip p-${c.name.lowercase()}" title="${RulesText.colorName(c)}">${c.symbol}</span>"""
+    internal fun pip(c: EnergyColor) = """<span class="pip p-${c.name.lowercase()}" title="${RulesText.colorName(c)}">${c.symbol}</span>"""
 
-    private fun costPips(cost: Cost): String {
+    internal fun costPips(cost: Cost): String {
         if (cost.total == 0) return """<span class="pip p-free">0</span>"""
         return pip(EnergyColor.FAITH).repeat(cost.faith) + pip(EnergyColor.COMPUTE).repeat(cost.compute) +
             pip(EnergyColor.FLUX).repeat(cost.flux) + if (cost.generic > 0) """<span class="pip p-generic">${cost.generic}</span>""" else ""
     }
 
-    private fun signatureLine(sig: Signature, strikeBonus: Int) = when (sig) {
+    internal fun signatureLine(sig: Signature, strikeBonus: Int) = when (sig) {
         Signature.STRIKE -> "Strike · deal ${Engine.STRIKE_DAMAGE + strikeBonus}"
         Signature.FORECAST -> "Forecast · Foresee 2"
         Signature.SHIFT -> "Shift · swap 1 card"
@@ -643,7 +691,7 @@ class Views(private val app: App) {
         else -> "Faction squad"
     }
 
-    private fun cap(s: String) = s.replaceFirstChar { it.uppercase() }
+    internal fun cap(s: String) = s.replaceFirstChar { it.uppercase() }
 
     companion object {
         private val BLURBS = mapOf(

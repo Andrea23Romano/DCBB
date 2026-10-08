@@ -12,6 +12,7 @@ import dcbb.core.content.Prototype
 import dcbb.core.engine.CombatSetup
 import dcbb.core.engine.Engine
 import dcbb.core.engine.Replay
+import dcbb.core.run.RunReplay
 import dcbb.core.model.Encounter
 import dcbb.core.state.Phase
 import dcbb.core.text.RulesText
@@ -27,8 +28,9 @@ import kotlin.math.roundToInt
  * committed and diffed when numbers change.
  *
  * Usage: sim [--seeds N] [--threads N] [--bots planner,greedy,random] [--out FILE] [--title TEXT]
+ *        sim --runs N [--threads N] [--out FILE]   (whole runs of Act I, see RunSim.kt)
  *        sim --trace operative/deck/encounter/index [--bot planner|greedy|random]
- *        sim --replay "a1 oracle mid proxy_patrol 4242 P/12//// ..."   (a code copied from the web client)
+ *        sim --replay "a1 oracle mid proxy_patrol 4242 P/12//// ..."   (a fight or run code copied from the web client)
  */
 fun main(args: Array<String>) {
     Locale.setDefault(Locale.ROOT)
@@ -41,7 +43,15 @@ fun main(args: Array<String>) {
     val content = Prototype.content
     val engine = Engine(content)
     opts["trace"]?.let { trace(engine, content, it, opts["bot"] ?: "planner"); return }
-    opts["replay"]?.let { replay(engine, content, it); return }
+    opts["replay"]?.let { code ->
+        if (code.substringAfter("Replay:").trim().startsWith(RunReplay.VERSION)) replayRun(code) else replay(engine, content, code)
+        return
+    }
+    opts["run-trace"]?.let { traceRun(it); return }
+    if (opts["runs"] != null) {
+        runSim(opts)
+        return
+    }
     val decks = listOf("starter", "mid")
     val cells = buildList {
         for (bot in bots) for (op in content.operatives.keys.sorted()) for (deck in decks) for (enc in content.encounters) {
@@ -289,7 +299,7 @@ private class Report(val content: Content, val cells: List<Cell>, val seeds: Int
         line()
         line("| Card | Faction | Type | Cost | Rarity | Text | Pts | Ratio |")
         line("|---|---|---|---|---|---|---|---|")
-        for (def in content.cards.values.sortedWith(compareBy({ it.faction.ordinal }, { it.rarity.ordinal }, { it.name }))) {
+        for (def in content.authored.sortedWith(compareBy({ it.faction.ordinal }, { it.rarity.ordinal }, { it.name }))) {
             val r = Budget.report(def)
             line(
                 "| ${def.name} | ${def.faction.label} | ${RulesText.typeLine(def)} | ${def.cost} | ${def.rarity.short} | " +
@@ -332,7 +342,7 @@ private class Report(val content: Content, val cells: List<Cell>, val seeds: Int
         }
         val errors = cells.sumOf { c -> c.fights.sumOf { it.stats.botErrors } }
         if (errors > 0) flags += "**Bot errors:** $errors illegal bot choices fell back to a legal move."
-        for (def in content.cards.values) {
+        for (def in content.authored) {
             val r = Budget.report(def)
             if (!r.acceptable) flags += "**Budget:** ${def.name} is at ${num(r.ratio, 2)}× its target."
             if (!r.withinTolerance && r.acceptable) {

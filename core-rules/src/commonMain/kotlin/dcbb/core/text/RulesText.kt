@@ -186,6 +186,7 @@ object RulesText {
     fun intent(actions: List<EnemyAction>): String = actions.joinToString(" + ") { a ->
         when (a) {
             is EnemyAction.Attack -> if (a.hits > 1) "Attack ${a.damage}×${a.hits}" else "Attack ${a.damage}"
+            is EnemyAction.AttackPer -> "Attack ${a.per} × ${a.status.label}"
             is EnemyAction.Guard -> "Guard ${a.block}"
             is EnemyAction.Buff -> "${a.status.label} ${a.n}"
             is EnemyAction.Debuff -> "${a.status.label} ${a.n}"

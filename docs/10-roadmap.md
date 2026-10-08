@@ -20,12 +20,13 @@
 
 Phase 1 started in October 2026, alongside the art style work. The repository now holds:
 
-- **`core-rules`:** the combat rules engine, a pure reducer with seeded RNG streams. It carries every sample card from [03](03-factions-and-operatives.md) (51 cards), 21 enemies in 14 encounters, the [08](08-card-dsl.md) budget calculator and rules-text renderer, two bots, and the test suite.
+- **`core-rules`:** the combat rules engine, a pure reducer with seeded RNG streams. It carries every sample card from [03](03-factions-and-operatives.md) (51 cards, each with a generated Inscribed version), 22 enemies in 27 encounters, the [08](08-card-dsl.md) budget calculator and rules-text renderer, the bots, and the test suite.
+- **The run layer**, started early so play-tests cover whole runs: Act I of *The First Hour* ([05](05-run-structure.md#act-i-in-the-prototype)). It has the Weft and its dealing rules, HP, Paradox and Debt carried between fights, card rewards with Glimpse and Skip, the Antiquarian, Still Points, Caches, Shrines, six events including the Divergence *The Notes* and its Ripples, two Anomalies, nine Artifacts, the Paradox thresholds, and the Lattice Engine. Returning Moments, Rewind, Imprints, Defection and Acts II–III come later.
 - **`cli`:** a playable text client.
-- **`sim`:** the batch simulator, with a turn-planning bot, a greedy bot and a random floor. Its first baseline is [reports/sim-baseline.md](../reports/sim-baseline.md), and the current numbers are in [reports/sim-latest.md](../reports/sim-latest.md).
-- **`web`:** a browser test client, published as a private page for play-testing during development. Fights can be copied as replay codes and played back exactly in the simulator.
+- **`sim`:** the batch simulator, with a turn-planning bot, a greedy bot, a random floor, and a run bot. Its first baseline is [reports/sim-baseline.md](../reports/sim-baseline.md), and the current numbers are in [reports/sim-latest.md](../reports/sim-latest.md) for fights and [reports/run-latest.md](../reports/run-latest.md) for runs.
+- **`web`:** a browser test client, published as a private page for play-testing during development. It plays runs and single fights. Runs and fights can be copied as replay codes and played back exactly in the simulator.
 
-The first baseline tripped one exit check: Tear enemies that only Blank could soft-lock a fight. Two tuning passes fixed that, added interest to Borrow so it stops being an every-turn habit, and brought every encounter into its difficulty band. One thing stays open: the Vowknight is clearly the easiest operative, and a stronger bot confirmed that this is the design, not the bot. See [reports/README.md](../reports/README.md#baseline-findings).
+The first baseline tripped one exit check: Tear enemies that only Blank could soft-lock a fight. Two tuning passes fixed that, added interest to Borrow so it stops being an every-turn habit, and brought every encounter into its difficulty band. One thing stays open: the Vowknight is clearly the easiest operative, and a stronger bot confirmed that this is the design, not the bot. Runs show the same gap: with the run bot, the Vowknight clears Act I in nearly every run, the Oracle in about 60% and the Splinter in about half. Rebalancing is deliberately parked while the systems are built. See [reports/README.md](../reports/README.md#baseline-findings).
 
 ## MVP Content
 

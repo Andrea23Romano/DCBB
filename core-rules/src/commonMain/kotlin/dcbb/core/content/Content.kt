@@ -19,13 +19,17 @@ class Content(
     val misprintTables: Map<Pair<CardType, Int>, List<Face>>,
     /** Named decklists per operative, e.g. "starter", "mid". */
     val decks: Map<String, Map<String, List<String>>>,
+    /** Generated variants (Inscribed `id+`, Misprinted `id~`): playable like any card, but outside pools and budget tables. */
+    variants: List<CardDef> = emptyList(),
 ) {
-    val cards: Map<String, CardDef> = cards.associateBy { it.id }
+    /** The authored cards: what reward pools, shops and budget tables draw from. */
+    val authored: List<CardDef> = cards
+    val cards: Map<String, CardDef> = (cards + variants).associateBy { it.id }
     val enemies: Map<String, EnemyDef> = enemies.associateBy { it.id }
     val operatives: Map<String, OperativeDef> = operatives.associateBy { it.id }
 
     init {
-        require(this.cards.size == cards.size) { "Duplicate card ids" }
+        require(this.cards.size == cards.size + variants.size) { "Duplicate card ids" }
         for ((op, lists) in decks) for ((name, list) in lists) for (id in list) {
             require(id in this.cards) { "Deck $op/$name references unknown card $id" }
         }
@@ -47,6 +51,6 @@ class Content(
     /** Cards that can Bleed through into a [faction] deck: other factions' non-starter cards. */
     fun bleedPool(faction: Faction): List<CardDef> {
         val factions = setOf(Faction.ORDER, Faction.CONVERGENCE, Faction.ERRATA) - faction
-        return cards.values.filter { it.faction in factions && it.rarity != Rarity.STARTER }.sortedBy { it.id }
+        return authored.filter { it.faction in factions && it.rarity != Rarity.STARTER }.sortedBy { it.id }
     }
 }

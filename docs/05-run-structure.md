@@ -58,8 +58,10 @@ Example for an 8-step act (24 cards):
 - The step before each boss **always** includes a Still Point.
 - At least one Antiquarian appears between steps 3 and 6.
 - The act's Divergence event appears between steps 4 and 7. In Act III it appears between steps 3 and 5.
-- An act holds at most 2 Elites, not counting Returning Moments.
-- When Paradox is Frayed or worse, **Tear Moments** are shuffled in ([Paradox](#paradox)).
+- An act holds at most 2 Elites, not counting Returning Moments. No Elite is dealt in steps 1–2.
+- No step deals three Moments of the same type, so every step is a real choice.
+- Fights are dealt by threat: the first three steps deal easy fights (1 pip), the middle of the act threat 2, the last steps threat 3.
+- When Paradox is Frayed or worse, **Tear Moments** are shuffled in ([Paradox](#paradox)). Two Tear fights replace Moments not yet dealt, never a Moment placed by these rules or one you have Foreseen.
 - Fights draw from **era natives, the Tear, and factions you don't belong to**. Your own faction's squads only hunt you when your Standing with them is negative, as an apostate.
 
 ### What a Moment card shows
@@ -172,8 +174,8 @@ At 10 Paradox the Weave tears open around you.
   - every card in your Present becomes a random **Misprint** for the rest of the combat (from the [Misprint tables](08-card-dsl.md#misprint-tables))
   - a **Loose End** crawls through the Tear and joins the enemies
 - **Outside combat:**
-  - two random cards in your deck gain a permanent Misprint face
-  - the next step is a **Tear ambush**
+  - two random cards in your deck become **Misprinted** for the rest of the run: each time you draw one, it rolls a face from the [Misprint table](08-card-dsl.md#misprint-tables) for its type and cost
+  - the next step is a **Tear ambush**: an extra step that deals a single Tear fight, in which the enemies act before your first turn
 - **Errata:** the Splinter's *Unstable Equilibrium* Imprint moves Unravel to 12. Errata cards spend Paradox as fuel.
 
 > **Design intent:** Paradox is the run's push-your-luck dial. Rewinding, Glimpsing and Defecting are all *good* moves with a real price. Errata players live at 6–9 on purpose.
@@ -299,6 +301,8 @@ Boss Artifacts are strong, and each one has a drawback.
 | **Inscribe** a card | 60 |
 | Foresight charge | 40 |
 
+Each card, Artifact and service can be bought once per visit. Erasing can't take your deck below 5 cards.
+
 ### Still Point (rest)
 
 Choose one:
@@ -420,7 +424,7 @@ In a Divergence you **change history**.
 |---|---|---|
 | Burn the notes | `london.notes_burned` | **The Engine Never Built**: Convergence enemies −10% HP this run · **The Order Takes Credit**: Order squads gain +1 Plate · **Ash in the Margins**: your next Anomaly is a Rift |
 | Copy them for the Order | `london.notes_to_order` | **Canon of Engines**: Relic cards −25% at Antiquarians · **Holy Calculation**: Order enemies are Predictive in Act II · **Scriptorium**: Inscribe costs −20 Hours |
-| Give them to the stranger from 2049 | `london.notes_to_stranger` | **Bootstrapped**: Convergence cards appear twice as often in rewards, but Proxies gain +1 Might · **Signal Loop**: +1 Foresight per act, +1 Paradox · **A Debt Owed**: MERIDIAN Ascendant cannot be your Nexus champion this run |
+| Give them to the stranger from 2049 | `london.notes_to_stranger` | **Bootstrapped**: Convergence cards appear twice as often in rewards (for other operatives, the Convergence cards they can pay for join their pool), but Proxies gain +1 Might · **Signal Loop**: +1 Foresight per act, +1 Paradox · **A Debt Owed**: MERIDIAN Ascendant cannot be your Nexus champion this run |
 | Let history run | `london.notes_untouched` | **As Written**: Order Standing +1 · **The Tear Notices**: +1 Paradox, and the next Cache is upgraded |
 
 **Divergence Report example:**
@@ -466,6 +470,38 @@ ledger:
   - a full heal before the next act
 
 The rosters and mechanics are in [03](03-factions-and-operatives.md#bosses).
+
+---
+
+## Act I in the Prototype
+
+The first playable slice ([10](10-roadmap.md#phase-1-status)) builds Act I of *The First Hour*, London 1843, on the rules above. A run starts at step 1 and ends when the Lattice Engine falls or you do.
+
+**Fights by threat.** Your own faction's squads are left out.
+
+| Threat | Encounters |
+|---|---|
+| 1 (steps 1–3) | A Footpad in the Fog · A Rookery Tough · A Fraying Street (Tear) · A Stray Proxy · A Squire Errant · A Misprint on Drury Lane |
+| 2 | Fog on Fleet Street · Rookery Brawl · The Lamplighters' Round · Loose Threads (Tear) · Proxy Patrol · Drone Swarm · Misprinted Alley · Order Patrol |
+| 3 (steps 7–8) | The Rookery Gang · Brass Constables · The Line in the Fog · The Misprinted Quarter · The Unravelling (Tear) |
+| Elite | The Inquisitor · The Pruner · The Rent (two of them per act) |
+| Boss | The Lattice Engine ([03](03-factions-and-operatives.md#bosses)) |
+
+**Events.** Each act deals *The Notes* and four of these five:
+
+| Event | Choices |
+|---|---|
+| The Copyist | Hide her: Order −1, Errata +1, an Errata common card · Report her: Order +1, +40 Hours · Read the page: +2 Paradox, +1 Foresight |
+| A Penny Dreadful | Buy every number: −25 Hours, +1 Foresight · Find the author: +1 Paradox, an uncommon card · Walk on |
+| Babbage's Workshop | Pocket the turning gear: an Artifact, +2 Paradox · Sell the brass: +60 Hours, Convergence −1 · Leave it counting |
+| The Mudlark | Buy the future-minted coin: −40 Hours, a rare card, +1 Paradox · Pay for the patrols: −15 Hours, +1 Foresight · Leave |
+| The Night Ward | Work the night shift: lose 6 HP, Inscribe a card, Order +1 · Take laudanum: heal 20%, +1 Paradox · Keep walking |
+
+- **Anomalies:** Fading Street and The Loop, as described in [Services](#anomaly).
+- **Shrines:** your own faction's altar offers its boons ([Shrines](#shrines-and-defection)); Fork, transform and swap boons wait for later systems, so the Errata Seam offers *Stitch yourself tighter* (−2 Paradox) instead. Another faction's altar can be Desecrated.
+- **Artifacts:** Antikythera Gear, Baghdad Cell, Clockwork Sparrow, Piri Reis Fragment, Gnomon Splinter, Lovelace's Notes, Bell of the Still Hour, Byzantine Fire Jar and Misprinted Psalter.
+- **Ripples of *The Notes*:** all except *Ash in the Margins* (it needs the Rift), *Holy Calculation* (Act II) and *A Debt Owed* (the Nexus).
+- **Not yet built:** Returning Moments, Anchors and Rewind, Imprints and XP, Defection and Standing effects, Forks, and Acts II and III.
 
 ---
 

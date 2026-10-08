@@ -2,6 +2,7 @@ package dcbb.core.state
 
 import dcbb.core.engine.Rng
 import dcbb.core.model.CardType
+import dcbb.core.model.CombatMods
 import dcbb.core.model.Effect
 import dcbb.core.model.EnemyAction
 import dcbb.core.model.EnergyColor
@@ -69,6 +70,8 @@ data class PlayerState(
     /** What the last card played looked like, for the Double. */
     val lastCardDamage: Int = 0,
     val lastCardBlock: Int = 0,
+    /** Clockwork Sparrow's free Delay has been used this combat. */
+    val freeDelayUsed: Boolean = false,
 ) {
     fun status(type: StatusType): Int = statuses[type] ?: 0
     fun energyOf(color: EnergyColor): Int = energy[color] ?: 0
@@ -133,6 +136,8 @@ data class FxCtx(
     val recallUids: List<Int> = emptyList(),
     val shiftPairs: List<ShiftPair> = emptyList(),
     val iterations: Int = 0,
+    /** The effect comes from an Attack card (Misprinted Psalter). */
+    val attack: Boolean = false,
 )
 
 enum class TurnStep {
@@ -166,6 +171,8 @@ data class CombatState(
     val queue: List<Work> = emptyList(),
     val pending: PendingForesee? = null,
     val roundCap: Int = 60,
+    /** Rule changes from the run: Artifacts, Ripples, Paradox thresholds. */
+    val mods: CombatMods = CombatMods.NONE,
 ) {
     val livingEnemies: List<EnemyState> get() = enemies.filter { it.alive }
     fun enemy(uid: Int): EnemyState? = enemies.firstOrNull { it.uid == uid }

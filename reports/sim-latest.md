@@ -18,24 +18,24 @@ lost in won fights.
 
 | Bot | Operative | Deck | Win | Normal | Elite | Rounds (won) | HP lost (won) | Draws |
 |---|---|---|---|---|---|---|---|---|
-| planner | Oracle | starter | 100% | 100% | 100% | 4.8 | 31% | 0 |
-| planner | Oracle | mid | 100% | 100% | 100% | 5.2 | 32% | 0 |
-| planner | Splinter | starter | 100% | 100% | 100% | 3.9 | 29% | 0 |
-| planner | Splinter | mid | 100% | 100% | 100% | 4.4 | 29% | 0 |
-| planner | Vowknight | starter | 100% | 100% | 100% | 3.0 | 15% | 0 |
-| planner | Vowknight | mid | 100% | 100% | 100% | 3.6 | 16% | 0 |
-| greedy | Oracle | starter | 100% | 100% | 100% | 4.8 | 33% | 0 |
-| greedy | Oracle | mid | 100% | 100% | 100% | 5.3 | 37% | 0 |
-| greedy | Splinter | starter | 100% | 100% | 100% | 4.2 | 37% | 0 |
-| greedy | Splinter | mid | 99% | 100% | 96% | 4.9 | 34% | 0 |
-| greedy | Vowknight | starter | 100% | 100% | 100% | 3.1 | 16% | 0 |
-| greedy | Vowknight | mid | 100% | 100% | 100% | 3.8 | 19% | 0 |
-| random | Oracle | starter | 76% | 83% | 52% | 8.3 | 66% | 0 |
-| random | Oracle | mid | 62% | 69% | 38% | 8.1 | 65% | 0 |
-| random | Splinter | starter | 50% | 60% | 17% | 7.6 | 69% | 0 |
-| random | Splinter | mid | 51% | 61% | 17% | 7.8 | 69% | 0 |
-| random | Vowknight | starter | 96% | 99% | 84% | 5.9 | 48% | 0 |
-| random | Vowknight | mid | 94% | 98% | 82% | 7.0 | 52% | 0 |
+| planner | Oracle | starter | 97% | 100% | 78% | 4.3 | 26% | 0 |
+| planner | Oracle | mid | 100% | 100% | 98% | 4.8 | 29% | 0 |
+| planner | Splinter | starter | 97% | 100% | 78% | 3.5 | 25% | 0 |
+| planner | Splinter | mid | 99% | 100% | 92% | 3.9 | 26% | 0 |
+| planner | Vowknight | starter | 100% | 100% | 100% | 2.8 | 15% | 0 |
+| planner | Vowknight | mid | 100% | 100% | 100% | 3.2 | 15% | 0 |
+| greedy | Oracle | starter | 96% | 100% | 75% | 4.4 | 28% | 0 |
+| greedy | Oracle | mid | 98% | 100% | 85% | 4.8 | 32% | 0 |
+| greedy | Splinter | starter | 96% | 100% | 75% | 3.9 | 31% | 0 |
+| greedy | Splinter | mid | 97% | 100% | 78% | 4.3 | 29% | 0 |
+| greedy | Vowknight | starter | 100% | 100% | 100% | 2.8 | 15% | 0 |
+| greedy | Vowknight | mid | 100% | 100% | 100% | 3.5 | 17% | 0 |
+| random | Oracle | starter | 75% | 81% | 39% | 7.1 | 53% | 0 |
+| random | Oracle | mid | 65% | 72% | 28% | 6.9 | 51% | 0 |
+| random | Splinter | starter | 57% | 65% | 12% | 6.5 | 51% | 0 |
+| random | Splinter | mid | 57% | 65% | 12% | 6.5 | 52% | 0 |
+| random | Vowknight | starter | 92% | 97% | 64% | 5.2 | 41% | 0 |
+| random | Vowknight | mid | 91% | 96% | 62% | 6.1 | 44% | 0 |
 
 ## Encounters (`planner` bot)
 
@@ -57,6 +57,19 @@ Each cell: win rate · average share of max HP lost in won fights.
 | The Inquisitor (elite) | Inquisitor | 100% · 61% | 100% · 57% | 100% · 55% | 100% · 59% | 100% · 18% | 100% · 31% |
 | The Pruner (elite) | Pruner, Drone | 100% · 39% | 100% · 42% | 100% · 53% | 100% · 45% | 100% · 25% | 100% · 26% |
 | The Rent (elite) | The Rent, Loose End | 100% · 31% | 100% · 39% | 100% · 55% | 100% · 42% | 100% · 34% | 100% · 28% |
+| A Footpad in the Fog | Gaslight Footpad | 100% · 7% | 100% · 7% | 100% · 6% | 100% · 7% | 100% · 4% | 100% · 3% |
+| A Rookery Tough | Rookery Brawler | 100% · 6% | 100% · 8% | 100% · 13% | 100% · 7% | 100% · 7% | 100% · 4% |
+| A Fraying Street | Loose End ×2 | 100% · 4% | 100% · 4% | 100% · 3% | 100% · 3% | 100% · 3% | 100% · 2% |
+| A Stray Proxy | Brass Proxy | 100% · 7% | 100% · 10% | 100% · 7% | 100% · 7% | 100% · 5% | 100% · 5% |
+| A Squire Errant | Squire of the Line | 100% · 6% | 100% · 6% | 100% · 5% | 100% · 6% | 100% · 5% | 100% · 3% |
+| A Misprint on Drury Lane | Misprint | 100% · 12% | 100% · 14% | 100% · 7% | 100% · 10% | 100% · 5% | 100% · 7% |
+| The Lamplighters' Round | Lamplighter, Gaslight Footpad | 100% · 24% | 100% · 26% | 100% · 22% | 100% · 24% | 100% · 12% | 100% · 12% |
+| The Rookery Gang | Rookery Brawler, Gaslight Footpad | 100% · 31% | 100% · 32% | 100% · 34% | 100% · 31% | 100% · 22% | 100% · 17% |
+| Brass Constables | Brass Proxy ×2 | 100% · 32% | 100% · 48% | 100% · 30% | 100% · 40% | 100% · 24% | 100% · 27% |
+| The Line in the Fog | Sergeant-at-Arms ×2 | 100% · 39% | 100% · 40% | 99% · 39% | 100% · 40% | 100% · 16% | 100% · 18% |
+| The Misprinted Quarter | Misprint ×2 | 100% · 47% | 99% · 52% | 100% · 40% | 100% · 47% | 100% · 21% | 100% · 27% |
+| The Unravelling | Ravel, Loose End ×2 | 100% · 35% | 100% · 44% | 100% · 40% | 100% · 38% | 100% · 25% | 100% · 25% |
+| The Lattice Engine (elite) | The Lattice Engine | 14% · 63% | 93% · 47% | 10% · 58% | 66% · 54% | 100% · 31% | 100% · 23% |
 
 ## Mechanics in use (`planner` bot)
 
@@ -65,12 +78,12 @@ Per fight unless noted. *Pressure at resolution* averages over intents that reso
 
 | Operative | Deck | Cards / round | Intent Delays | Pressure at resolution | Borrowed | Debt carried out | Unravels | Vow breaks |
 |---|---|---|---|---|---|---|---|---|
-| Oracle | starter | 2.6 | 0.00 | – | 1.32 | 0.50 | 0.00 | 0.00 |
-| Oracle | mid | 2.2 | 0.49 | 1.09 | 2.22 | 0.51 | 0.00 | 0.00 |
-| Splinter | starter | 2.7 | 0.00 | – | 1.64 | 0.94 | 0.00 | 0.00 |
-| Splinter | mid | 2.8 | 0.23 | 1.02 | 1.60 | 0.73 | 0.00 | 0.02 |
-| Vowknight | starter | 2.3 | 0.00 | – | 1.49 | 0.79 | 0.00 | 0.00 |
-| Vowknight | mid | 2.0 | 0.10 | 1.00 | 2.14 | 0.79 | 0.00 | 0.00 |
+| Oracle | starter | 2.6 | 0.00 | – | 1.20 | 0.46 | 0.00 | 0.00 |
+| Oracle | mid | 2.3 | 0.46 | 1.10 | 1.82 | 0.53 | 0.00 | 0.00 |
+| Splinter | starter | 2.7 | 0.00 | – | 1.30 | 0.86 | 0.00 | 0.00 |
+| Splinter | mid | 2.8 | 0.20 | 1.02 | 1.34 | 0.71 | 0.00 | 0.02 |
+| Vowknight | starter | 2.3 | 0.00 | – | 1.26 | 0.87 | 0.00 | 0.00 |
+| Vowknight | mid | 2.0 | 0.08 | 1.00 | 1.79 | 0.80 | 0.00 | 0.00 |
 
 ## Card usage in the mid decks (`planner` bot)
 
@@ -78,42 +91,42 @@ Plays per fight, per copy in the deck. Low numbers mean the bot rarely finds the
 
 | Operative | Card | Copies | Plays per fight per copy |
 |---|---|---|---|
-| Oracle | Deterministic Model | 1 | 0.09 |
-| Oracle | Firewall | 4 | 0.43 |
-| Oracle | Hold Pattern | 1 | 0.17 |
-| Oracle | Hold the Hour | 1 | 0.33 |
-| Oracle | Lance.exe | 1 | 0.95 |
-| Oracle | Predictive Shield | 1 | 0.09 |
-| Oracle | Probability Lance | 1 | 0.60 |
-| Oracle | Pulse | 4 | 1.25 |
-| Oracle | Recursive Strike | 1 | 0.48 |
-| Oracle | Scatter Protocol | 1 | 0.49 |
-| Oracle | Stitch in Time | 1 | 0.79 |
-| Oracle | Watchdog.exe | 1 | 0.89 |
-| Splinter | Borrowed Self | 1 | 0.18 |
-| Splinter | Caret Strike | 1 | 1.14 |
-| Splinter | Crosstalk | 1 | 0.95 |
-| Splinter | Double Guard | 4 | 0.37 |
+| Oracle | Deterministic Model | 1 | 0.08 |
+| Oracle | Firewall | 4 | 0.44 |
+| Oracle | Hold Pattern | 1 | 0.15 |
+| Oracle | Hold the Hour | 1 | 0.31 |
+| Oracle | Lance.exe | 1 | 0.90 |
+| Oracle | Predictive Shield | 1 | 0.10 |
+| Oracle | Probability Lance | 1 | 0.54 |
+| Oracle | Pulse | 4 | 1.15 |
+| Oracle | Recursive Strike | 1 | 0.42 |
+| Oracle | Scatter Protocol | 1 | 0.40 |
+| Oracle | Stitch in Time | 1 | 0.77 |
+| Oracle | Watchdog.exe | 1 | 0.83 |
+| Splinter | Borrowed Self | 1 | 0.17 |
+| Splinter | Caret Strike | 1 | 1.03 |
+| Splinter | Crosstalk | 1 | 0.88 |
+| Splinter | Double Guard | 4 | 0.38 |
 | Splinter | Elsewhen Guard | 1 | 0.03 |
-| Splinter | Fray Lash | 1 | 0.39 |
-| Splinter | Hold the Hour | 1 | 0.19 |
-| Splinter | Mirage Step | 1 | 0.38 |
-| Splinter | Misprinted Edict | 1 | 0.57 |
-| Splinter | Splinter Cut | 4 | 1.19 |
-| Splinter | Split the Moment | 1 | 0.11 |
-| Splinter | Two Places at Once | 1 | 0.93 |
-| Vowknight | Crusader's Charge | 1 | 0.59 |
-| Vowknight | Gnomon Blade | 1 | 0.72 |
+| Splinter | Fray Lash | 1 | 0.31 |
+| Splinter | Hold the Hour | 1 | 0.16 |
+| Splinter | Mirage Step | 1 | 0.35 |
+| Splinter | Misprinted Edict | 1 | 0.52 |
+| Splinter | Splinter Cut | 4 | 1.08 |
+| Splinter | Split the Moment | 1 | 0.10 |
+| Splinter | Two Places at Once | 1 | 0.87 |
+| Vowknight | Crusader's Charge | 1 | 0.57 |
+| Vowknight | Gnomon Blade | 1 | 0.64 |
 | Vowknight | Hold Fast | 1 | 0.07 |
-| Vowknight | Hold the Hour | 1 | 0.10 |
-| Vowknight | Line Strike | 4 | 0.69 |
-| Vowknight | Litany of Steel | 1 | 0.13 |
-| Vowknight | Oathkeeper's Stand | 1 | 0.09 |
-| Vowknight | Remembered Blow | 1 | 0.55 |
-| Vowknight | Shield of the Line | 4 | 0.14 |
-| Vowknight | Stitch in Time | 1 | 0.28 |
-| Vowknight | Sundial Cut | 1 | 0.48 |
-| Vowknight | Vow of the Sword | 1 | 0.77 |
+| Vowknight | Hold the Hour | 1 | 0.08 |
+| Vowknight | Line Strike | 4 | 0.63 |
+| Vowknight | Litany of Steel | 1 | 0.11 |
+| Vowknight | Oathkeeper's Stand | 1 | 0.10 |
+| Vowknight | Remembered Blow | 1 | 0.49 |
+| Vowknight | Shield of the Line | 4 | 0.13 |
+| Vowknight | Stitch in Time | 1 | 0.25 |
+| Vowknight | Sundial Cut | 1 | 0.43 |
+| Vowknight | Vow of the Sword | 1 | 0.69 |
 
 ## Card budgets
 
@@ -183,4 +196,11 @@ time for under 10% of max HP. *Soft elite*: an elite won 95%+ of the time for un
 - **Trivial:** Plague Season, for Vowknight (starter), Vowknight (mid).
 - **Trivial:** Glass Desert, for Vowknight (starter).
 - **Soft elite:** The Inquisitor: Vowknight (starter) loses 18%.
+- **Trivial:** A Footpad in the Fog, for every operative and deck.
+- **Trivial:** A Rookery Tough, for Oracle (starter), Oracle (mid), Splinter (mid), Vowknight (starter), Vowknight (mid).
+- **Trivial:** A Fraying Street, for every operative and deck.
+- **Trivial:** A Stray Proxy, for every operative and deck.
+- **Trivial:** A Squire Errant, for every operative and deck.
+- **Trivial:** A Misprint on Drury Lane, for Splinter (starter), Vowknight (starter), Vowknight (mid).
+- **Hard:** The Lattice Engine: Oracle (starter) wins 14%, Splinter (starter) wins 10%
 

@@ -1,7 +1,9 @@
 package dcbb.web
 
 import dcbb.core.bot.PlannerBot
+import dcbb.core.bot.RunBot
 import dcbb.core.content.Content
+import dcbb.core.content.FirstHour
 import dcbb.core.content.Prototype
 import dcbb.core.engine.Action
 import dcbb.core.engine.CombatSetup
@@ -13,6 +15,12 @@ import dcbb.core.engine.PlayCard
 import dcbb.core.engine.Replay
 import dcbb.core.engine.ResolveForesee
 import dcbb.core.engine.UseSignature
+import dcbb.core.run.RunAction
+import dcbb.core.run.RunEngine
+import dcbb.core.run.RunOutcome
+import dcbb.core.run.RunReplay
+import dcbb.core.run.RunState
+import dcbb.core.run.Screen
 import dcbb.core.state.CombatState
 import dcbb.core.state.ShiftPair
 import kotlinx.browser.localStorage
@@ -69,7 +77,29 @@ class ForeseeDraft(val order: MutableList<Int>, val tutor: Boolean) {
     )
 }
 
-enum class Drawer { NONE, PAST, FUTURE, ERASED, DECK, LOG }
+enum class Drawer { NONE, PAST, FUTURE, ERASED, DECK, LOG, RUN_DECK, RUN_LOG }
+
+/**
+ * A run in progress: its state, every action (for run codes and Undo), the run log, and the combat events of the
+ * current fight. [bot] keeps the planner's per-fight memory between bot moves.
+ */
+class RunSession(val op: String, val seed: Long, val era: String, start: RunOutcome) {
+    var state: RunState = start.state
+    val actions = mutableListOf<RunAction>()
+    val log: MutableList<String> = start.log.toMutableList()
+    val events = mutableListOf<String>()
+    var fightStart = 0
+    val undo = mutableListOf<Snap>()
+    var bot = RunBot(seed)
+
+    class Snap(val state: RunState, val logSize: Int, val eventsSize: Int, val fightStart: Int, val actionCount: Int)
+
+    fun fightLog(): List<String> = events.drop(fightStart)
+    fun replay() = RunReplay(op, seed, era, actions.toList())
+}
+
+/** What the bot is playing on its own, one action per tick: the current fight, or the rest of the run. */
+enum class Auto { NONE, FIGHT, RUN }
 
 /**
  * The browser client: plain DOM, re-rendered from state after every input. Rules, bots and replay codes all come from
@@ -78,9 +108,12 @@ enum class Drawer { NONE, PAST, FUTURE, ERASED, DECK, LOG }
 class App(private val root: Element) {
     val content: Content = Prototype.content
     val engine = Engine(content)
+    val runEngine = RunEngine(FirstHour.run)
 
     var setup: Setup = loadSetup()
     var session: Session? = null
+    var run: RunSession? = null
+    var auto = Auto.NONE
     var pick: Pick? = null
     var foresee: ForeseeDraft? = null
     var notice: String? = null
@@ -91,6 +124,14 @@ class App(private val root: Element) {
     var busy = false
 
     private val views = Views(this)
+    val runViews = RunViews(this, views)
+
+    /** The fight on screen: the run's current fight, or the lab's. */
+    val fightState: CombatState?
+        get() {
+            val r = run
+            return if (r != null) (r.state.screen as? Screen.Fight)?.combat else session?.state
+        }
 
     fun mount() {
         root.addEventListener("click", { e -> onClick(e) })
@@ -99,25 +140,35 @@ class App(private val root: Element) {
     }
 
     fun render() {
-        root.innerHTML = if (session == null) views.setup() else views.combat()
+        val r = run
+        root.innerHTML = when {
+            r != null && r.state.screen is Screen.Fight -> views.combat()
+            r != null -> runViews.screen(r)
+            session != null -> views.combat()
+            else -> views.setup()
+        }
         if (copyText != null) (root.querySelector("#copy-text") as? HTMLTextAreaElement)?.select()
     }
 
     // ---- boot and hot reload --------------------------------------------------------------------------------
 
-    /** Restores a fight from a replay code (hot reload or a pasted code), or opens the setup screen. */
+    /** Restores a run or a fight from its code (hot reload or a pasted code), or opens the setup screen. */
     fun boot(code: String?) {
         if (code != null) {
             try {
-                restore(Replay.parse(code))
+                restoreCode(code)
             } catch (e: Throwable) {
-                notice = "Couldn't restore that fight: ${e.message}"
+                notice = "Couldn't restore that: ${e.message}"
             }
         }
         mount()
     }
 
-    fun snapshot(): String? = session?.replay()?.encode()
+    fun snapshot(): String? = run?.replay()?.encode() ?: session?.replay()?.encode()
+
+    private fun restoreCode(code: String) {
+        if (code.trim().startsWith(RunReplay.VERSION)) restoreRun(RunReplay.parse(code)) else restore(Replay.parse(code))
+    }
 
     private fun restore(replay: Replay) {
         setup = Setup(replay.operative, replay.deck, replay.encounter, replay.seed)
@@ -150,13 +201,42 @@ class App(private val root: Element) {
             }
             "paste-code" -> {
                 val code = (root.querySelector("#replay-code") as? HTMLTextAreaElement)?.value?.trim().orEmpty()
-                val line = code.lines().firstOrNull { it.contains(Replay.VERSION + " ") }
+                val line = code.lines().firstOrNull { it.contains(Replay.VERSION + " ") || it.contains(RunReplay.VERSION + " ") }
                     ?.substringAfter("Replay:")?.trim() ?: code
                 try {
-                    restore(Replay.parse(line))
+                    restoreCode(line)
                 } catch (t: Throwable) {
                     notice = "That isn't a replay code: ${t.message}"
                 }
+            }
+
+            // Runs
+            "run-start" -> {
+                readSeed()
+                startRun()
+            }
+            "run-resume" -> savedRun()?.let { code ->
+                try {
+                    restoreRun(RunReplay.parse(code))
+                } catch (t: Throwable) {
+                    notice = "Couldn't resume the saved run: ${t.message}"
+                }
+            }
+            "run-choose" -> if (n != null) runAct(RunAction.Choose(n))
+            "run-foresight" -> runAct(RunAction.Foresight)
+            "run-glimpse" -> runAct(RunAction.Glimpse)
+            "run-skip" -> runAct(RunAction.Skip)
+            "run-done" -> {
+                showResult = true
+                runAct(RunAction.Done)
+            }
+            "run-bot" -> run?.let { r -> runAct(r.bot.act(runEngine, r.state)) }
+            "auto-fight" -> startAuto(Auto.FIGHT)
+            "auto-run" -> startAuto(Auto.RUN)
+            "auto-stop" -> auto = Auto.NONE
+            "run-new" -> {
+                setup = setup.copy(seed = randomSeed())
+                startRun()
             }
 
             // Choosing what to play
@@ -202,7 +282,7 @@ class App(private val root: Element) {
             "fs-ok" -> foresee?.let { act(it.action()) }
 
             // Tools
-            "undo" -> undo()
+            "undo" -> if (run != null) runUndo() else undo()
             "hint" -> hint()
             "do-hint" -> hint?.let { act(it) }
             "dismiss" -> {
@@ -217,16 +297,19 @@ class App(private val root: Element) {
             }
             "to-setup" -> {
                 session = null
+                run = null
+                auto = Auto.NONE
                 pick = null
                 foresee = null
                 notice = null
                 hint = null
+                drawer = Drawer.NONE
             }
             "drawer" -> {
                 val d = id?.let { runCatching { Drawer.valueOf(it) }.getOrNull() } ?: Drawer.NONE
                 drawer = if (drawer == d) Drawer.NONE else d
             }
-            "copy" -> copyLog()
+            "copy" -> if (run != null) copyRun() else copyLog()
             "copy-close" -> copyText = null
             "result-close" -> showResult = false
         }
@@ -262,6 +345,7 @@ class App(private val root: Element) {
 
     /** Applies [a]; on a rule error, keeps the state and shows the engine's explanation. */
     fun act(a: Action): Boolean {
+        if (run != null) return runAct(RunAction.Fight(a))
         val s = session ?: return false
         val out = engine.apply(s.state, a)
         if (out.error != null) {
@@ -281,7 +365,7 @@ class App(private val root: Element) {
     }
 
     private fun syncForesee() {
-        val pending = session?.state?.pending ?: return
+        val pending = fightState?.pending ?: return
         if (foresee == null) foresee = ForeseeDraft(pending.uids.toMutableList(), pending.tutor)
     }
 
@@ -299,23 +383,147 @@ class App(private val root: Element) {
         syncForesee()
     }
 
+    private fun botSeed(): Long = run?.seed ?: session?.setup?.seed ?: 0
+
     private fun hint() {
-        val s = session ?: return
-        if (s.state.phase.over) return
-        hint = PlannerBot(s.setup.seed).act(engine, s.state)
+        val st = fightState ?: return
+        if (st.phase.over) return
+        hint = PlannerBot(botSeed()).act(engine, st)
         notice = null
     }
 
     /** The planner bot plays the rest of this turn, one action at a time (each one can be undone). */
     private fun botTurn() {
-        val s = session ?: return
-        val bot = PlannerBot(s.setup.seed)
-        val round = s.state.round
+        val bot = PlannerBot(botSeed())
+        val round = fightState?.round ?: return
         var guard = 0
-        while (!s.state.phase.over && s.state.round == round && guard++ < 60) {
-            val a = bot.act(engine, s.state)
+        while (true) {
+            val st = fightState ?: break
+            if (st.phase.over || st.round != round || guard++ >= 60) break
+            val a = bot.act(engine, st)
             if (!act(a) || a == EndTurn) break
         }
+    }
+
+    // ---- runs -------------------------------------------------------------------------------------------------
+
+    fun startRun() {
+        val s = setup
+        val era = runEngine.rc.eras.first().id
+        run = RunSession(s.op, s.seed, era, runEngine.start(s.op, s.seed, era))
+        session = null
+        resetUi()
+        saveSetup(s)
+        saveRun()
+    }
+
+    private fun restoreRun(code: RunReplay) {
+        setup = setup.copy(op = code.operative, seed = code.seed)
+        run = RunSession(code.operative, code.seed, code.era, runEngine.start(code.operative, code.seed, code.era))
+        session = null
+        resetUi()
+        for (a in code.actions) if (!runAct(a, save = false)) break
+        saveRun()
+    }
+
+    private fun resetUi() {
+        pick = null
+        foresee = null
+        notice = null
+        hint = null
+        showResult = true
+        drawer = Drawer.NONE
+        auto = Auto.NONE
+        syncForesee()
+    }
+
+    /** Applies a run action; on an error, keeps the state and shows the engine's explanation. */
+    fun runAct(a: RunAction, save: Boolean = true): Boolean {
+        val r = run ?: return false
+        val out = runEngine.apply(r.state, a)
+        if (out.error != null) {
+            notice = out.error
+            return false
+        }
+        r.undo += RunSession.Snap(r.state, r.log.size, r.events.size, r.fightStart, r.actions.size)
+        val wasFight = r.state.screen is Screen.Fight
+        if (!wasFight && out.state.screen is Screen.Fight) {
+            r.fightStart = r.events.size
+            showResult = true
+        }
+        r.state = out.state
+        r.actions += a
+        r.log += out.log
+        r.events += out.events.map { it.text }
+        pick = null
+        hint = null
+        notice = null
+        foresee = null
+        syncForesee()
+        if (save) saveRun()
+        return true
+    }
+
+    private fun runUndo() {
+        val r = run ?: return
+        val snap = r.undo.removeLastOrNull() ?: return
+        r.state = snap.state
+        while (r.log.size > snap.logSize) r.log.removeAt(r.log.size - 1)
+        while (r.events.size > snap.eventsSize) r.events.removeAt(r.events.size - 1)
+        while (r.actions.size > snap.actionCount) r.actions.removeAt(r.actions.size - 1)
+        r.fightStart = snap.fightStart
+        r.bot = RunBot(r.seed)
+        auto = Auto.NONE
+        pick = null
+        hint = null
+        notice = null
+        foresee = null
+        showResult = true
+        syncForesee()
+        saveRun()
+    }
+
+    /** The bot plays on its own, one action per tick so the page stays responsive and you can watch. */
+    private fun startAuto(mode: Auto) {
+        if (run == null) return
+        auto = mode
+        window.setTimeout({ tick() }, 30)
+    }
+
+    private fun tick() {
+        val r = run
+        if (r == null || auto == Auto.NONE || busy) {
+            auto = Auto.NONE
+            render()
+            return
+        }
+        val fight = r.state.screen as? Screen.Fight
+        val done = when (auto) {
+            Auto.FIGHT -> fight == null || fight.combat.phase.over
+            else -> r.state.over
+        }
+        if (done) {
+            auto = Auto.NONE
+            render()
+            return
+        }
+        if (!runAct(r.bot.act(runEngine, r.state))) auto = Auto.NONE
+        render()
+        if (auto != Auto.NONE) window.setTimeout({ tick() }, 30)
+    }
+
+    private fun copyRun() {
+        val r = run ?: return
+        val text = buildString {
+            append("Anachronist run log\n")
+            append("Replay: ").append(r.replay().encode()).append("\n\n")
+            r.log.forEach { append(it).append('\n') }
+            if (r.state.screen is Screen.Fight) {
+                append("\nCurrent fight:\n")
+                r.fightLog().forEach { append(it).append('\n') }
+            }
+        }
+        writeClipboard(text, "Copied the run code and log. Paste it into our chat to report a bug: I can replay the whole run exactly.")
     }
 
     private fun copyLog() {
@@ -325,6 +533,10 @@ class App(private val root: Element) {
             append("Replay: ").append(s.replay().encode()).append("\n\n")
             s.log.forEach { append(it).append('\n') }
         }
+        writeClipboard(text, "Copied the fight log. Paste it into our chat to report a bug: I can replay it exactly.")
+    }
+
+    private fun writeClipboard(text: String, done: String) {
         val clipboard = window.navigator.asDynamic().clipboard
         if (clipboard == null) {
             copyText = text
@@ -333,7 +545,7 @@ class App(private val root: Element) {
         try {
             clipboard.writeText(text).then(
                 { _: dynamic ->
-                    notice = "Copied the fight log. Paste it into our chat to report a bug: I can replay it exactly."
+                    notice = done
                     render()
                 },
                 { _: dynamic ->
@@ -363,6 +575,22 @@ class App(private val root: Element) {
         return if (valid) Setup(op, deck, enc, default.seed) else default
     }
 
+    /** The run in progress, kept in this browser so a reload resumes it. */
+    private fun saveRun() {
+        val code = run?.replay()?.encode() ?: return
+        try {
+            localStorage.setItem(RUN_KEY, code)
+        } catch (t: Throwable) {
+            // Storage can be blocked; the run just won't survive a reload.
+        }
+    }
+
+    fun savedRun(): String? = try {
+        localStorage.getItem(RUN_KEY)?.takeIf { it.startsWith(RunReplay.VERSION) }
+    } catch (t: Throwable) {
+        null
+    }
+
     private fun saveSetup(s: Setup) {
         try {
             localStorage.setItem(SETUP_KEY, "${s.op}|${s.deck}|${s.enc}")
@@ -373,6 +601,7 @@ class App(private val root: Element) {
 
     companion object {
         private const val SETUP_KEY = "dcbb.setup"
+        private const val RUN_KEY = "dcbb.run"
         fun randomSeed(): Long = Random.nextInt(1, 100_000).toLong()
     }
 }

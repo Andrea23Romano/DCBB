@@ -201,6 +201,8 @@ These are tuned from simulation and versioned with the content.
 | **Inscribed** (upgraded) versions | ×1.30 of target, ±10% |
 | **Forge variants** | **1.00–1.10** × target. This is a small reward bump, because forging replaces taking a new card. |
 
+**Inscribed versions in the prototype.** Until the YAML content lands, Inscribed versions are generated: the generator raises a card's numbers one step at a time (Damage and Block repeatedly, counts such as Draw, Foresee or Plate at most once) and keeps the step that brings the card closest to ×1.30 of its target. Ten cards whose generated upgrade missed the window or read badly carry an authored one instead, for example *Rollback+* loses its Erase and *Optimal Path+* gains Retain; *Paradox Engine+* keeps its generated upgrade with a documented exception. The test suite checks every Inscribed version against ×1.30 ±10%. In card ids, `+` marks an Inscribed version (`order.line_strike+`) and `~` a Misprinted one, the variant an out-of-combat Unravel leaves in your deck ([05](05-run-structure.md#unravel)).
+
 > The budget is a **sanity rail**, not a balance oracle. Rares and legendaries exist to break patterns, which the budget can't fully price. Simulation ([09](09-tech-architecture.md#testing-and-qa)) is the final judge, and its results feed back into the cost table.
 
 ### Worked budget: Remembered Blow
