@@ -277,6 +277,7 @@ flowchart LR
 /llm-service    Bound service hosting the inference runtime (separate process)
 /sim            Headless simulator + bots (JVM)
 /ml             Python: data generation, LoRA training, conversion, eval (dev only)
+/art            Art bible, prompts, golden set, masters, provenance (binaries in Git LFS; see 12)
 /docs           These documents
 ```
 

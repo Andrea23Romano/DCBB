@@ -10,7 +10,7 @@
 |---|---|---|---|
 | **0: Design** | This document set | Vision, lore, systems, GenAI, architecture | Reviewed; open questions triaged |
 | **1: Combat prototype** | Prove the combat is fun | `core-rules` for combat; 3 operatives (starter decks plus about 40 cards); about 10 enemies; Track, Pressure, Reservoir and Borrow; a text or desktop debug UI; `sim` bots with first balance reports | Playtesters want "one more fight". Sims show no dominant degenerate line (Delay-lock, infinite Borrow). Average turn under 20 s. |
-| **2: Android vertical slice** (no GenAI) | Prove the whole loop on a phone | The full MVP content below; Compose UI; saves and resume; progressive tutorial; **VFX spike** (card motion, Track animation, the branch shader) | The mission "The First Hour" is playable start to finish at 60 fps on a mid-range phone. The ADR-001 go/no-go on Compose game feel is made ([09](09-tech-architecture.md#stack-decision-adr-001)). |
+| **2: Android vertical slice** (no GenAI) | Prove the whole loop on a phone | The full MVP content below; Compose UI; saves and resume; progressive tutorial; **VFX spike** (card motion, Track animation, the branch shader); the art **style-lock sprint** and vertical-slice art ([12](12-art-pipeline.md#the-style-lock-sprint)) | The mission "The First Hour" is playable start to finish at 60 fps on a mid-range phone. The ADR-001 go/no-go on Compose game feel is made ([09](09-tech-architecture.md#stack-decision-adr-001)). |
 | **3: GenAI P0** | Prove the Chronicler | `genai` and `llm-service`; LiteRT-LM with **off-the-shelf** Gemma 4 E2B (prompt-only); event narration, Run Chronicle, barks; queue, cache, fallbacks, Report flow; AI pack delivery | All [07](07-genai-design.md#evaluation) gates except faction voice. Fallback rate ≤ 10%. No frame drops from generation. |
 | **4: Forge, fine-tuning and tiers** | Make it ours and make it scale down | The Forge pipeline; the `ml/` pipeline; multi-task LoRA for Tiers A and B; tier classification; the full eval suite | **All** 07 gates pass on the reference phones |
 | **5: Meta and content** | Make it a game you keep playing | Chronoscape, Archive and Echoes, Variant Pool, Entropy, Fixed Points, Codex, the Movement I hub story; content grown toward launch targets; closed beta | Retention and difficulty curves are healthy in the beta. Crash-free sessions ≥ 99.5%. |
@@ -62,7 +62,9 @@ This is the Phase 2 vertical slice, reused by Phases 3–4.
 | Model download size (≈ 1.5–2 GB on Tier A) | Players skip it | Optional on-demand AI pack; Wi-Fi default; clear value preview; Tier B's smaller model |
 | Generated text quality or consistency | Immersion breaks; lore drift | Fine-tuning on our Lore Bible; small, structured packets; validators; authored fallbacks; human-rated eval gates |
 | Forge variants are unbalanced | Runs trivialized or ruined | One DSL and one budget; auto-tune; capped ops; at most 3 Forks per run; simulation checks against source cards |
-| Player sentiment about GenAI | Review-bombing; distrust | Transparency (quill marks, a store disclosure); all art, rules and core story made by humans; an Off switch; no AI art |
+| Player sentiment about GenAI and AI-assisted art | Review-bombing; distrust | Transparency (quill marks, a store disclosure of AI-assisted art); a strong, consistent art direction with a human finishing pass on every image; rules and story written by people; an Off switch for the Chronicler; no image generation at runtime |
+| AI art drifts or looks generic | The game looks cheap or inconsistent | One primary generator; golden set and character sheets as references; fixed prompt blocks; QA scorecard; drift checks every ~20 assets ([12](12-art-pipeline.md)) |
+| AI art ownership and tool terms | Weak IP protection; a tool changes its terms | Meaningful, recorded human finishing; human-made frames, icons and layouts; provenance log; saved copies of tool terms; every asset replaceable from its record |
 | Complexity creep (Track, Borrow, Reservoir, Paradox, Fork…) | New players bounce | Keyword cap of 25; progressive disclosure across the first runs; long-press explanations everywhere; the Archivist explainer |
 | Compose falls short on game feel | Product looks flat | VFX spike in Phase 2 with a go/no-go; Godot 4 as the documented fallback |
 | Scope | Never ships | MVP cut lines above; meta systems deferred to Phase 5; Movement III can slip past 1.0 |
@@ -76,7 +78,7 @@ This is the Phase 2 vertical slice, reused by Phases 3–4.
 | # | Question | Notes |
 |---|---|---|
 | 1 | **Final title?** | Working title *Anachronist*. Alternatives in [01](01-vision.md#title-ideas). Needs a trademark check. |
-| 2 | **Art direction and budget** | How many illustrators? Card art count for the MVP is about 120 cards plus about 30 enemies. |
+| 2 | **Art production capacity** | The direction is set ([11](11-art-direction.md)) and art is AI-assisted ([12](12-art-pipeline.md)). Open: which hosted tool wins the style-lock sprint, who does the finishing pass on ~225 MVP images, and whether to commission a human illustrator for key art and the logo. |
 | 3 | **Price point** | Benchmark against premium mobile deckbuilders. |
 | 4 | **iOS and PC (Steam)?** | Compose Multiplatform and LiteRT-LM make this plausible. Decide after Phase 3. |
 | 5 | **Localization** | Gemma models are multilingual, so narration could be localized cheaply. The authored fallbacks and rules templates still need professional localization. Which languages at launch? |

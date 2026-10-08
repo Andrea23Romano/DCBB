@@ -121,14 +121,16 @@ Free demo plus a one-time unlock, with optional expansions and cosmetic supporte
 
 ## Art Direction
 
-- **Hand-painted illustration** in the tradition DC is praised for.
-- **Faction visual languages:**
-  - **Order:** illuminated-manuscript borders, gold leaf, stained-glass light, the sundial-cross
-  - **Convergence:** white porcelain geometry, cyan light, gold circuitry; brass and clockwork in older eras
-  - **Errata:** a collage of eras, torn paper, risograph misprint offsets, margin doodles, the caret ‸
-  - **The Tear:** ragged rips through the painted canvas itself, with loose threads and darkness behind. When the Tear touches a card, the card's art tears.
+**Illuminated Weave** ([11](11-art-direction.md)): painterly illustration on a woven paper-and-thread ground, the tradition DC is praised for, with each faction painted in its own **medium**.
+
+- **Faction media:**
+  - **Order:** an illuminated manuscript. Egg-tempera color, gold leaf, stained-glass light, the sundial-cross.
+  - **Convergence:** engraving on porcelain. White glaze, fine cyan hatching, gold filigree; brass and clockwork in older eras.
+  - **Errata:** a collage cut from the other two. Torn paper, tape, misprint offsets, margin doodles, the caret ‸.
+  - **The Tear:** ragged rips through the painted canvas itself, with loose threads and black void behind. When the Tear touches a card, the card's art tears.
 - **Era palettes:** London fog and soot · Milan fresco ochre · Salt Waste white salt and black glass.
-- **Branch Variants** reuse the original art with **shader treatments** (double exposure, chromatic offset, misprinted registration) and a variant frame. **No generated art.**
+- **AI-assisted, human-directed.** Art is generated at development time with hosted image tools, then curated, corrected and finished by people. Every asset's origin is recorded ([12](12-art-pipeline.md)). The shipped game never generates images.
+- **Branch Variants** reuse the original art with **shader treatments** (double exposure, chromatic offset, misprinted registration) and a variant frame.
 - **Energy pips are shaped:** ☀ Faith, ⬡ Compute, ◎ Flux, ○ Neutral. Color is never the only signal.
 
 ## Audio Direction

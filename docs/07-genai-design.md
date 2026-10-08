@@ -26,7 +26,7 @@ It never makes the rules. The runtime and models are covered in [09](09-tech-arc
 5. **Deterministic where it matters.** Seeded fallbacks, caches and challenge-mode rules keep fairness and replays intact.
 6. **Offline, private and optional.** No network is required and no data leaves the device. Players choose **Off / Lite / Full**.
 7. **Transparent and reportable.** Generated text carries a small quill mark and can be reported in-app.
-8. **Words only.** No generated art and no generated rules. Humans make the art, the rules, the core story and the style guides.
+8. **Words only at runtime.** The on-device model never generates images or rules. People write the rules, the core story and the style guides. The art is made at development time with AI assistance and finished by people ([12](12-art-pipeline.md)).
 
 ---
 
@@ -42,7 +42,7 @@ It never makes the rules. The runtime and models are covered in [09](09-tech-arc
 
 | Not planned | Reason |
 |---|---|
-| Generated art | The hand-painted art is a DC strength we keep. Image models are inconsistent on device, and many players reject AI art. Variant cards get **shader** treatments instead: double exposure, misprint offsets. |
+| Runtime image generation | On-device image models are slow and inconsistent, and every image needs a human finishing pass. Art is made at development time instead ([12](12-art-pipeline.md)), and variant cards get **shader** treatments: double exposure, misprint offsets. |
 | LLM-written rules or numbers | Balance and fairness must be deterministic. The DSL and budget own mechanics ([08](08-card-dsl.md)). |
 | Adaptive difficulty "by LLM" | A deterministic director is cheaper, testable and fair. |
 | Story-critical plot | Authored. GenAI adds color *around* beats ([06](06-meta-progression.md#meta-story-delivery)). |
@@ -358,7 +358,7 @@ Every output passes through these layers in order. Any failure means one retry, 
   - The rating follows the content.
 - **Transparency.**
   - The store listing and first-run screen explain that a small on-device model writes some text, that it never sees personal data, and how to turn it off.
-  - All art, rules and core story are human-made.
+  - The rules and core story are written by people. The art is AI-assisted and finished by people, and the store page and credits say so ([12](12-art-pipeline.md#legal-and-disclosure-checklist)).
 - **Training data provenance.**
   - Fine-tuning data comes from our own Lore Bible, authored exemplars, and teacher-model outputs generated from our own prompts ([09](09-tech-architecture.md#fine-tuning-pipeline)).
   - No scraped fiction is used.

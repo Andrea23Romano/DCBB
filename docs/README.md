@@ -32,6 +32,8 @@
 | 08 | [Card DSL and Power Budget](08-card-dsl.md) | The card language, point costs, budgets, the validator, the Forge (generated Branch Variants) |
 | 09 | [Technical Architecture](09-tech-architecture.md) | Stack decision, modules, determinism, LLM runtime, device tiers, model delivery, fine-tuning pipeline, testing |
 | 10 | [Roadmap](10-roadmap.md) | Phases with exit checks, MVP and launch content, business model, risks, open questions |
+| 11 | [Art Direction](11-art-direction.md) | Illuminated Weave: the rendering core, faction media, era palettes, the recurring cast, element specs, readability tests |
+| 12 | [Art Pipeline](12-art-pipeline.md) | Making AI-assisted art with hosted tools: prompt blocks, golden set, finishing pass, QA, provenance, legal, the style-lock sprint, the MVP manifest |
 
 **Short on time?** Read [01](01-vision.md), then the [Track](04-combat.md#the-track), [Anchors and Rewind](05-run-structure.md#anchors-and-rewind) and the [GenAI principles](07-genai-design.md#principles).
 
@@ -83,13 +85,16 @@
 | **Foresee N** | Keyword: look at the top N cards of your Future; they become Known | [04](04-combat.md#keywords) |
 | **Foresight** | A map resource: reveals Moments' details and one Moment ahead | [05](05-run-structure.md#foresight) |
 | **Forge** | The pipeline that creates Branch Variants (LLM plan, engine validation) | [08](08-card-dsl.md#the-forge) |
+| **Finishing pass** | The human correction, grading and cleanup every AI-assisted image goes through before approval | [12](12-art-pipeline.md#the-finishing-pass) |
 | **Fork** | Keyword: a card with two faces; choose one when played | [04](04-combat.md#keywords) |
 | **Forked intent** | An Errata enemy intent with two possible outcomes | [04](04-combat.md#faction-behavior) |
 | **Fray** | The turbulence other people's Divergences tear open; the Errata travel through it | [02](02-world-and-lore.md#how-each-faction-travels) |
 | **Future / Present / Past** | The draw pile, hand and discard pile | [04](04-combat.md#zones) |
 | **Glimpse** | See the alternate card reward for +1 Paradox | [05](05-run-structure.md#options-on-every-card-reward-screen) |
 | **Gnomon** | The Order's relic of time travel, found in 1191 | [02](02-world-and-lore.md#the-order-of-the-unbroken-line) |
+| **Golden set** | The approved reference images every new image is generated and judged against | [12](12-art-pipeline.md#the-golden-set-and-character-sheets) |
 | **Hours** | The currency | [05](05-run-structure.md#services) |
+| **Illuminated Weave** | The art direction: painterly illustration on a woven ground, one medium per faction | [11](11-art-direction.md) |
 | **Imprint** | A level-up passive, sometimes with deck requirements | [05](05-run-structure.md#imprints) |
 | **Inscribe** | A permanent card upgrade (about +30%) | [05](05-run-structure.md#other-upgrades) |
 | **Iterate +N** | Keyword: grows each time it's played this combat | [04](04-combat.md#keywords) |
@@ -99,6 +104,7 @@
 | **Lore Bible** | Structured, tagged lore snippets used by writers and the Chronicler | [07](07-genai-design.md#context-packets) |
 | **Margins** | The Errata's refuges in the gaps between branches | [02](02-world-and-lore.md#the-errata) |
 | **Martyr** | Keyword: triggers the first time you lose HP each enemy phase | [04](04-combat.md#keywords) |
+| **Medium** | A faction's visual medium: manuscript (Order), porcelain engraving (Convergence), collage (Errata), rips (Tear) | [11](11-art-direction.md#faction-media) |
 | **MERIDIAN** | The Convergence's AI mind, born in 2049 | [02](02-world-and-lore.md#the-convergence) |
 | **Misprint** | Keyword: becomes one of its alternate faces at random when drawn; also the temporary faces from Fork and Unravel | [04](04-combat.md#keywords), [08](08-card-dsl.md#misprint-tables) |
 | **Moment** | A card in the Weft: Combat, Elite, Event, Anomaly, Antiquarian, Still Point, Shrine, Cache | [05](05-run-structure.md#the-weft) |
