@@ -36,6 +36,12 @@ object CardValues {
         return pts / 2.0
     }
 
+    /**
+     * What an installed Constant is worth. A Vow's restriction is left out: the bot pays for it in play, by avoiding
+     * the restricted move or taking the Penance, so subtracting the budget credit too would count it twice.
+     */
+    fun installedValue(def: CardDef): Double = (points(def) + (def.constant?.vow?.budgetCredit ?: 0.0)) / 2.0
+
     fun bestInPast(engine: Engine, state: CombatState, n: Int): List<Int> =
         state.player.past.sortedByDescending { value(engine, state, it) }.take(n).map { it.uid }
 
@@ -71,7 +77,8 @@ object Eval {
     fun score(engine: Engine, s: CombatState, includeHand: Boolean = true): Double {
         val p = s.player
         when (s.phase) {
-            Phase.WON -> return 10_000.0 + p.hp * 10.0
+            // Debt outlives the combat (it is repaid at the next one's first Dawn), so a win with Debt is worth less.
+            Phase.WON -> return 10_000.0 + (p.hp - DEBT * p.debtTotal) * 10.0
             Phase.LOST -> return -10_000.0 - s.livingEnemies.sumOf { it.hp }
             Phase.DRAW -> return -5_000.0
             else -> Unit
@@ -90,7 +97,7 @@ object Eval {
         v -= threat(engine, s)
         v += energyValue(engine, s)
         v -= DEBT * p.debtTotal
-        v += p.constants.sumOf { CardValues.points(engine.content.card(it.defId)) / 2.0 * CONSTANT_WEIGHT }
+        v += p.constants.sumOf { CardValues.installedValue(engine.content.card(it.defId)) * CONSTANT_WEIGHT }
         v += if (includeHand) {
             handOption(engine, s)
         } else {

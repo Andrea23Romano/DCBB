@@ -24,9 +24,12 @@ object Budget {
     /** Misprint faces may sit further from the target than authored cards (docs/08 "Modifiers"). */
     const val MISPRINT_FACE_TOLERANCE = 0.25
 
-    data class Report(val cardId: String, val points: Double, val target: Double) {
+    data class Report(val cardId: String, val points: Double, val target: Double, val exception: String? = null) {
         val ratio: Double get() = points / target
         val withinTolerance: Boolean get() = ratio in (1 - TOLERANCE - 1e-9)..(1 + TOLERANCE + 1e-9)
+
+        /** Inside the window, or outside it with a documented exception. */
+        val acceptable: Boolean get() = withinTolerance || exception != null
     }
 
     /** Expected values for scaling counters (docs/08 "Standard expected-value assumptions"). */
@@ -46,7 +49,7 @@ object Budget {
 
     fun target(def: CardDef): Double = baseBudget(def.cost.total) * def.rarity.budgetMultiplier
 
-    fun report(def: CardDef) = Report(def.id, points(def), target(def))
+    fun report(def: CardDef) = Report(def.id, points(def), target(def), def.budgetException)
 
     fun points(def: CardDef): Double {
         var p = when {

@@ -43,6 +43,8 @@ data class CombatSetup(
     val hp: Int? = null,
     val paradox: Int = 0,
     val roundCap: Int = 60,
+    /** Debt still owed from the previous combat. It is repaid at this combat's first Dawn. */
+    val debt: Map<EnergyColor, Int> = emptyMap(),
 )
 
 data class Outcome(val state: CombatState, val events: List<GameEvent>, val error: String? = null)
@@ -100,6 +102,7 @@ class Engine(val content: Content) {
             maxHp = op.maxHp,
             future = future,
             paradox = setup.paradox,
+            debt = setup.debt.filterValues { it > 0 },
         )
         val initial = CombatState(
             round = 1,
@@ -741,12 +744,15 @@ class Engine(val content: Content) {
             }
         }
 
+        /** Reshuffles the Past into the Future. Known marks clear, and Blank cards are restored: the thread re-knits. */
         private fun reshuffle(): Boolean {
             if (p.past.isEmpty()) return false
-            val (shuffled, rng) = s.rng.shuffled(p.past.map { it.copy(known = false) }, Stream.SHUFFLE)
+            val restored = p.past.count { it.blank }
+            val (shuffled, rng) = s.rng.shuffled(p.past.map { it.copy(known = false, blank = false) }, Stream.SHUFFLE)
             s = s.copy(rng = rng)
             player { it.copy(future = it.future + shuffled, past = emptyList()) }
             emit(GameEvent.Info("You reshuffle your Past into your Future"))
+            if (restored > 0) emit(GameEvent.Info("$restored Blank card${if (restored > 1) "s are" else " is"} restored"))
             return true
         }
 

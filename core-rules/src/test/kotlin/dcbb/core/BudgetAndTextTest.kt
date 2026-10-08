@@ -11,9 +11,12 @@ import kotlin.test.assertTrue
 class BudgetAndTextTest {
 
     @Test
-    fun `every prototype card is within 10 percent of its budget`() {
-        val off = content.cards.values.map { Budget.report(it) }.filter { !it.withinTolerance }
+    fun `every prototype card is within 10 percent of its budget or has a documented exception`() {
+        val off = content.cards.values.map { Budget.report(it) }.filter { !it.acceptable }
         assertTrue(off.isEmpty(), "Out of budget: " + off.joinToString { "${it.cardId} ${"%.2f".format(it.ratio)}" })
+        val exceptions = content.cards.values.filter { it.budgetException != null }
+        assertTrue(exceptions.all { !it.budgetException.isNullOrBlank() })
+        assertTrue(exceptions.size <= 3, "Exceptions are for a few reviewed cards, not a habit: ${exceptions.map { it.id }}")
     }
 
     @Test
@@ -21,7 +24,7 @@ class BudgetAndTextTest {
         // Pts column of docs/03 (one decimal there) and the docs/08 worked example.
         val expected = mapOf(
             "order.line_strike" to 12.0,
-            "order.vow_of_the_sword" to 11.2,
+            "order.vow_of_the_sword" to 1.6, // budget exception: +2 Strike, tuned by simulation
             "order.remembered_blow" to 24.0,
             "order.hold_fast" to 12.6,
             "order.sundial_cut" to 12.4,

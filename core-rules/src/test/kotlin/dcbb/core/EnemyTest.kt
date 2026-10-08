@@ -19,7 +19,7 @@ class EnemyTest {
             val out = start("vowknight", "saltwaste.mirage", seed = seed).ok(EndTurn)
             out.events.filterIsInstance<GameEvent.IntentResolved>().single().label
         }.toSet()
-        assertEquals(setOf("Attack 9", "Guard 9"), outcomes)
+        assertEquals(setOf("Attack 12", "Guard 8"), outcomes)
     }
 
     @Test

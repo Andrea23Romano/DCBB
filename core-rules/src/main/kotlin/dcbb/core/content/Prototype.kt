@@ -73,6 +73,7 @@ object Prototype {
         retain: Boolean = false,
         erase: Boolean = false,
         requiresParadox: Int = 0,
+        exception: String? = null,
     ) = CardDef(
         id = id,
         name = name,
@@ -87,6 +88,7 @@ object Prototype {
         retain = retain,
         eraseAfterPlay = erase,
         requiresParadox = requiresParadox,
+        budgetException = exception,
     )
 
     // ---- cards ------------------------------------------------------------------------------------------------
@@ -100,7 +102,8 @@ object Prototype {
             card("order.shield_of_the_line", "Shield of the Line", o, CardType.SKILL, Rarity.STARTER, "1", listOf(block(4, attuned(2)))),
             card(
                 "order.vow_of_the_sword", "Vow of the Sword", o, CardType.CONSTANT, Rarity.STARTER, "1F",
-                constant = ConstantSpec(ConstantKind.VOW, strikeDamage = 4, vow = VowRule.MAX_ONE_SKILL_PER_TURN),
+                constant = ConstantSpec(ConstantKind.VOW, strikeDamage = 2, vow = VowRule.MAX_ONE_SKILL_PER_TURN),
+                exception = "Simulation: the Vowknight outpaced the other operatives, and +4 widened the gap",
             ),
             card(
                 "order.remembered_blow", "Remembered Blow", o, CardType.ATTACK, Rarity.STARTER, "1F+1",
@@ -378,8 +381,8 @@ object Prototype {
     private fun enemies(): List<EnemyDef> = listOf(
         // Era natives
         EnemyDef(
-            "london.gaslight_footpad", "Gaslight Footpad", Faction.ERA, 20,
-            RotationAi(listOf(intent(attack(6)), intent(attack(3), debuff(StatusType.WEAK, 1)))),
+            "london.gaslight_footpad", "Gaslight Footpad", Faction.ERA, 24,
+            RotationAi(listOf(intent(attack(9)), intent(attack(4), debuff(StatusType.WEAK, 1)))),
         ),
         EnemyDef(
             "london.rookery_brawler", "Rookery Brawler", Faction.ERA, 28,
@@ -391,39 +394,39 @@ object Prototype {
         ),
         EnemyDef(
             "milan.condottiero", "Condottiero", Faction.ERA, 32,
-            RotationAi(listOf(intent(guard(6)), intent(attack(8)), intent(attack(16), countdown = 2))),
+            RotationAi(listOf(intent(guard(6)), intent(attack(10)), intent(attack(18), countdown = 2))),
         ),
         EnemyDef(
             "milan.plague_doctor", "Plague Doctor", Faction.ERA, 24,
-            RotationAi(listOf(intent(debuff(StatusType.BURN, 3)), intent(attack(5), debuff(StatusType.EXPOSED, 1)))),
+            RotationAi(listOf(intent(debuff(StatusType.BURN, 4)), intent(attack(6), debuff(StatusType.EXPOSED, 1)))),
         ),
         EnemyDef(
             "milan.crossbowman", "Sforza Crossbowman", Faction.ERA, 20,
-            RotationAi(listOf(intent(attack(14), countdown = 2), intent(attack(5)))),
+            RotationAi(listOf(intent(attack(16), countdown = 2), intent(attack(6)))),
         ),
         EnemyDef(
             "saltwaste.salt_wraith", "Salt Wraith", Faction.ERA, 22,
-            RotationAi(listOf(intent(EnemyAction.BlankFuture(1)), intent(attack(7)))),
+            RotationAi(listOf(intent(EnemyAction.BlankFuture(1), attack(5)), intent(attack(9)))),
         ),
         EnemyDef(
-            "saltwaste.sandglass_golem", "Sandglass Golem", Faction.ERA, 40,
-            RotationAi(listOf(intent(buff(StatusType.PLATE, 2)), intent(attack(10), countdown = 2))),
+            "saltwaste.sandglass_golem", "Sandglass Golem", Faction.ERA, 38,
+            RotationAi(listOf(intent(buff(StatusType.PLATE, 2), attack(4)), intent(attack(12), countdown = 2))),
         ),
         EnemyDef(
-            "saltwaste.mirage", "Mirage", Faction.ERA, 18,
-            RotationAi(listOf(forked(listOf(attack(9)), listOf(guard(9))))),
+            "saltwaste.mirage", "Mirage", Faction.ERA, 20,
+            RotationAi(listOf(forked(listOf(attack(12)), listOf(guard(8))))),
         ),
         // The Order
         EnemyDef(
             "order.squire", "Squire of the Line", Faction.ORDER, 24,
-            RotationAi(listOf(intent(attack(6)), intent(guard(5)))),
+            RotationAi(listOf(intent(attack(8)), intent(guard(6)))),
         ),
         EnemyDef(
             "order.sergeant", "Sergeant-at-Arms", Faction.ORDER, 34,
-            RotationAi(loop = listOf(intent(attack(8))), opening = listOf(intent(buff(StatusType.PLATE, 2)))),
+            RotationAi(loop = listOf(intent(attack(10))), opening = listOf(intent(buff(StatusType.PLATE, 2)))),
         ),
         EnemyDef(
-            "order.inquisitor", "Inquisitor", Faction.ORDER, 48,
+            "order.inquisitor", "Inquisitor", Faction.ORDER, 60,
             MultiSlotAi(
                 mapOf(
                     "strike" to listOf(intent(attack(7), name = "Strike")),
@@ -441,39 +444,42 @@ object Prototype {
             "conv.calculating_engine", "Calculating Engine", Faction.CONVERGENCE, 30,
             RotationAi(listOf(intent(debuff(StatusType.GLITCH, 2)), intent(attack(7)), intent(guard(7)))),
         ),
-        EnemyDef("conv.drone", "Drone", Faction.CONVERGENCE, 8, RotationAi(listOf(intent(attack(3))))),
+        EnemyDef("conv.drone", "Drone", Faction.CONVERGENCE, 10, RotationAi(listOf(intent(attack(5))))),
         EnemyDef(
-            "conv.pruner", "Pruner", Faction.CONVERGENCE, 52,
-            RotationAi(
-                listOf(
-                    intent(EnemyAction.Disrupt(1), EnemyAction.EraseFuture(1), name = "Prune"),
-                    intent(attack(12), countdown = 2),
+            "conv.pruner", "Pruner", Faction.CONVERGENCE, 56,
+            MultiSlotAi(
+                mapOf(
+                    "jab" to listOf(intent(attack(7))),
+                    "prune" to listOf(
+                        intent(EnemyAction.Disrupt(1), EnemyAction.EraseFuture(1), name = "Prune"),
+                        intent(attack(14), countdown = 2),
+                    ),
                 ),
             ),
             elite = true,
         ),
         // The Errata
         EnemyDef(
-            "errata.misprint", "Misprint", Faction.ERRATA, 21,
-            RotationAi(listOf(forked(listOf(attack(12)), listOf(debuff(StatusType.WEAK, 2))))),
+            "errata.misprint", "Misprint", Faction.ERRATA, 26,
+            RotationAi(listOf(forked(listOf(attack(14)), listOf(debuff(StatusType.WEAK, 2))))),
         ),
-        EnemyDef("errata.double", "Double", Faction.ERRATA, 24, DoubleAi(fallbackDamage = 6)),
+        EnemyDef("errata.double", "Double", Faction.ERRATA, 36, DoubleAi(fallbackDamage = 8)),
         // The Tear
         EnemyDef(
             "tear.loose_end", "Loose End", Faction.TEAR, 12,
-            RotationAi(listOf(intent(EnemyAction.BlankFuture(1)))),
+            RotationAi(listOf(intent(EnemyAction.BlankFuture(1), attack(4)))),
         ),
         EnemyDef(
-            "tear.ravel", "Ravel", Faction.TEAR, 30,
-            RotationAi(listOf(intent(EnemyAction.EraseFuture(1)), intent(attack(8)))),
+            "tear.ravel", "Ravel", Faction.TEAR, 34,
+            RotationAi(listOf(intent(EnemyAction.EraseFuture(1), attack(6)), intent(attack(14)))),
         ),
         EnemyDef(
-            "tear.the_rent", "The Rent", Faction.TEAR, 60,
+            "tear.the_rent", "The Rent", Faction.TEAR, 82,
             RotationAi(
                 listOf(
-                    intent(EnemyAction.SilenceConstants),
-                    intent(attack(14), countdown = 2),
-                    intent(EnemyAction.BlankFuture(2)),
+                    intent(EnemyAction.SilenceConstants, attack(6)),
+                    intent(attack(16), countdown = 2),
+                    intent(EnemyAction.BlankFuture(2), attack(8)),
                 ),
             ),
             elite = true,
@@ -490,8 +496,8 @@ object Prototype {
         Encounter("condottieri", "Condottieri", listOf("milan.condottiero", "milan.crossbowman")),
         Encounter("plague_season", "Plague Season", listOf("milan.plague_doctor", "milan.crossbowman")),
         Encounter("salt_mirage", "Salt Mirage", listOf("saltwaste.salt_wraith", "saltwaste.mirage")),
-        Encounter("glass_desert", "Glass Desert", listOf("saltwaste.sandglass_golem")),
-        Encounter("drone_swarm", "Drone Swarm", listOf("conv.drone", "conv.drone", "conv.drone")),
+        Encounter("glass_desert", "Glass Desert", listOf("saltwaste.sandglass_golem", "saltwaste.mirage")),
+        Encounter("drone_swarm", "Drone Swarm", listOf("conv.drone", "conv.drone", "conv.drone", "conv.drone")),
         Encounter("inquisitor", "The Inquisitor", listOf("order.inquisitor"), elite = true),
         Encounter("pruner", "The Pruner", listOf("conv.pruner", "conv.drone"), elite = true),
         Encounter("the_rent", "The Rent", listOf("tear.the_rent", "tear.loose_end"), elite = true),

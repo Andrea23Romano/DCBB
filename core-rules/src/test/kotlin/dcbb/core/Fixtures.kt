@@ -17,6 +17,9 @@ import kotlin.test.fail
 val content = Prototype.content
 val engine = Engine(content)
 
+/** Max HP of the Sandglass Golem, the tests' usual target, so tests survive enemy tuning. */
+val GOLEM = content.enemy("saltwaste.sandglass_golem").maxHp
+
 fun start(op: String, vararg enemies: String, seed: Long = 1, deck: List<String>? = null): CombatState =
     engine.start(CombatSetup(op, deck ?: content.deck(op, "starter"), enemies.toList(), seed)).state
 

@@ -30,7 +30,7 @@ You need **JDK 17 or newer**. The Gradle wrapper fetches everything else.
 cli/build/install/cli/bin/cli      # pick an operative, a deck and an encounter
 cli/build/install/cli/bin/cli --op splinter --deck mid --enc misprinted_alley --seed 7
 
-./gradlew :sim:run --args="--seeds 200 --out reports/sim-baseline.md"   # balance report
+./gradlew :sim:run --args="--seeds 200 --out reports/sim-latest.md"     # balance report
 ./gradlew :sim:run -q --args="--trace vowknight/mid/the_rent/2"         # one fight, blow by blow
 ```
 
@@ -41,4 +41,4 @@ In the text client, type `help` for commands. For example, `p 2 e1` plays card 2
 | [`core-rules`](core-rules/src/main/kotlin/dcbb/core) | The combat engine: a pure reducer `(state, action) → (state, events)` with seeded RNG streams. Also the content (every sample card in [docs/03](docs/03-factions-and-operatives.md), 21 enemies, 14 encounters), the [docs/08](docs/08-card-dsl.md) budget calculator and rules-text renderer, the bots, and the tests. |
 | [`cli`](cli/src/main/kotlin/dcbb/cli/Main.kt) | A text client for playing single fights. |
 | [`sim`](sim/src/main/kotlin/dcbb/sim/Main.kt) | The batch simulator that writes the balance report. |
-| [`reports`](reports/README.md) | The latest baseline and what it found. |
+| [`reports`](reports/README.md) | The latest balance report, the frozen first baseline, and what changed between them. |

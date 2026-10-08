@@ -58,13 +58,15 @@ class TrackTest {
         val scheduled = s.track.single { it.kind == TrackKind.SCHEDULED }
         assertEquals(2, scheduled.countdown)
 
-        s = s.ok(EndTurn).state // Attack 6 against 3 Block
-        assertEquals(65 - 3, s.player.hp)
-        val out = s.ok(EndTurn) // the Scheduled Block lands first, then Attack 3 + Weak 1
+        s = s.ok(EndTurn).state // Attack 9 against 3 Block
+        assertEquals(65 - 6, s.player.hp)
+        val out = s.ok(EndTurn) // the Scheduled Block lands first, then Attack 4 + Weak 1
         val blockAt = out.events.indexOfFirst { it is GameEvent.BlockGained }
         val hitAt = out.events.indexOfFirst { it is GameEvent.DamageToPlayer }
         assertTrue(blockAt in 0 until hitAt, "Scheduled Block must resolve before the attack")
-        assertEquals(0, out.events.filterIsInstance<GameEvent.DamageToPlayer>().single().amount)
+        val hit = out.events.filterIsInstance<GameEvent.DamageToPlayer>().single()
+        assertEquals(3, hit.blocked)
+        assertEquals(1, hit.amount)
     }
 
     @Test

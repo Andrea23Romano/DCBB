@@ -166,6 +166,8 @@ data class CardDef(
     val requiresParadox: Int = 0,
     val unplayable: Boolean = false,
     val flavor: String = "",
+    /** Why this card may sit outside the ±10% budget window (docs/08 "Budget Targets"). Reviewed in playtests. */
+    val budgetException: String? = null,
 ) {
     /** The default face (face A for Fork cards). */
     val baseFace: Face get() = forkFaces?.first() ?: Face(type, effects)

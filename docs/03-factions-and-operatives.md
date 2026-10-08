@@ -34,7 +34,7 @@ Lore for each faction is in [02](02-world-and-lore.md#the-factions). Rules for e
 ## How to Read the Card Tables
 
 - **Cost:** `1F+1` means one Faith pip plus one generic pip. F is Faith, C is Compute, X is Flux. Full rules in [04](04-combat.md#costs-and-paying).
-- **Pts:** the card's budget points against its target. Every sample card is within the ±10% window. The formula is in [08](08-card-dsl.md#primitives-and-point-costs).
+- **Pts:** the card's budget points against its target. Every sample card is within the ±10% window, except cards marked ⚑: reviewed exceptions, explained under their table. The formula is in [08](08-card-dsl.md#primitives-and-point-costs).
 - **Rarity:** St (starter), C (common), U (uncommon), R (rare), L (legendary).
 
 ---
@@ -60,8 +60,10 @@ Lore for each faction is in [02](02-world-and-lore.md#the-factions). Rules for e
 |---|---|---|---|---|---|---|
 | Line Strike | 4 | Attack | 1 | St | Deal 5. Attuned: +2. | 12 / 12 |
 | Shield of the Line | 4 | Skill | 1 | St | Gain 4 Block. Attuned: +2 Block. | 12 / 12 |
-| Vow of the Sword | 1 | Constant (Vow) | 1F | St | Vow: play at most 1 Skill per turn. While kept, your Strike deals +4. | 11.2 / 12 |
+| Vow of the Sword | 1 | Constant (Vow) | 1F | St | Vow: play at most 1 Skill per turn. While kept, your Strike deals +2. | 1.6 / 12 ⚑ |
 | Remembered Blow | 1 | Attack | 1F+1 | St | Deal 9. Remember 3 Attacks: +5. | 24 / 24 |
+
+⚑ **Budget exception.** *Vow of the Sword* is far below its budget on purpose. At +4 the Vowknight outpaced the other operatives in simulation, so it is held at +2 until a stronger simulation bot and playtests settle it ([reports](../reports/README.md)).
 
 ### Sample card pool
 
@@ -248,7 +250,7 @@ Hybrids are unlocked by **Defecting** ([06](06-meta-progression.md#unlocks)). Th
 
 ## Enemy Rosters
 
-Enemy stats are prototype starting points. Intents use the vocabulary in [04](04-combat.md#enemies-and-intents).
+Enemy stats are prototype values, tuned once by simulation so that a normal fight costs about 15–25% of your max HP and an elite 35–50% ([reports](../reports/README.md)). Intents use the vocabulary in [04](04-combat.md#enemies-and-intents).
 
 ### Era natives
 
@@ -256,15 +258,15 @@ Era natives can be anyone who lived in that era, on any side of its conflicts. I
 
 | Enemy | Era | HP | Intents (rotation) | Notes |
 |---|---|---|---|---|
-| Gaslight Footpad | London 1843 | 20 | Attack 6 ① → Attack 3 + Weak 1 ① | Often in pairs |
+| Gaslight Footpad | London 1843 | 24 | Attack 9 ① → Attack 4 + Weak 1 ① | Often in pairs |
 | Rookery Brawler | London 1843 | 28 | Attack 9 ① → **Charge** Attack 18 ② | Teaches Delay and Pressure |
 | Lamplighter | London 1843 | 22 | Attack 4 + Burn 2 ① | |
-| Condottiero | Milan 1495 | 32 | Guard 6 → Attack 8 → Charge Attack 16 ② | |
-| Plague Doctor | Milan 1495 | 24 | Burn 3 ① → Attack 5 + Exposed 1 ① | |
-| Sforza Crossbowman | Milan 1495 | 20 | Charge Attack 14 ② → Attack 5 ① | Kill it before it fires |
-| Salt Wraith | Salt Waste 1191 | 22 | Unpick: Blank the top card of your Future ① → Attack 7 ① | Tear-touched |
-| Sandglass Golem | Salt Waste 1191 | 40 | Plate 2 ① → Charge Attack 10 ② | |
-| Mirage | Salt Waste 1191 | 18 | Forked: Attack 9 / Guard 9 ① | Errata-touched |
+| Condottiero | Milan 1495 | 32 | Guard 6 → Attack 10 → Charge Attack 18 ② | |
+| Plague Doctor | Milan 1495 | 24 | Burn 4 ① → Attack 6 + Exposed 1 ① | |
+| Sforza Crossbowman | Milan 1495 | 20 | Charge Attack 16 ② → Attack 6 ① | Kill it before it fires |
+| Salt Wraith | Salt Waste 1191 | 22 | Unpick: Blank the top card of your Future + Attack 5 ① → Attack 9 ① | Tear-touched |
+| Sandglass Golem | Salt Waste 1191 | 38 | Plate 2 + Attack 4 ① → Charge Attack 12 ② | Rarely alone |
+| Mirage | Salt Waste 1191 | 20 | Forked: Attack 12 / Guard 8 ① | Errata-touched |
 
 ### Faction squads
 
@@ -272,20 +274,20 @@ Squads appear in any era, with era skins: a Brass Proxy is clockwork in 1495 and
 
 | Enemy | Faction | HP | Behavior |
 |---|---|---|---|
-| Squire of the Line | Order | 24 | Attack 6 ① ↔ Guard 5 ① |
-| Sergeant-at-Arms | Order | 34 | Plate 2 (first turn) → Attack 8 ① |
+| Squire of the Line | Order | 24 | Attack 8 ① ↔ Guard 6 ① |
+| Sergeant-at-Arms | Order | 34 | Plate 2 (first turn) → Attack 10 ① |
 | Penitent | Order | 26 | Martyr: gains Might 1 when it loses HP · Attack 5 ×2 ① |
-| **Inquisitor** (elite) | Order | 48 | Strike 7 ① every round + **Purge 30 ③ (Fixed)**, which recharges |
+| **Inquisitor** (elite) | Order | 60 | Strike 7 ① every round + **Purge 30 ③ (Fixed)**, which recharges |
 | Brass Proxy | Convergence | 26 | **Predictive**: more Attacks than Skills in your Present → Guard 8 + Attack 6; otherwise Attack 10 |
 | Calculating Engine | Convergence | 30 | Glitch 2 ① → Attack 7 ① → Guard 7 ① |
-| Drone Swarm | Convergence | 3 × 8 | Each drone: Attack 3 ① |
-| **Pruner** (elite) | Convergence | 52 | **Disrupt** (Delay your Scheduled items 1) · **Prune** (Erase the top card of your Future) · Charge Attack 12 ② |
-| Misprint | Errata | 21 | **Forked**: Attack 12 / Weak 2 ① |
-| Double | Errata | 24 | Copies the last card you played as its intent (damage → Attack, Block → Guard) |
+| Drone Swarm | Convergence | 4 × 10 | Each drone: Attack 5 ① |
+| **Pruner** (elite) | Convergence | 56 | A jab, Attack 7 ①, every round · **Prune** ①: **Disrupt** (Delay your Scheduled items 1) and Erase the top card of your Future → Charge Attack 14 ② |
+| Misprint | Errata | 26 | **Forked**: Attack 14 / Weak 2 ① |
+| Double | Errata | 36 | Copies the last card you played as its intent (damage → Attack, Block → Guard; Attack 8 if there is nothing to copy) |
 | **Seam-runner** (elite) | Errata | 44 | Untargetable every other round ("in the Margins") · Forked: Attack 15 / Steal a card from your Present (returned on death) |
-| Loose End | Tear | 12 | Unpick: Blank the top card of your Future ① |
-| Ravel | Tear | 30 | Unpick: Erase the top card of your Future ① → Attack 8 ① |
-| **The Rent** (elite) | Tear | 60 | Snip: your Constants don't trigger next turn · Charge Attack 14 ② · Unpick: Blank the top 2 cards of your Future |
+| Loose End | Tear | 12 | Unpick: Blank the top card of your Future + Attack 4 ① |
+| Ravel | Tear | 34 | Unpick: Erase the top card of your Future + Attack 6 ① → Attack 14 ① |
+| **The Rent** (elite) | Tear | 82 | Snip (your Constants don't trigger next turn) + Attack 6 ① → Charge Attack 16 ② → Unpick: Blank the top 2 cards of your Future + Attack 8 ① |
 | Echo of You | (yours) | 60% of your max HP | Plays your deck (from a Rewind or from the Archive). Cards are mapped to intents deterministically: Attacks → Attack, Skills → Guard or Buff, Constants → passives. |
 
 ### Bosses

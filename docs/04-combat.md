@@ -123,6 +123,7 @@ A card with **Attuned** gets its bonus if its **entire cost** was paid with its 
   - During your turn you may spend up to **2 energy you don't have**. It must be a color in your income.
   - That amount becomes **Debt** and is subtracted from that color's income at your next Dawn.
   - Debt never exceeds 2.
+  - Debt you still owe when a combat ends carries into your next combat and is repaid at its first Dawn. Borrowing to finish a fight is still often right, but it isn't free.
 - **Rationale.** DC caps carryover at 8. We start lower (6) because Borrow adds flexibility in the other direction. Together they make energy a resource you move through time: save it, or take it from tomorrow.
 
 > **Progressive disclosure:** the Reservoir is active from the first fight. The Borrow button unlocks on your third run, with a one-screen tutorial.
@@ -211,7 +212,7 @@ Enemy behavior is how the faction triangle shows up in combat.
 | **The Tear** | Unpick: Blank or Erase the top of your Future; Snip your Constants | Big decks, Recall, killing them fast |
 | **Era natives** | Straightforward attackers, like bandits, constables or plague-doctors | Anything |
 
-- **Forked intents.** These show both outcomes, for example *A: Attack 12 / B: Weak 2*. Each has a 50% chance unless the intent says otherwise. The outcome is rolled when the intent resolves. Some cards **Observe**, which collapses a Forked intent to its rolled outcome early.
+- **Forked intents.** These show both outcomes, for example *A: Attack 14 / B: Weak 2*. Each has a 50% chance unless the intent says otherwise. The outcome is rolled when the intent resolves. Some cards **Observe**, which collapses a Forked intent to its rolled outcome early.
 - **Predictive intents.** At Dawn, after you draw, a Predictive enemy reads your Present and picks its intent. For example: *"If your Present holds more Attacks than Skills: Guard 8 and Attack 6. Otherwise: Attack 10."*
 
 ---
@@ -269,7 +270,7 @@ The glossary is capped at **25 keywords** at launch. Long-pressing any keyword o
 | State | Meaning |
 |---|---|
 | **Known** | Seen via Foresee. Cleared on reshuffle. |
-| **Blank** | Its thread cut by the Tear. Can't be played. Restored after combat. |
+| **Blank** | Its thread cut by the Tear. Can't be played. Restored when your Past is reshuffled into your Future (the thread re-knits), and after combat. |
 | **Misprinted** | Showing a temporary alternate face for this combat. |
 
 ### Card types
@@ -313,21 +314,21 @@ The Phase 1 prototype had to settle these. The engine and its tests follow this 
 
 **Situation.** The Vowknight is at 58/75 HP in round 3.
 
-- **Constants:** *Vow of the Sword*. While kept, Strike deals +4. It breaks if you play a second Skill in a turn.
+- **Constants:** *Vow of the Sword*. While kept, Strike deals +2. It breaks if you play a second Skill in a turn.
 - **Energy at Dawn:** income 2F + 1N, plus 1F in the Reservoir, for **3F + 1N** available.
 - **Present:** Line Strike, Line Strike, Remembered Blow, Litany of Steel, Shield of the Line.
 - **Past:** 6 cards, including 3 Attacks.
 - **Enemies:**
   - **Brass Proxy** (Convergence, 26 HP, Predictive). At Dawn it saw 3 Attacks against 2 Skills, so its intent is **Guard 8 + Attack 6** ①.
-  - **Misprint** (Errata, 21 HP). Its Forked intent is **A: Attack 12 / B: Weak 2** ①.
+  - **Misprint** (Errata, 26 HP). Its Forked intent is **A: Attack 14 / B: Weak 2** ①.
 
 | # | Action | Paid with | Result |
 |---|---|---|---|
-| 1 | **Strike** on Misprint | free | 4 + 4 (Vow) = 8 → Misprint 13 |
-| 2 | **Remembered Blow** on Misprint | 1F + 1N | 9, +5 for Remember 3 Attacks = 14 → Misprint dies, and its Forked intent leaves the Track |
-| 3 | **Line Strike** on Brass Proxy | 1F (Attuned) | 5 + 2 = 7 → Proxy 19. Its Guard hasn't resolved yet, so hitting it *now* is efficient. |
+| 1 | **Strike** on Misprint | free | 4 + 2 (Vow) = 6 → Misprint 20 |
+| 2 | **Remembered Blow** on Misprint | 1F + 1N | 9, +5 for Remember 3 Attacks = 14 → Misprint 6 |
+| 3 | **Line Strike** on Misprint | 1F (Attuned) | 5 + 2 = 7 → Misprint dies, and its Forked intent leaves the Track |
 | 4 | **Litany of Steel** | 1F | Gain 4 Block. Litany triggers (previous card was an Attack): draw 1, which is *Hold the Hour*. That is 1 Skill played this turn. |
-| 5 | Out of energy. Shield or Hold the Hour would be a 2nd Skill and break the Vow (Penance 4 HP). **Borrow 1F** and play the other **Line Strike** instead. | 1F borrowed (Attuned) | 7 → Proxy 12. Debt 1. |
+| 5 | Out of energy. Shield or Hold the Hour would be a 2nd Skill and break the Vow (Penance 4 HP). **Borrow 1F** and play the other **Line Strike** on the Brass Proxy instead. Its Guard hasn't resolved yet, so hitting it *now* is efficient. | 1F borrowed (Attuned) | 7 → Proxy 19. Debt 1. |
 | 6 | **Dusk** | n/a | Shield of the Line and Hold the Hour are discarded. The Reservoir is empty. |
 | 7 | **Enemy phase** | n/a | Proxy's intent ticks ① → 0: it gains 8 Block and attacks for 6. Your 4 Block absorbs 4 and you take 2 → 56 HP. |
 | 8 | **Next Dawn** | n/a | Debt 1 is repaid from Faith income, so you have only 1F + 1N. The Proxy now has 8 Block, and it sets a new intent after reading your new hand. |
@@ -341,7 +342,7 @@ The Phase 1 prototype had to settle these. The engine and its tests follow this 
 
 ### Example B: the Track, Delay, Pressure and Fixed
 
-The **Oracle** fights an **Inquisitor** (Order elite, 48 HP). The Inquisitor has two intents:
+The **Oracle** fights an **Inquisitor** (Order elite, 60 HP). The Inquisitor has two intents:
 
 - **Strike 7** ①, which repeats every round
 - **Purge 30** ③, **Fixed**
@@ -368,7 +369,7 @@ The layout is portrait, and everything can be played one-handed with the thumb.
 ```
 ┌───────────────────────────────────┐
 │  [Enemy A]          [Enemy B]     │  portraits · HP · Block · statuses
-│  ⚔ 9 ①  (P1)        ⑂ ⚔12 / Weak ①│  intent icon + countdown clock + Pressure
+│  ⚔ 9 ①  (P1)        ⑂ ⚔14 / Weak ①│  intent icon + countdown clock + Pressure
 ├───────────────────────────────────┤
 │ TRACK  ①│⚔9 ⑂ +3🛡 ②│      ③│⚔30🔒  │  shared timeline strip (tap to expand)
 ├───────────────────────────────────┤

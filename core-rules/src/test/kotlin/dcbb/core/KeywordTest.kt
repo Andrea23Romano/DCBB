@@ -22,7 +22,7 @@ class KeywordTest {
     fun `Vow and Relic buff the Strike`() {
         val s = start("vowknight", "saltwaste.sandglass_golem").withConstants("order.vow_of_the_sword", "order.gnomon_blade")
         val out = s.ok(UseSignature())
-        assertEquals(40 - 11, out.state.enemies[0].hp, "4 + 4 (Vow) + 3 (Gnomon Blade)")
+        assertEquals(GOLEM - 9, out.state.enemies[0].hp, "4 + 2 (Vow) + 3 (Gnomon Blade)")
         assertEquals(2, out.state.player.block)
     }
 
@@ -39,7 +39,7 @@ class KeywordTest {
         assertEquals(75 - 4, out.state.player.hp)
         assertTrue(out.state.player.constants.isEmpty())
         assertEquals("order.vow_of_the_sword", out.state.player.erased.single().defId)
-        assertEquals(40 - 4, out.state.ok(UseSignature()).state.enemies[0].hp, "Strike is back to 4")
+        assertEquals(GOLEM - 4, out.state.ok(UseSignature()).state.enemies[0].hp, "Strike is back to 4")
     }
 
     @Test
@@ -77,9 +77,9 @@ class KeywordTest {
     fun `Remember counts the right kind of card in the Past`() {
         val base = start("vowknight", "saltwaste.sandglass_golem").withPresent("order.remembered_blow").withEnergy(FAITH to 2)
         val three = base.withPast("order.line_strike", "order.line_strike", "order.line_strike", "order.shield_of_the_line")
-        assertEquals(40 - 14, three.ok(PlayCard(three.player.present[0].uid)).state.enemies[0].hp)
+        assertEquals(GOLEM - 14, three.ok(PlayCard(three.player.present[0].uid)).state.enemies[0].hp)
         val two = base.withPast("order.line_strike", "order.line_strike", "order.shield_of_the_line", "order.shield_of_the_line")
-        assertEquals(40 - 9, two.ok(PlayCard(two.player.present[0].uid)).state.enemies[0].hp)
+        assertEquals(GOLEM - 9, two.ok(PlayCard(two.player.present[0].uid)).state.enemies[0].hp)
     }
 
     @Test
@@ -91,18 +91,18 @@ class KeywordTest {
         val shield = s.present("order.shield_of_the_line").uid
         val charge = s.present("order.crusaders_charge").uid
         val afterAttack = s.ok(PlayCard(strike, pay = dcbb.core.engine.PayStyle.NEUTRAL_FIRST)).state.ok(PlayCard(charge)).state
-        assertEquals(40 - 5 - 14, afterAttack.enemies[0].hp)
+        assertEquals(GOLEM - 5 - 14, afterAttack.enemies[0].hp)
         val afterSkill = s.ok(PlayCard(shield, pay = dcbb.core.engine.PayStyle.NEUTRAL_FIRST)).state.ok(PlayCard(charge)).state
-        assertEquals(40 - 10, afterSkill.enemies[0].hp)
+        assertEquals(GOLEM - 10, afterSkill.enemies[0].hp)
     }
 
     @Test
     fun `Calculated rewards Known cards`() {
         val s = start("oracle", "saltwaste.sandglass_golem").withPresent("conv.probability_lance").withEnergy(COMPUTE to 1)
         val lance = s.player.present[0]
-        assertEquals(40 - 4, s.ok(PlayCard(lance.uid)).state.enemies[0].hp)
+        assertEquals(GOLEM - 4, s.ok(PlayCard(lance.uid)).state.enemies[0].hp)
         val known = s.copy(player = s.player.copy(present = listOf(lance.copy(known = true))))
-        assertEquals(40 - 8, known.ok(PlayCard(lance.uid)).state.enemies[0].hp)
+        assertEquals(GOLEM - 8, known.ok(PlayCard(lance.uid)).state.enemies[0].hp)
     }
 
     @Test
@@ -110,11 +110,11 @@ class KeywordTest {
         var s = start("oracle", "saltwaste.sandglass_golem").withPresent("conv.recursive_strike").withEnergy(NEUTRAL to 3)
         val card = s.player.present[0]
         s = s.ok(PlayCard(card.uid)).state
-        assertEquals(40 - 3, s.enemies[0].hp)
+        assertEquals(GOLEM - 3, s.enemies[0].hp)
         val again = s.player.past.single { it.uid == card.uid }
         assertEquals(1, again.iterations)
         s = s.copy(player = s.player.copy(present = listOf(again), past = emptyList()))
-        assertEquals(40 - 3 - 5, s.ok(PlayCard(card.uid)).state.enemies[0].hp)
+        assertEquals(GOLEM - 3 - 5, s.ok(PlayCard(card.uid)).state.enemies[0].hp)
     }
 
     @Test
@@ -159,6 +159,26 @@ class KeywordTest {
         assertTrue(s.player.present.any { it.uid == blow } && s.player.present.any { it.uid == strike }, "Remember 5: Recall 2")
         val kept = s.ok(EndTurn).state.player.present.count { it.defId == "order.recite_the_canon" }
         assertEquals(1, kept, "the unplayed Recite the Canon has Retain")
+    }
+
+    @Test
+    fun `reshuffling the Past restores Blank cards`() {
+        var s = start("oracle", "saltwaste.sandglass_golem")
+        s = s.copy(player = s.player.copy(future = emptyList(), past = s.player.future.map { it.copy(blank = true) }))
+        val out = s.ok(EndTurn)
+        assertTrue(out.events.any { "restored" in it.text })
+        assertTrue(out.state.player.present.none { it.blank })
+    }
+
+    @Test
+    fun `Debt carried in from the last combat is repaid at the first Dawn`() {
+        val setup = dcbb.core.engine.CombatSetup(
+            "vowknight", content.deck("vowknight", "starter"), listOf("saltwaste.sandglass_golem"), seed = 3,
+            debt = mapOf(FAITH to 2),
+        )
+        val s = engine.start(setup).state
+        assertEquals(mapOf(NEUTRAL to 1), s.player.energy)
+        assertTrue(s.player.debt.isEmpty())
     }
 
     @Test

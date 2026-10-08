@@ -38,7 +38,7 @@ class ErrataTest {
         assertTrue(s.player.otherHand.any { it.uid == guard })
         assertTrue(s.player.shiftedThisTurn)
         val out = s.ok(PlayCard(s.present("errata.caret_strike").uid)).state
-        assertEquals(40 - 7, out.enemies[0].hp, "Deal 4, +3 after a Shift")
+        assertEquals(GOLEM - 7, out.enemies[0].hp, "Deal 4, +3 after a Shift")
     }
 
     @Test
@@ -59,7 +59,7 @@ class ErrataTest {
     fun `Fork cards let you choose a face`() {
         val s = start("splinter", "saltwaste.sandglass_golem").withPresent("errata.two_places_at_once").withEnergy(FLUX to 1)
         val card = s.player.present[0].uid
-        assertEquals(40 - 5, s.ok(PlayCard(card, face = 0)).state.enemies[0].hp)
+        assertEquals(GOLEM - 5, s.ok(PlayCard(card, face = 0)).state.enemies[0].hp)
         assertEquals(4, s.ok(PlayCard(card, face = 1)).state.player.block)
         s.rejects(PlayCard(card, face = 2))
     }

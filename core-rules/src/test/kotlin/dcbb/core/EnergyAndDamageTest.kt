@@ -27,11 +27,11 @@ class EnergyAndDamageTest {
         val card = s.present("order.line_strike").uid
 
         val attuned = s.ok(PlayCard(card)).state
-        assertEquals(40 - 7, attuned.enemies[0].hp)
+        assertEquals(GOLEM - 7, attuned.enemies[0].hp)
         assertEquals(mapOf(NEUTRAL to 1), attuned.player.energy)
 
         val plain = s.ok(PlayCard(card, pay = PayStyle.NEUTRAL_FIRST)).state
-        assertEquals(40 - 5, plain.enemies[0].hp)
+        assertEquals(GOLEM - 5, plain.enemies[0].hp)
         assertEquals(mapOf(FAITH to 1), plain.player.energy)
     }
 
@@ -52,7 +52,7 @@ class EnergyAndDamageTest {
         s = s.ok(PlayCard(a, allowBorrow = true)).state
         s = s.ok(PlayCard(b, allowBorrow = true)).state
         assertEquals(mapOf(FAITH to 2), s.player.debt)
-        assertEquals(40 - 14, s.enemies[0].hp, "borrowed Faith still counts as Attuned")
+        assertEquals(GOLEM - 14, s.enemies[0].hp, "borrowed Faith still counts as Attuned")
         s.rejects(PlayCard(c, allowBorrow = true))
 
         s = s.ok(EndTurn).state
@@ -101,9 +101,9 @@ class EnergyAndDamageTest {
         val s = start("vowknight", "saltwaste.sandglass_golem").withPresent("order.line_strike").withEnergy(FAITH to 1)
         val golem = s.enemies[0]
         val exposed = s.copy(enemies = listOf(golem.copy(statuses = mapOf(StatusType.EXPOSED to 1))))
-        assertEquals(40 - 10, exposed.ok(PlayCard(s.player.present[0].uid)).state.enemies[0].hp, "7 x 1.5 = 10.5")
+        assertEquals(GOLEM - 10, exposed.ok(PlayCard(s.player.present[0].uid)).state.enemies[0].hp, "7 x 1.5 = 10.5")
         val weak = s.copy(player = s.player.copy(statuses = mapOf(StatusType.WEAK to 1)))
-        assertEquals(40 - 5, weak.ok(PlayCard(s.player.present[0].uid)).state.enemies[0].hp, "7 x 0.75 = 5.25")
+        assertEquals(GOLEM - 5, weak.ok(PlayCard(s.player.present[0].uid)).state.enemies[0].hp, "7 x 0.75 = 5.25")
     }
 
     @Test
@@ -112,10 +112,10 @@ class EnergyAndDamageTest {
         s = s.copy(player = s.player.copy(statuses = mapOf(StatusType.PLATE to 2)))
         val out = s.ok(EndTurn)
         val hit = out.events.filterIsInstance<GameEvent.DamageToPlayer>().single()
-        assertEquals(4, hit.amount)
+        assertEquals(7, hit.amount, "the Footpad's Attack 9 against 2 Block from Plate")
         assertEquals(2, hit.blocked)
         assertEquals(1, out.state.player.status(StatusType.PLATE))
-        assertEquals(75 - 4, out.state.player.hp)
+        assertEquals(75 - 7, out.state.player.hp)
     }
 
     @Test
@@ -123,7 +123,7 @@ class EnergyAndDamageTest {
         var s = start("vowknight", "saltwaste.sandglass_golem")
         s = s.copy(player = s.player.copy(statuses = mapOf(StatusType.BURN to 3)))
         val out = s.ok(EndTurn)
-        assertEquals(75 - 3, out.state.player.hp)
+        assertEquals(3, out.events.filterIsInstance<GameEvent.HpLost>().single { it.reason == "Burn" }.amount)
         assertEquals(2, out.state.player.status(StatusType.BURN))
     }
 
@@ -131,7 +131,7 @@ class EnergyAndDamageTest {
     fun `Strike deals 4 and auto-targets a lone enemy`() {
         val s = start("vowknight", "saltwaste.sandglass_golem")
         val out = s.ok(UseSignature())
-        assertEquals(40 - 4, out.state.enemies[0].hp)
+        assertEquals(GOLEM - 4, out.state.enemies[0].hp)
         s.ok(UseSignature()).state.rejects(UseSignature())
     }
 }
