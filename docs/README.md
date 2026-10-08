@@ -1,6 +1,6 @@
 # Anachronist: Design Documents
 
-> **Status:** Phase 0, design. No code yet. Implementation follows the [roadmap](10-roadmap.md).
+> **Status:** Phase 1, combat prototype ([status](10-roadmap.md#phase-1-status)). The rules engine, a text client and the balance simulator are in the repository; everything else is design. Implementation follows the [roadmap](10-roadmap.md).
 > **Working title:** *Anachronist*. **Codename:** DCBB ("Dawncaster, but better").
 
 **Anachronist** is a roguelike deckbuilder for Android about a war over history.
@@ -140,7 +140,7 @@
 | **Subroutine** | Keyword (Constant): an effect that runs every turn | [04](04-combat.md#keywords) |
 | **Tear** | The antagonist force: a rip in the Weave where every cut-away history ends up, and it wants back in | [02](02-world-and-lore.md#the-tear) |
 | **Track** | The shared timeline of enemy intents and your Scheduled effects | [04](04-combat.md#the-track) |
-| **Unpick** | The Tear's intent: Blank a card or Erase the top of your Future | [04](04-combat.md#intent-types) |
+| **Unpick** | The Tear's intent: Blank or Erase the top card of your Future | [04](04-combat.md#intent-types) |
 | **Unravel** | What happens at 10 Paradox: the Weave tears open around you | [05](05-run-structure.md#unravel) |
 | **Unwoven** | The Tear's creatures: figures of snapped thread and absence | [02](02-world-and-lore.md#the-tear) |
 | **VariantPlan** | The JSON plan the LLM writes for a Branch Variant | [08](08-card-dsl.md#variantplan-schema) |

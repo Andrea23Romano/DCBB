@@ -16,6 +16,16 @@
 | **5: Meta and content** | Make it a game you keep playing | Chronoscape, Archive and Echoes, Variant Pool, Entropy, Fixed Points, Codex, the Movement I hub story; content grown toward launch targets; closed beta | Retention and difficulty curves are healthy in the beta. Crash-free sessions ≥ 99.5%. |
 | **6: Launch and beyond** | Ship 1.0 | Launch content; then expansions (missions, operatives, hybrids, Movements II and III) | n/a |
 
+### Phase 1 status
+
+Phase 1 started in October 2026, alongside the art style work. The repository now holds:
+
+- **`core-rules`:** the combat rules engine, a pure reducer with seeded RNG streams. It carries every sample card from [03](03-factions-and-operatives.md) (51 cards), 21 enemies in 14 encounters, the [08](08-card-dsl.md) budget calculator and rules-text renderer, two bots, and the test suite.
+- **`cli`:** a playable text client.
+- **`sim`:** the batch simulator. Its first baseline is [reports/sim-baseline.md](../reports/sim-baseline.md).
+
+The baseline already trips one exit check: Tear enemies that only Blank can soft-lock a fight. That finding and the tuning proposals are in [reports/README.md](../reports/README.md#baseline-findings).
+
 ## MVP Content
 
 This is the Phase 2 vertical slice, reused by Phases 3–4.

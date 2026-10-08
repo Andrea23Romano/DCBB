@@ -267,15 +267,19 @@ flowchart LR
 - AI packs are integrity-checked. Prompts are built only from game state and curated lore; there is no free-text input.
 - Anti-cheat isn't a priority for a single-player game. Future leaderboards would use server-side replay verification.
 
-## Repository Layout (planned)
+## Repository Layout
+
+Phase 1 created `core-rules`, `cli`, `sim` and `reports`. The rest is planned.
 
 ```
 /app            Android app (Jetpack Compose UI)
 /core-rules     Pure Kotlin rules engine (KMP-ready)
+/cli            Text client for the combat prototype (Phase 1)
 /content        Card/enemy/event data, schemas, validator CLI
 /genai          LLM abstraction, context builder, validators, queue, cache
 /llm-service    Bound service hosting the inference runtime (separate process)
 /sim            Headless simulator + bots (JVM)
+/reports        Generated simulation reports, committed so changes can be diffed
 /ml             Python: data generation, LoRA training, conversion, eval (dev only)
 /art            Art bible, prompts, golden set, masters, provenance (binaries in Git LFS; see 12)
 /docs           These documents

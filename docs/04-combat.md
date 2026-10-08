@@ -197,7 +197,7 @@ Elites and bosses may hold two intents on the Track at once, for example a jab e
 | Summon | portal | Reinforcement arrives through the Weave |
 | Charge | hourglass | A multi-round windup (countdown ②+) |
 | Disrupt | crossed clock | Delay your Scheduled effects |
-| Unpick | torn edge | Tear effects: Blank a card, Erase the top of your Future |
+| Unpick | torn edge | Tear effects on what you are about to draw: Blank or Erase the top card of your Future |
 
 ### Faction behavior
 
@@ -208,7 +208,7 @@ Enemy behavior is how the faction triangle shows up in combat.
 | **The Order** | **Fixed** charging hits, Plate, slow and heavy | Precise planning (Convergence: Foresee and Scheduled timing) |
 | **The Convergence** | **Predictive** intents set at Dawn by reading your Present, plus Disrupt | Changing your hand after they read it (Errata: Shift and Fork) |
 | **The Errata** | **Forked** intents with two possible outcomes, plus Doubles that copy your last card | Steady defense that covers both outcomes (Order: Block, Plate, Vows) |
-| **The Tear** | Unpick: Blank cards, Erase your Future, snip Constants | Big decks, Recall, killing them fast |
+| **The Tear** | Unpick: Blank or Erase the top of your Future; Snip your Constants | Big decks, Recall, killing them fast |
 | **Era natives** | Straightforward attackers, like bandits, constables or plague-doctors | Anything |
 
 - **Forked intents.** These show both outcomes, for example *A: Attack 12 / B: Weak 2*. Each has a 50% chance unless the intent says otherwise. The outcome is rolled when the intent resolves. Some cards **Observe**, which collapses a Forked intent to its rolled outcome early.
@@ -246,7 +246,7 @@ The glossary is capped at **25 keywords** at launch. Long-pressing any keyword o
 | **Shift N** | Errata | Swap N cards between your Present and your Other Hand. With no Other Hand, swap with the top card of your Future. |
 | **Paradox** | Errata | Gain or spend Paradox, the run-wide meter ([05](05-run-structure.md#paradox)). At 10 the timeline **Unravels**. |
 | **Misprint** | Errata | When drawn, this card becomes one of its printed alternate faces at random (long-press to see all of them). |
-| **Bleed-through N** | Errata | Add N random cards from another faction's pool to your Present. They cost 1 less this turn and are Erased after play. |
+| **Bleed-through N** | Errata | Add N random cards from another faction's pool to your Present. They cost 1 less this turn, any energy pays their colored pips, and they are Erased after play. |
 
 **Rules terms that are not keywords:** Pressure, Known, Constant, Penance, Program, Predictive, Forked intent, Observe, Unravel. Each is defined in this document or in [05](05-run-structure.md). All of them are listed in the [glossary](README.md#glossary).
 
@@ -290,6 +290,20 @@ The glossary is capped at **25 keywords** at launch. Long-pressing any keyword o
 5. Multiply by 1.5 if the target is **Exposed**.
 6. Round down.
 7. **Block** absorbs the damage first, and the rest is lost as HP.
+
+---
+
+## Edge Cases
+
+The Phase 1 prototype had to settle these. The engine and its tests follow this table.
+
+| Situation | Rule |
+|---|---|
+| An effect has no legal target, such as a Delay when only Fixed intents are on the Track | You can still play the card, and that effect does nothing. When there are several legal targets, you choose. |
+| Paradox reaches 10 in the middle of a card | Unravel resolves at once, then the rest of the card resolves. Paradox never goes above 10. |
+| Glitch and cost changes | Glitch adds a generic pip. A cost reduction removes generic pips first, then colored ones. |
+| The Double copies your last card | It copies the printed damage (or Block), before Attuned and other bonuses. |
+| Choices while a card resolves | Targets, Recall picks and Shift pairs are chosen when you play the card. Foresee is the only choice that pauses a card. |
 
 ---
 

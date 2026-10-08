@@ -262,7 +262,7 @@ Era natives can be anyone who lived in that era, on any side of its conflicts. I
 | Condottiero | Milan 1495 | 32 | Guard 6 → Attack 8 → Charge Attack 16 ② | |
 | Plague Doctor | Milan 1495 | 24 | Burn 3 ① → Attack 5 + Exposed 1 ① | |
 | Sforza Crossbowman | Milan 1495 | 20 | Charge Attack 14 ② → Attack 5 ① | Kill it before it fires |
-| Salt Wraith | Salt Waste 1191 | 22 | Unpick: Blank a card ① → Attack 7 ① | Tear-touched |
+| Salt Wraith | Salt Waste 1191 | 22 | Unpick: Blank the top card of your Future ① → Attack 7 ① | Tear-touched |
 | Sandglass Golem | Salt Waste 1191 | 40 | Plate 2 ① → Charge Attack 10 ② | |
 | Mirage | Salt Waste 1191 | 18 | Forked: Attack 9 / Guard 9 ① | Errata-touched |
 
@@ -283,9 +283,9 @@ Squads appear in any era, with era skins: a Brass Proxy is clockwork in 1495 and
 | Misprint | Errata | 21 | **Forked**: Attack 12 / Weak 2 ① |
 | Double | Errata | 24 | Copies the last card you played as its intent (damage → Attack, Block → Guard) |
 | **Seam-runner** (elite) | Errata | 44 | Untargetable every other round ("in the Margins") · Forked: Attack 15 / Steal a card from your Present (returned on death) |
-| Loose End | Tear | 12 | Unpick: Blank a card in your Present ① |
+| Loose End | Tear | 12 | Unpick: Blank the top card of your Future ① |
 | Ravel | Tear | 30 | Unpick: Erase the top card of your Future ① → Attack 8 ① |
-| **The Rent** (elite) | Tear | 60 | Snip: your Constants don't trigger next turn · Charge Attack 14 ② · Blank 2 |
+| **The Rent** (elite) | Tear | 60 | Snip: your Constants don't trigger next turn · Charge Attack 14 ② · Unpick: Blank the top 2 cards of your Future |
 | Echo of You | (yours) | 60% of your max HP | Plays your deck (from a Rewind or from the Archive). Cards are mapped to intents deterministically: Attacks → Attack, Skills → Guard or Buff, Constants → passives. |
 
 ### Bosses
