@@ -34,7 +34,7 @@ Lore for each faction is in [02](02-world-and-lore.md#the-factions). Rules for e
 ## How to Read the Card Tables
 
 - **Cost:** `1F+1` means one Faith pip plus one generic pip. F is Faith, C is Compute, X is Flux. Full rules in [04](04-combat.md#costs-and-paying).
-- **Pts:** the card's budget points against its target. Every sample card is within the ±10% window, except cards marked ⚑: reviewed exceptions, explained under their table. The formula is in [08](08-card-dsl.md#primitives-and-point-costs).
+- **Pts:** the card's budget points against its target. Every sample card is within the ±10% window. The formula is in [08](08-card-dsl.md#primitives-and-point-costs).
 - **Rarity:** St (starter), C (common), U (uncommon), R (rare), L (legendary).
 
 ---
@@ -60,10 +60,8 @@ Lore for each faction is in [02](02-world-and-lore.md#the-factions). Rules for e
 |---|---|---|---|---|---|---|
 | Line Strike | 4 | Attack | 1 | St | Deal 5. Attuned: +2. | 12 / 12 |
 | Shield of the Line | 4 | Skill | 1 | St | Gain 4 Block. Attuned: +2 Block. | 12 / 12 |
-| Vow of the Sword | 1 | Constant (Vow) | 1F | St | Vow: play at most 1 Skill per turn. While kept, your Strike deals +2. | 1.6 / 12 ⚑ |
+| Vow of the Sword | 1 | Constant (Vow) | 1F | St | Vow: play at most 1 Skill per turn. While kept, your Strike deals +4. | 11.2 / 12 |
 | Remembered Blow | 1 | Attack | 1F+1 | St | Deal 9. Remember 3 Attacks: +5. | 24 / 24 |
-
-⚑ **Budget exception.** *Vow of the Sword* is far below its budget on purpose. At +4 the Vowknight outpaced the other operatives in simulation, so it is held at +2 until a stronger simulation bot and playtests settle it ([reports](../reports/README.md)).
 
 ### Sample card pool
 
@@ -287,7 +285,7 @@ Squads appear in any era, with era skins: a Brass Proxy is clockwork in 1495 and
 | **Seam-runner** (elite) | Errata | 44 | Untargetable every other round ("in the Margins") · Forked: Attack 15 / Steal a card from your Present (returned on death) |
 | Loose End | Tear | 12 | Unpick: Blank the top card of your Future + Attack 4 ① |
 | Ravel | Tear | 34 | Unpick: Erase the top card of your Future + Attack 6 ① → Attack 14 ① |
-| **The Rent** (elite) | Tear | 82 | Snip (your Constants don't trigger next turn) + Attack 6 ① → Charge Attack 16 ② → Unpick: Blank the top 2 cards of your Future + Attack 8 ① |
+| **The Rent** (elite) | Tear | 82 | Snip (your Constants don't trigger next turn) + Attack 6 ① → Charge Attack 20 ② → Unpick: Blank the top 2 cards of your Future + Attack 8 ① |
 | Echo of You | (yours) | 60% of your max HP | Plays your deck (from a Rewind or from the Archive). Cards are mapped to intents deterministically: Attacks → Attack, Skills → Guard or Buff, Constants → passives. |
 
 ### Bosses

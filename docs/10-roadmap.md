@@ -22,9 +22,10 @@ Phase 1 started in October 2026, alongside the art style work. The repository no
 
 - **`core-rules`:** the combat rules engine, a pure reducer with seeded RNG streams. It carries every sample card from [03](03-factions-and-operatives.md) (51 cards), 21 enemies in 14 encounters, the [08](08-card-dsl.md) budget calculator and rules-text renderer, two bots, and the test suite.
 - **`cli`:** a playable text client.
-- **`sim`:** the batch simulator. Its first baseline is [reports/sim-baseline.md](../reports/sim-baseline.md), and the current numbers are in [reports/sim-latest.md](../reports/sim-latest.md).
+- **`sim`:** the batch simulator, with a turn-planning bot, a greedy bot and a random floor. Its first baseline is [reports/sim-baseline.md](../reports/sim-baseline.md), and the current numbers are in [reports/sim-latest.md](../reports/sim-latest.md).
+- **`web`:** a browser test client, published as a private page for play-testing during development. Fights can be copied as replay codes and played back exactly in the simulator.
 
-The first baseline tripped one exit check: Tear enemies that only Blank could soft-lock a fight. A first tuning pass fixed that and brought every encounter into its difficulty band. Two things stay open: the Vowknight is still clearly the easiest operative, and Borrow became an every-turn habit. See [reports/README.md](../reports/README.md#baseline-findings).
+The first baseline tripped one exit check: Tear enemies that only Blank could soft-lock a fight. Two tuning passes fixed that, added interest to Borrow so it stops being an every-turn habit, and brought every encounter into its difficulty band. One thing stays open: the Vowknight is clearly the easiest operative, and a stronger bot confirmed that this is the design, not the bot. See [reports/README.md](../reports/README.md#baseline-findings).
 
 ## MVP Content
 

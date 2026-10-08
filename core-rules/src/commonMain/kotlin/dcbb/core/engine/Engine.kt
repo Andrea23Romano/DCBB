@@ -72,6 +72,9 @@ class Engine(val content: Content) {
         const val DRAW_PER_TURN = 5
         const val RESERVOIR_CAP = 6
         const val BORROW_LIMIT = 2
+
+        /** Extra Debt the first time you Borrow in a turn: Borrow 1 and owe 2, Borrow 2 and owe 3. */
+        const val BORROW_INTEREST = 1
         const val PENANCE = 4
         const val UNRAVEL_AT = 10
         const val UNRAVEL_RESET = 5
@@ -395,19 +398,22 @@ class Engine(val content: Content) {
                 return "Not enough energy for ${def.name} (cost $cost)" + if (couldBorrow) ". Borrow to play it." else ""
             }
 
-            // Commit.
+            // Commit. The first Borrow of the turn also charges interest, in the color borrowed.
             val hadGlitch = p.status(StatusType.GLITCH) > 0
+            val interest = if (pay.borrowed > 0 && p.borrowedThisTurn == 0) BORROW_INTEREST else 0
+            val interestColor = pay.borrow.keys.firstOrNull()
             player { pl ->
+                val debt = pl.debt.plusAll(pay.borrow)
                 pl.copy(
                     energy = pl.energy.minusAll(pay.spend),
-                    debt = pl.debt.plusAll(pay.borrow),
+                    debt = if (interest > 0 && interestColor != null) debt.plusOne(interestColor, interest) else debt,
                     borrowedThisTurn = pl.borrowedThisTurn + pay.borrowed,
                     statuses = if (hadGlitch) pl.statuses.dec(StatusType.GLITCH) else pl.statuses,
                     present = pl.present.filter { it.uid != inst.uid },
                     resolving = inst,
                 )
             }
-            if (pay.borrowed > 0) emit(GameEvent.Borrowed(pay.borrowed))
+            if (pay.borrowed > 0) emit(GameEvent.Borrowed(pay.borrowed, interest))
 
             if (face.type == CardType.SKILL && p.skillsPlayedThisTurn >= 1) breakVows(VowRule.MAX_ONE_SKILL_PER_TURN)
             if (pay.borrowed > 0) breakVows(VowRule.NO_BORROW_OR_DELAY)

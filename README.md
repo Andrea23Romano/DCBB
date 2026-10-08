@@ -30,15 +30,21 @@ You need **JDK 17 or newer**. The Gradle wrapper fetches everything else.
 cli/build/install/cli/bin/cli      # pick an operative, a deck and an encounter
 cli/build/install/cli/bin/cli --op splinter --deck mid --enc misprinted_alley --seed 7
 
+./gradlew :web:webDist             # the browser test client: one self-contained page,
+open web/build/dist/index.html     # works offline (or use your file manager)
+
 ./gradlew :sim:run --args="--seeds 200 --out reports/sim-latest.md"     # balance report
 ./gradlew :sim:run -q --args="--trace vowknight/mid/the_rent/2"         # one fight, blow by blow
+./gradlew :sim:run -q --args="--replay '<code from the web client>'"    # play back a copied fight
 ```
 
-In the text client, type `help` for commands. For example, `p 2 e1` plays card 2 on enemy 1, `sig` uses your Signature Action, `hint` asks the bot, and `end` ends your turn.
+- **Browser client:** tap a card to line it up, then tap it again (or **Play**) to play it. **Hint** asks the planner bot, **Bot plays turn** lets it finish your turn, **Undo** steps back, and **Copy log** copies a replay code you can send to reproduce a fight exactly.
+- **Text client:** type `help` for commands. For example, `p 2 e1` plays card 2 on enemy 1, `sig` uses your Signature Action, `hint` asks the bot, and `end` ends your turn.
 
 | Module | What's inside |
 |---|---|
-| [`core-rules`](core-rules/src/main/kotlin/dcbb/core) | The combat engine: a pure reducer `(state, action) → (state, events)` with seeded RNG streams. Also the content (every sample card in [docs/03](docs/03-factions-and-operatives.md), 21 enemies, 14 encounters), the [docs/08](docs/08-card-dsl.md) budget calculator and rules-text renderer, the bots, and the tests. |
+| [`core-rules`](core-rules/src/commonMain/kotlin/dcbb/core) | The combat engine: a pure reducer `(state, action) → (state, events)` with seeded RNG streams. Also the content (every sample card in [docs/03](docs/03-factions-and-operatives.md), 21 enemies, 14 encounters), the [docs/08](docs/08-card-dsl.md) budget calculator and rules-text renderer, the bots, and the tests. |
+| [`web`](web/src/jsMain/kotlin/dcbb/web) | The browser test client: `core-rules` compiled to JavaScript, in one self-contained page. |
 | [`cli`](cli/src/main/kotlin/dcbb/cli/Main.kt) | A text client for playing single fights. |
 | [`sim`](sim/src/main/kotlin/dcbb/sim/Main.kt) | The batch simulator that writes the balance report. |
 | [`reports`](reports/README.md) | The latest balance report, the frozen first baseline, and what changed between them. |

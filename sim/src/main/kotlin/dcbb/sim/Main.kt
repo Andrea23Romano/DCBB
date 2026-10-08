@@ -3,6 +3,7 @@ package dcbb.sim
 import dcbb.core.bot.Bot
 import dcbb.core.bot.FightResult
 import dcbb.core.bot.GreedyBot
+import dcbb.core.bot.PlannerBot
 import dcbb.core.bot.RandomBot
 import dcbb.core.bot.Runner
 import dcbb.core.budget.Budget
@@ -10,6 +11,7 @@ import dcbb.core.content.Content
 import dcbb.core.content.Prototype
 import dcbb.core.engine.CombatSetup
 import dcbb.core.engine.Engine
+import dcbb.core.engine.Replay
 import dcbb.core.model.Encounter
 import dcbb.core.state.Phase
 import dcbb.core.text.RulesText
@@ -24,20 +26,22 @@ import kotlin.math.roundToInt
  * with a heuristic bot and a random bot. Results are deterministic for a given configuration, so the report can be
  * committed and diffed when numbers change.
  *
- * Usage: sim [--seeds N] [--threads N] [--bots greedy,random] [--out FILE] [--title TEXT]
- *        sim --trace operative/deck/encounter/index [--bot greedy|random]
+ * Usage: sim [--seeds N] [--threads N] [--bots planner,greedy,random] [--out FILE] [--title TEXT]
+ *        sim --trace operative/deck/encounter/index [--bot planner|greedy|random]
+ *        sim --replay "a1 oracle mid proxy_patrol 4242 P/12//// ..."   (a code copied from the web client)
  */
 fun main(args: Array<String>) {
     Locale.setDefault(Locale.ROOT)
     val opts = parseArgs(args)
     val seeds = opts["seeds"]?.toInt() ?: 100
     val threads = opts["threads"]?.toInt() ?: Runtime.getRuntime().availableProcessors()
-    val bots = (opts["bots"] ?: "greedy,random").split(",").map { it.trim() }
+    val bots = (opts["bots"] ?: "planner,greedy,random").split(",").map { it.trim() }
     val out = opts["out"]
 
     val content = Prototype.content
     val engine = Engine(content)
-    opts["trace"]?.let { trace(engine, content, it, opts["bot"] ?: "greedy"); return }
+    opts["trace"]?.let { trace(engine, content, it, opts["bot"] ?: "planner"); return }
+    opts["replay"]?.let { replay(engine, content, it); return }
     val decks = listOf("starter", "mid")
     val cells = buildList {
         for (bot in bots) for (op in content.operatives.keys.sorted()) for (deck in decks) for (enc in content.encounters) {
@@ -65,12 +69,34 @@ fun main(args: Array<String>) {
     }
 }
 
+/** Replays a fight from a replay code (as copied from the web client) and prints its event log. */
+private fun replay(engine: Engine, content: Content, code: String) {
+    val r = Replay.parse(code.substringAfter("Replay:").trim())
+    var out = engine.start(r.setup(content))
+    out.events.forEach { println(it.text) }
+    for ((i, a) in r.actions.withIndex()) {
+        val next = engine.apply(out.state, a)
+        if (next.error != null) {
+            println("Action ${i + 1} (${Replay.encode(a)}) was rejected: ${next.error}")
+            return
+        }
+        next.events.forEach { println(it.text) }
+        out = next
+    }
+    val s = out.state
+    println("State: ${s.phase}, round ${s.round}, HP ${s.player.hp}/${s.player.maxHp}, energy ${s.player.energy}, debt ${s.player.debt}")
+}
+
 /** Prints the full event log of one fight: `--trace operative/deck/encounter/index`. */
 private fun trace(engine: Engine, content: Content, spec: String, botName: String) {
     val (op, deck, encId, index) = spec.split("/")
     val cell = CellSpec(botName, op, deck, content.encounter(encId))
     val seed = fightSeed(cell, index.toInt())
-    val bot: Bot = if (botName == "random") RandomBot(seed) else GreedyBot(seed)
+    val bot: Bot = when (botName) {
+        "random" -> RandomBot(seed)
+        "planner" -> PlannerBot(seed)
+        else -> GreedyBot(seed)
+    }
     val result = Runner.fight(engine, CombatSetup(op, content.deck(op, deck), cell.encounter.enemies, seed), bot, keepLog = true)
     result.log.forEach { println(it) }
     println("Result: ${result.phase} in ${result.rounds} rounds, HP ${result.hpStart} -> ${result.hpEnd}")
@@ -82,7 +108,7 @@ private fun parseArgs(args: Array<String>): Map<String, String> {
     while (i < args.size) {
         val a = args[i]
         require(a.startsWith("--") && i + 1 < args.size) {
-            "Usage: sim [--seeds N] [--threads N] [--bots greedy,random] [--out FILE] [--title TEXT]"
+            "Usage: sim [--seeds N] [--threads N] [--bots planner,greedy,random] [--out FILE] [--title TEXT]"
         }
         m[a.removePrefix("--")] = args[i + 1]
         i += 2
@@ -115,6 +141,7 @@ private fun runCell(engine: Engine, content: Content, spec: CellSpec, seeds: Int
         val seed = fightSeed(spec, i)
         val bot: Bot = when (spec.bot) {
             "greedy" -> GreedyBot(seed)
+            "planner" -> PlannerBot(seed)
             "random" -> RandomBot(seed)
             else -> error("Unknown bot ${spec.bot}")
         }
@@ -129,6 +156,9 @@ private class Report(val content: Content, val cells: List<Cell>, val seeds: Int
     private fun pct(x: Double) = if (x.isNaN()) "–" else "${(x * 100).roundToInt()}%"
     private fun num(x: Double, digits: Int = 1) = if (x.isNaN()) "–" else "%.${digits}f".format(x)
     private val ops = content.operatives.keys.sorted()
+
+    /** The strongest bot in this run: per-encounter tables and flags use it. */
+    private val primary = listOf("planner", "greedy", "random").firstOrNull { it in bots } ?: bots.first()
     private val decks = listOf("starter", "mid")
 
     fun render(): String {
@@ -137,8 +167,10 @@ private class Report(val content: Content, val cells: List<Cell>, val seeds: Int
         line("Generated by `./gradlew :sim:run` (Phase 1 prototype). Every operative and deck fights every encounter")
         line("with $seeds seeds per cell. Results are deterministic for this configuration: rerun the command and diff.")
         line()
-        line("- **Bots:** ${bots.joinToString(", ") { "`$it`" }}. `greedy` plays one action ahead on a determinized copy of")
-        line("  the state (no peeking at hidden cards or rolls) with a hand-tuned heuristic; `random` picks uniformly among legal actions.")
+        line("- **Bots:** ${bots.joinToString(", ") { "`$it`" }}. All of them plan on determinized copies of the state, so they")
+        line("  never peek at hidden cards or rolls. `planner` searches the whole turn and plays out the enemy phase to score")
+        line("  each plan; `greedy` looks one action ahead; `random` picks uniformly among legal actions. Tables below the")
+        line("  summary use the strongest bot in the run: `$primary`.")
         line("- **Fights:** single combats at full HP, Paradox 0, no relics or Imprints. Round cap 60 (counted as a draw).")
         line("- **Read with care:** the greedy bot is a floor for skilled play, not a ceiling. Large gaps between operatives or")
         line("  encounters are the signal; small ones are noise. See [docs/09](../docs/09-tech-architecture.md#testing-and-qa).")
@@ -183,7 +215,7 @@ private class Report(val content: Content, val cells: List<Cell>, val seeds: Int
     private fun rate(fs: List<FightResult>) = if (fs.isEmpty()) Double.NaN else fs.count { it.won }.toDouble() / fs.size
 
     private fun encounters() {
-        val bot = if ("greedy" in bots) "greedy" else bots.first()
+        val bot = primary
         line("## Encounters (`$bot` bot)")
         line()
         line("Each cell: win rate · average share of max HP lost in won fights.")
@@ -206,7 +238,7 @@ private class Report(val content: Content, val cells: List<Cell>, val seeds: Int
     }
 
     private fun mechanics() {
-        val bot = if ("greedy" in bots) "greedy" else bots.first()
+        val bot = primary
         line("## Mechanics in use (`$bot` bot)")
         line()
         line("Per fight unless noted. *Pressure at resolution* averages over intents that resolved with Pressure.")
@@ -231,7 +263,7 @@ private class Report(val content: Content, val cells: List<Cell>, val seeds: Int
     }
 
     private fun cardUsage() {
-        val bot = if ("greedy" in bots) "greedy" else bots.first()
+        val bot = primary
         line("## Card usage in the mid decks (`$bot` bot)")
         line()
         line("Plays per fight, per copy in the deck. Low numbers mean the bot rarely finds the card worth its energy.")
@@ -271,11 +303,11 @@ private class Report(val content: Content, val cells: List<Cell>, val seeds: Int
     private fun flags() {
         line("## Flags")
         line()
-        line("Automatic checks on the `greedy` results. *Hard*: win rate under 50%. *Trivial*: a normal fight won 99%+ of the")
+        line("Automatic checks on the `$primary` results. *Hard*: win rate under 50%. *Trivial*: a normal fight won 99%+ of the")
         line("time for under 10% of max HP. *Soft elite*: an elite won 95%+ of the time for under 20% of max HP.")
         line()
         val flags = mutableListOf<String>()
-        val greedy = cells.filter { it.spec.bot == "greedy" }
+        val greedy = cells.filter { it.spec.bot == primary }
         fun who(c: Cell) = "${content.operative(c.spec.op).name} (${c.spec.deck})"
         for (enc in content.encounters) {
             val cs = greedy.filter { it.spec.encounter.id == enc.id }

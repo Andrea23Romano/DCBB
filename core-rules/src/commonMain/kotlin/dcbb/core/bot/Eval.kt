@@ -1,6 +1,8 @@
 package dcbb.core.bot
 
 import dcbb.core.budget.Budget
+import dcbb.core.content.Content
+import dcbb.core.model.Bonus
 import dcbb.core.engine.Engine
 import dcbb.core.engine.Rng
 import dcbb.core.engine.Stream
@@ -9,29 +11,65 @@ import dcbb.core.model.Cond
 import dcbb.core.model.Effect
 import dcbb.core.model.EnemyAction
 import dcbb.core.model.Face
+import dcbb.core.model.Signature
 import dcbb.core.model.StatusType
 import dcbb.core.state.CardInst
 import dcbb.core.state.CombatState
 import dcbb.core.state.Phase
 import dcbb.core.state.TrackKind
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.max
 
-/** Card values in damage-equivalents: budget points / 2 (docs/08 anchor: 12 points ≈ 6 damage). */
+/**
+ * Card values in damage-equivalents: budget points / 2 (docs/08 anchor: 12 points ≈ 6 damage).
+ * Values come from an immutable table built once per content, so bots can share it across threads.
+ */
 object CardValues {
-    private val defPoints = ConcurrentHashMap<String, Double>()
-    private val facePoints = ConcurrentHashMap<Face, Double>()
+    /** Calculated is a sure thing for a Known card and impossible for an unknown one. */
+    private val KNOWN = Budget.CondOdds { if (it == Cond.Calculated) 1.0 else Budget.factor(it) }
+    private val UNKNOWN = Budget.CondOdds { if (it == Cond.Calculated) 0.0 else Budget.factor(it) }
 
-    fun points(def: CardDef): Double = defPoints.getOrPut(def.id) { Budget.points(def) }
+    private class Table(val content: Content) {
+        val standard: Map<String, Double> = content.cards.mapValues { Budget.points(it.value) }
+        val known: Map<String, Double> = content.cards.mapValues { Budget.points(it.value, KNOWN) }
+        val unknown: Map<String, Double> = content.cards.mapValues { Budget.points(it.value, UNKNOWN) }
+        val calculated: Set<String> = content.cards.values.filter { mentionsCalculated(it) }.map { it.id }.toSet()
+        val faces: Map<Face, Double> = buildMap {
+            for (faces in content.misprintTables.values) for (f in faces) put(f, Budget.face(f))
+            for (def in content.cards.values) for (f in def.misprintFaces.orEmpty() + def.forkFaces.orEmpty()) put(f, Budget.face(f))
+        }
+    }
 
+    // Racy but safe: a Table is immutable, so at worst two threads build equal tables.
+    private var table: Table? = null
+
+    private fun table(content: Content): Table {
+        val t = table
+        if (t != null && t.content === content) return t
+        return Table(content).also { table = it }
+    }
+
+    fun points(content: Content, def: CardDef): Double = table(content).standard.getValue(def.id)
+
+    private fun facePoints(t: Table, f: Face) = t.faces[f] ?: Budget.face(f)
+
+    /**
+     * What [inst] is worth if played now: Known cards get their Calculated bonuses, unknown ones don't, and Strike
+     * buffs are worth nothing to an operative without Strike.
+     */
     fun value(engine: Engine, state: CombatState, inst: CardInst): Double {
         if (inst.blank) return 0.0
         val def = engine.content.card(inst.defId)
         if (def.unplayable) return 0.0
+        val t = table(engine.content)
+        var base = if (inst.known) t.known.getValue(def.id) else t.unknown.getValue(def.id)
+        val spec = def.constant
+        if (spec != null && !strikes(engine, state)) base = maxOf(0.0, base - Budget.strikePart(spec))
+        val face = inst.face
+        val granted = inst.granted
         val pts = when {
-            inst.face != null -> facePoints.getOrPut(inst.face) { Budget.face(inst.face) }
-            inst.granted != null -> max(points(def), facePoints.getOrPut(inst.granted) { Budget.face(inst.granted) } + 2.0)
-            else -> points(def)
+            face != null -> facePoints(t, face)
+            granted != null -> max(base, facePoints(t, granted) + 2.0)
+            else -> base
         }
         return pts / 2.0
     }
@@ -40,18 +78,28 @@ object CardValues {
      * What an installed Constant is worth. A Vow's restriction is left out: the bot pays for it in play, by avoiding
      * the restricted move or taking the Penance, so subtracting the budget credit too would count it twice.
      */
-    fun installedValue(def: CardDef): Double = (points(def) + (def.constant?.vow?.budgetCredit ?: 0.0)) / 2.0
+    fun installedValue(engine: Engine, state: CombatState, def: CardDef): Double {
+        val spec = def.constant ?: return points(engine.content, def) / 2.0
+        var pts = points(engine.content, def) + (spec.vow?.budgetCredit ?: 0.0)
+        if (!strikes(engine, state)) pts -= Budget.strikePart(spec)
+        return maxOf(0.0, pts) / 2.0
+    }
+
+    private fun strikes(engine: Engine, state: CombatState) =
+        engine.content.operative(state.player.operativeId).signature == Signature.STRIKE
 
     fun bestInPast(engine: Engine, state: CombatState, n: Int): List<Int> =
         state.player.past.sortedByDescending { value(engine, state, it) }.take(n).map { it.uid }
 
-    fun usesCalculated(def: CardDef): Boolean = mentionsCalculated(def.effects) ||
-        (def.forkFaces ?: emptyList()).any { mentionsCalculated(it.effects) }
+    fun usesCalculated(content: Content, def: CardDef): Boolean = def.id in table(content).calculated
+
+    private fun mentionsCalculated(def: CardDef): Boolean =
+        mentionsCalculated(def.effects) || def.forkFaces.orEmpty().any { mentionsCalculated(it.effects) }
 
     private fun mentionsCalculated(effects: List<Effect>): Boolean = effects.any { e ->
         when (e) {
             is Effect.When -> e.cond == Cond.Calculated || mentionsCalculated(e.then) || mentionsCalculated(e.otherwise)
-            is Effect.Damage -> e.amount.bonuses.any { it is dcbb.core.model.Bonus.If && it.cond == Cond.Calculated }
+            is Effect.Damage -> e.amount.bonuses.any { it is Bonus.If && it.cond == Cond.Calculated }
             else -> false
         }
     }
@@ -97,7 +145,7 @@ object Eval {
         v -= threat(engine, s)
         v += energyValue(engine, s)
         v -= DEBT * p.debtTotal
-        v += p.constants.sumOf { CardValues.installedValue(engine.content.card(it.defId)) * CONSTANT_WEIGHT }
+        v += p.constants.sumOf { CardValues.installedValue(engine, s, engine.content.card(it.defId)) * CONSTANT_WEIGHT }
         v += if (includeHand) {
             handOption(engine, s)
         } else {
@@ -109,7 +157,7 @@ object Eval {
         v -= 3.0 * p.status(StatusType.WEAK) + 2.0 * p.status(StatusType.GLITCH)
         v -= 1.5 * p.future.count { it.blank } + 1.0 * p.erased.size
         v += p.future.take(Engine.DRAW_PER_TURN).sumOf { c ->
-            if (!c.known) 0.0 else if (CardValues.usesCalculated(engine.content.card(c.defId))) 0.6 else 0.2
+            if (!c.known) 0.0 else if (CardValues.usesCalculated(engine.content, engine.content.card(c.defId))) 0.6 else 0.2
         }
         for (item in s.track) {
             if (item.kind != TrackKind.SCHEDULED) continue

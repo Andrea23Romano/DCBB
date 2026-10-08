@@ -51,24 +51,34 @@ object Budget {
 
     fun report(def: CardDef) = Report(def.id, points(def), target(def), def.budgetException)
 
-    fun points(def: CardDef): Double {
+    /** How likely each condition is to hold. The budget uses fixed difficulty factors; bots pass what they can see. */
+    fun interface CondOdds {
+        fun of(c: Cond): Double
+    }
+
+    val STANDARD = CondOdds { factor(it) }
+
+    fun points(def: CardDef, odds: CondOdds = STANDARD): Double {
         var p = when {
-            def.forkFaces != null -> def.forkFaces.maxOf { face(it) } + 2.0
-            def.misprintFaces != null -> def.misprintFaces.map { face(it) }.average()
-            else -> effects(def.effects)
+            def.forkFaces != null -> def.forkFaces.maxOf { face(it, odds) } + 2.0
+            def.misprintFaces != null -> def.misprintFaces.map { face(it, odds) }.average()
+            else -> effects(def.effects, odds)
         }
-        def.constant?.let { p += constant(it) }
+        def.constant?.let { p += constant(it, odds) }
         if (def.retain) p += 2.0
         if (def.eraseAfterPlay) p -= 3.0
         return p
     }
 
-    fun face(face: Face): Double = effects(face.effects)
+    fun face(face: Face, odds: CondOdds = STANDARD): Double = effects(face.effects, odds)
 
-    fun effects(effects: List<Effect>): Double = effects.sumOf { effect(it) }
+    fun effects(effects: List<Effect>, odds: CondOdds = STANDARD): Double = effects.sumOf { effect(it, odds) }
 
-    fun constant(spec: ConstantSpec): Double {
-        var perTrigger = effects(spec.dawn) + effects(spec.dusk)
+    /** The share of a Constant's points that comes from buffing the Strike (worth nothing to other operatives). */
+    fun strikePart(spec: ConstantSpec): Double = (spec.strikeDamage * 2.0 + spec.strikeBlock * 2.4) * CONSTANT_FACTOR
+
+    fun constant(spec: ConstantSpec, odds: CondOdds = STANDARD): Double {
+        var perTrigger = effects(spec.dawn, odds) + effects(spec.dusk, odds)
         perTrigger += spec.strikeDamage * 2.0 + spec.strikeBlock * 2.4
         spec.onShiftIn?.let { rule ->
             if (rule.forkShifted) perTrigger += 6.0 * SHIFTS_PER_TURN
@@ -77,18 +87,18 @@ object Budget {
         return perTrigger * CONSTANT_FACTOR - (spec.vow?.budgetCredit ?: 0.0)
     }
 
-    fun effect(e: Effect): Double = when (e) {
-        is Effect.Damage -> amount(e.amount) * e.hits * when (e.target) {
+    fun effect(e: Effect, odds: CondOdds = STANDARD): Double = when (e) {
+        is Effect.Damage -> amount(e.amount, odds) * e.hits * when (e.target) {
             Tgt.CHOSEN_ENEMY -> 2.0
             Tgt.WEAKEST_ENEMY -> 1.9
             Tgt.RANDOM_ENEMY -> 1.7
             Tgt.ALL_ENEMIES -> 3.0
         }
 
-        is Effect.Block -> amount(e.amount) * 2.4
+        is Effect.Block -> amount(e.amount, odds) * 2.4
         is Effect.GainPlate -> e.n * 5.0
         is Effect.Draw -> e.n * 6.0
-        is Effect.GainEnergy -> amount(e.amount) * 10.0
+        is Effect.GainEnergy -> amount(e.amount, odds) * 10.0
         is Effect.Foresee -> e.n * 2.0 + if (e.tutor) 8.0 else 0.0
         is Effect.Recall -> e.n * 7.0
         is Effect.Delay -> if (e.n >= 2) 18.0 + 8.0 * (e.n - 2) else 10.0 * e.n
@@ -106,11 +116,11 @@ object Budget {
         is Effect.ReduceCostThisTurn -> e.n * 10.0
         is Effect.LoseHp -> e.n * -2.0
         is Effect.When -> {
-            val base = effects(e.otherwise)
-            base + factor(e.cond) * (effects(e.then) - base)
+            val base = effects(e.otherwise, odds)
+            base + odds.of(e.cond) * (effects(e.then, odds) - base)
         }
 
-        is Effect.Schedule -> effects(e.effects) * 0.8.pow(e.countdown - 1)
+        is Effect.Schedule -> effects(e.effects, odds) * 0.8.pow(e.countdown - 1)
     }
 
     private fun status(type: StatusType, n: Int): Double = when (type) {
@@ -124,9 +134,9 @@ object Budget {
     }
 
     /** Expected magnitude: base plus conditional bonuses (discounted) plus scaling bonuses (expected value). */
-    fun amount(a: Amount): Double = a.base + a.bonuses.sumOf { b ->
+    fun amount(a: Amount, odds: CondOdds = STANDARD): Double = a.base + a.bonuses.sumOf { b ->
         when (b) {
-            is Bonus.If -> b.plus * factor(b.cond)
+            is Bonus.If -> b.plus * odds.of(b.cond)
             is Bonus.Per -> minOf(b.max.toDouble(), b.each * expected(b.counter))
         }
     }

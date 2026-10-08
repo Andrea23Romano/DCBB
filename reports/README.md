@@ -15,30 +15,99 @@ To read one fight blow by blow, trace it by operative, deck, encounter and fight
 ./gradlew :sim:run -q --args="--trace oracle/starter/the_rent/3"
 ```
 
+To play back a fight from the web test client, copy its log there (**Copy log**) and pass the replay code:
+
+```bash
+./gradlew :sim:run -q --args="--replay 'a1 oracle mid proxy_patrol 4242 S/// F/12,14// E'"
+```
+
 ## What the simulator does
 
 - **Matrix:** every operative (Vowknight, Oracle, Splinter) with two decks fights every encounter.
   - The *starter* deck is the 10 cards from [docs/03](../docs/03-factions-and-operatives.md).
   - The *mid* deck adds 8 of that faction's sample cards.
 - **Fights:** single combats at full HP and Paradox 0, with no relics, Imprints or rewards.
-- **Bots:**
-  - `greedy` tries every candidate action on a copy of the state, with the unseen part of the Future reshuffled and fresh dice, so it can't peek. It plays the best one by a hand-tuned evaluation, or ends the turn when nothing beats ending it.
+- **Bots:** all of them plan on copies of the state with the unseen part of the Future reshuffled and fresh dice, so none can peek.
+  - `planner` searches the whole turn (a beam over sequences of plays), then scores each way of ending it by playing out the enemy phase and the next draw on a few copies. It is the yardstick: the per-encounter tables and flags use it.
+  - `greedy` looks one action ahead with the same evaluation, and ends the turn when nothing beats ending it.
   - `random` picks uniformly among legal actions. It is the floor.
 
 ## Baseline findings
 
-The first baseline raised six findings. Their status after tuning pass 1:
+The first baseline raised six findings. Their status after tuning pass 2:
 
 | # | Finding | Status |
 |---|---|---|
-| 1 | Blank can soft-lock a fight against the Tear | **Fixed.** Blank cards are restored on reshuffle. Fights stalled at the round cap went from 75 to 0 (greedy bot). |
-| 2 | The Vowknight is about twice as efficient as the others | **Narrowed a little.** It is still the easiest operative by a wide margin. See [below](#what-the-numbers-say-now). |
-| 3 | Most fights are too soft | **Tuned.** Every encounter now averages inside its band. |
-| 4 | Borrow is free on the last turn | **Fixed in the rules.** But Borrow is now an every-turn habit. See [below](#what-the-numbers-say-now). |
-| 5 | Delay, draw and setup cards look weak | **Open.** Judging them needs a stronger bot. |
+| 1 | Blank can soft-lock a fight against the Tear | **Fixed.** Blank cards are restored on reshuffle. Fights stalled at the round cap went from 75 to 0. |
+| 2 | The Vowknight is about twice as efficient as the others | **Confirmed as design, not bot.** The planner sees the same gap. Options are in [pass 2](#what-pass-2-found). |
+| 3 | Most fights are too soft | **Tuned.** Every encounter averages inside its band, now measured with the planner. |
+| 4 | Borrow is free on the last turn | **Fixed.** Debt carries into the next fight, and Borrow charges interest. Borrow use fell from 4.6–6.6 to 1.3–2.2 energy per fight. |
+| 5 | Delay, draw and setup cards look weak | **Partly.** The planner Delays and sets up more, but several cards stay rarely played. See [pass 2](#what-pass-2-found). |
 | 6 | Paradox and Unravel aren't exercised | **Open.** Needs fights seeded with Paradox, or run-level simulations. |
 
-## Tuning pass 1
+## Tuning pass 2
+
+### What changed
+
+- **Vow of the Sword is back at +4**, by decision. The budget exception from pass 1 is gone.
+- **Borrow interest.** The first Borrow of a turn costs 1 extra Debt: Borrow 1 and owe 2, Borrow 2 and owe 3 ([docs/04](../docs/04-combat.md#reservoir-and-borrow)).
+- **The planner bot** became the yardstick. With interest, the economy is tighter, so the bands were re-checked with it. Only The Rent fell out of its band; its charged attack went from 16 to 20.
+- **Bot fixes.** Known cards are valued with their Calculated bonuses. Strike buffs count only for an operative that Strikes: the planner had installed a bled-in *Gnomon Blade* as the Splinter.
+
+### Before and after
+
+Max HP lost per won fight. Pass 1 is the greedy bot without interest; pass 2 is the planner with interest.
+
+| Operative | Deck | Pass 1 (greedy) | Pass 2 (planner) | Pass 2 (greedy) | Borrowed per fight, pass 1 greedy → pass 2 planner |
+|---|---|---|---|---|---|
+| Oracle | starter | 26% | 31% | 33% | 6.6 → 1.3 |
+| Oracle | mid | 28% | 32% | 37% | 5.6 → 2.2 |
+| Splinter | starter | 24% | 29% | 37% | 5.5 → 1.6 |
+| Splinter | mid | 27% | 29% | 34% | 5.5 → 1.6 |
+| Vowknight | starter | 15% | 15% | 16% | 4.6 → 1.5 |
+| Vowknight | mid | 16% | 16% | 19% | 5.3 → 2.1 |
+
+**Encounters** with the planner, averaged over the six operative and deck pairs: every one is in its band.
+
+| Encounter | HP lost | Band |
+|---|---|---|
+| Fog on Fleet Street | 24% | 15–25% |
+| Rookery Brawl | 23% | 15–25% |
+| Proxy Patrol | 22% | 15–25% |
+| Misprinted Alley | 17% | 15–25% |
+| Order Patrol | 23% | 15–25% |
+| Loose Threads | 21% | 15–25% |
+| Condottieri | 18% | 15–25% |
+| Plague Season | 16% | 15–25% |
+| Salt Mirage | 22% | 15–25% |
+| Glass Desert | 25% | 15–25% |
+| Drone Swarm | 22% | 15–25% |
+| The Inquisitor (elite) | 47% | 35–50% |
+| The Pruner (elite) | 38% | 35–50% |
+| The Rent (elite) | 38% | 35–50% |
+
+### What pass 2 found
+
+1. **The Vowknight's lead is real.**
+   - The planner loses 15–16% of max HP per fight with the Vowknight, and 29–32% with the Oracle and the Splinter. The greedy bot showed the same gap.
+   - A planner with twice the search width and nearly three times the samples changes nothing (15% against 26–30%), so the gap is not a search artifact.
+   - It is mostly damage. The Vowknight wins in 3.0–3.6 rounds; the others take 3.9–5.2. Its free Strike adds 4–8 damage a turn, while Forecast and Shift add none.
+   - **Experiment** (planner, 60 seeds, not applied):
+     - Forecast that also draws 1 barely helps the Oracle: 30–32% → 29–30%.
+     - Shift that makes the incoming card cost 1 less helps the Splinter more: 29% → 20–25%.
+   - **Options:** buff Forecast and Shift along those lines, or accept the Vowknight as the easy operative (the docs call it the most forgiving) and tune encounters against the other two.
+   - The only flags left are the Vowknight's: Condottieri, Plague Season and Glass Desert are trivial for it, and the Inquisitor is soft (18%).
+2. **Borrow is a decision again.** With interest, the planner borrows 1.3–2.2 energy per fight and carries 0.5–0.9 Debt out of a won fight. Random play, which borrows freely, now loses up to half its fights.
+3. **The planner uses the Track more:** the Oracle's mid deck Delays 0.49 intents per fight, and *Hold the Hour* is played 0.33 times per fight. Still rarely played (under 0.15 per copy per fight):
+   - *Deterministic Model*, *Predictive Shield*, *Split the Moment*, *Elsewhen Guard*
+   - *Hold Fast*, *Oathkeeper's Stand*, *Litany of Steel*, *Shield of the Line*
+
+   Most are Skills that compete with the Vowknight's Vow or with racing. They are worth a design look before more bot work.
+4. **Unchanged:** no single fight reaches Paradox 10.
+
+## Tuning pass 1 (history)
+
+These are the pass 1 numbers, measured with the greedy bot before Borrow interest existed.
 
 ### What changed
 
@@ -138,4 +207,4 @@ The first baseline raised six findings. Their status after tuning pass 1:
   - Imprints and Artifacts
   - rewards and upgrades between fights
   - Inscribed cards
-- **Content format:** content is Kotlin data in [`Prototype.kt`](../core-rules/src/main/kotlin/dcbb/core/content/Prototype.kt). The YAML pipeline from [docs/08](../docs/08-card-dsl.md) comes in Phase 2.
+- **Content format:** content is Kotlin data in [`Prototype.kt`](../core-rules/src/commonMain/kotlin/dcbb/core/content/Prototype.kt). The YAML pipeline from [docs/08](../docs/08-card-dsl.md) comes in Phase 2.

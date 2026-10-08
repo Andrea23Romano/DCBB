@@ -82,7 +82,7 @@ Time manipulation is the core verb at every layer, not a theme skin.
 
 | Dawncaster | Anachronist |
 |---|---|
-| Colored energy carries over (cap 8) | **Reservoir** carryover (cap 6), plus **Borrow** up to 2 from next turn (**Debt**). Energy moves both ways in time. |
+| Colored energy carries over (cap 8) | **Reservoir** carryover (cap 6), plus **Borrow** up to 2 from next turn (**Debt**, with interest). Energy moves both ways in time. |
 | Basic-attack interplay | One **Signature Action** per operative (Strike, Forecast, Shift), modified by cards, Relics and Artifacts |
 | Talents on level-up | **Imprints**, with faction and deck requirements that make builds intentional |
 | Pick 1 of 3 event cards | The **Weft**: 3 Moments, **Foresight** to peek ahead, **Returning Moments** (skipped branches come back changed), and **Anchors** with Rewind |

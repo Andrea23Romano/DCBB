@@ -55,7 +55,7 @@
 | **Attuned** | Keyword: a bonus if the card's whole cost was paid in its faction's energy | [04](04-combat.md#attuned) |
 | **Bleed-through N** | Keyword: add N random cards from another faction's pool to your Present | [04](04-combat.md#keywords) |
 | **Block** | Keyword: prevents damage; yours expires at Dawn | [04](04-combat.md#keywords) |
-| **Borrow / Debt** | Spend up to 2 energy you don't have; it is repaid from your next Dawn's income, even when that Dawn is in your next combat | [04](04-combat.md#reservoir-and-borrow) |
+| **Borrow / Debt** | Spend up to 2 energy you don't have, plus 1 interest the first time each turn. It is repaid from your next Dawn's income, even when that Dawn is in your next combat | [04](04-combat.md#reservoir-and-borrow) |
 | **Branch** | A timeline: a thread of the Weave, split off by a Divergence | [02](02-world-and-lore.md#the-laws-of-the-weave) |
 | **Branch Pool** | Where unchosen Moments wait to return | [05](05-run-structure.md#returning-moments) |
 | **Branch Variant** | A permanent second face for a card, created by the Forge | [08](08-card-dsl.md#the-forge) |

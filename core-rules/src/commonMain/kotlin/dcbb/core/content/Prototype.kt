@@ -102,8 +102,7 @@ object Prototype {
             card("order.shield_of_the_line", "Shield of the Line", o, CardType.SKILL, Rarity.STARTER, "1", listOf(block(4, attuned(2)))),
             card(
                 "order.vow_of_the_sword", "Vow of the Sword", o, CardType.CONSTANT, Rarity.STARTER, "1F",
-                constant = ConstantSpec(ConstantKind.VOW, strikeDamage = 2, vow = VowRule.MAX_ONE_SKILL_PER_TURN),
-                exception = "Simulation: the Vowknight outpaced the other operatives, and +4 widened the gap",
+                constant = ConstantSpec(ConstantKind.VOW, strikeDamage = 4, vow = VowRule.MAX_ONE_SKILL_PER_TURN),
             ),
             card(
                 "order.remembered_blow", "Remembered Blow", o, CardType.ATTACK, Rarity.STARTER, "1F+1",
@@ -478,7 +477,7 @@ object Prototype {
             RotationAi(
                 listOf(
                     intent(EnemyAction.SilenceConstants, attack(6)),
-                    intent(attack(16), countdown = 2),
+                    intent(attack(20), countdown = 2),
                     intent(EnemyAction.BlankFuture(2), attack(8)),
                 ),
             ),

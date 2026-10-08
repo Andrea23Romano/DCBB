@@ -83,7 +83,7 @@ class FightStats {
             when (e) {
                 is GameEvent.CardPlayed -> {
                     cardsPlayed++
-                    cardPlays.merge(e.defId, 1, Int::plus)
+                    cardPlays[e.defId] = (cardPlays[e.defId] ?: 0) + 1
                 }
 
                 is GameEvent.SignatureUsed -> signatures++

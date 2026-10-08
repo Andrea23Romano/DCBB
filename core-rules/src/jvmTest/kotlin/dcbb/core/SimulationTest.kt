@@ -2,6 +2,7 @@ package dcbb.core
 
 import dcbb.core.bot.GreedyBot
 import dcbb.core.bot.Moves
+import dcbb.core.bot.PlannerBot
 import dcbb.core.bot.RandomBot
 import dcbb.core.bot.Runner
 import dcbb.core.engine.Action
@@ -56,6 +57,36 @@ class SimulationTest {
     }
 
     @Test
+    fun `the planner finishes every encounter legally, and the same seed gives the same fight`() {
+        for (enc in content.encounters) for (op in content.operatives.keys) {
+            val setup = CombatSetup(op, content.deck(op, "mid"), enc.enemies, seed = 11)
+            val a = Runner.fight(engine, setup, PlannerBot(5), keepLog = true)
+            assertTrue(a.phase.over, "$op vs ${enc.id} didn't end")
+            assertEquals(0, a.stats.botErrors, "planner chose an illegal action vs ${enc.id}")
+            if (enc.id == "the_rent") assertEquals(a.log, Runner.fight(engine, setup, PlannerBot(5), keepLog = true).log)
+        }
+    }
+
+    @Test
+    fun `replay codes rebuild a fight exactly`() {
+        val setup = CombatSetup("splinter", content.deck("splinter", "mid"), content.encounter("misprinted_alley").enemies, seed = 77)
+        val bot = PlannerBot(3)
+        var out = engine.start(setup)
+        val actions = mutableListOf<dcbb.core.engine.Action>()
+        while (!out.state.phase.over) {
+            val a = bot.act(engine, out.state)
+            actions += a
+            out = engine.apply(out.state, a)
+        }
+        val code = dcbb.core.engine.Replay("splinter", "mid", "misprinted_alley", 77, actions).encode()
+        val parsed = dcbb.core.engine.Replay.parse(code)
+        assertEquals(actions, parsed.actions)
+        var again = engine.start(parsed.setup(content))
+        for (a in parsed.actions) again = engine.apply(again.state, a)
+        assertEquals(out.state, again.state)
+    }
+
+    @Test
     fun `engine invariants hold through hundreds of random fights`() {
         var fights = 0
         for (seed in 1L..12L) for (enc in content.encounters) for (op in content.operatives.keys) {
@@ -91,7 +122,8 @@ class SimulationTest {
         ensure(p.allCards.count { !it.bleed } == deckSize, "cards were created or lost")
         ensure(p.hp <= p.maxHp, "HP above max")
         ensure(p.energy.values.all { it > 0 } && p.debt.values.all { it > 0 }, "zero or negative pools")
-        ensure(p.debtTotal <= Engine.BORROW_LIMIT && p.borrowedThisTurn <= Engine.BORROW_LIMIT, "Borrow limit broken")
+        ensure(p.debtTotal <= Engine.BORROW_LIMIT + Engine.BORROW_INTEREST, "Debt above the cap")
+        ensure(p.borrowedThisTurn <= Engine.BORROW_LIMIT, "Borrow limit broken")
         ensure(p.constants.size <= Engine.CONSTANT_SLOTS, "too many Constants")
         ensure(p.present.size <= Engine.HAND_LIMIT, "Present over 10")
         ensure(p.otherHand.size <= content.operative(p.operativeId).otherHandSize, "Other Hand too big")

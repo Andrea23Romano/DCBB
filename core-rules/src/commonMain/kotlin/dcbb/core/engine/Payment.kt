@@ -58,7 +58,7 @@ object Payments {
             val t = minOf(have, n)
             if (t > 0) {
                 avail[color] = have - t
-                spend.merge(color, t, Int::plus)
+                spend[color] = (spend[color] ?: 0) + t
             }
             return t
         }
@@ -67,7 +67,7 @@ object Payments {
             if (n <= 0) return true
             if (color !in incomeColors || borrowLeft < n) return false
             borrowLeft -= n
-            borrow.merge(color, n, Int::plus)
+            borrow[color] = (borrow[color] ?: 0) + n
             return true
         }
 

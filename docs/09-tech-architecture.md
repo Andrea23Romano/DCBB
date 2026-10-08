@@ -50,7 +50,7 @@ flowchart TB
         UI["Screens · animation system · audio · accessibility · settings"]
         STORE["GameStore (UDF): dispatches Actions, renders State"]
     end
-    subgraph CORE["core-rules (pure Kotlin, KMP-ready)"]
+    subgraph CORE["core-rules (pure Kotlin Multiplatform: JVM + JS)"]
         RED["Reducer: (State, Action) -> (State, Events)"]
         DSL["Effect interpreter + rules-text renderer"]
         RNG["Seeded RNG streams"]
@@ -80,9 +80,10 @@ flowchart TB
 
 | Module | Responsibility |
 |---|---|
-| `core-rules` | Game state, the action reducer, combat (zones, energy, Track), run (Weft, Anchors, Paradox, ledger), DSL interpreter, rules-text rendering, RNG streams, serialization. **No Android dependencies.** |
+| `core-rules` | Game state, the action reducer, combat (zones, energy, Track), run (Weft, Anchors, Paradox, ledger), DSL interpreter, rules-text rendering, RNG streams, serialization. **No Android dependencies.** Kotlin Multiplatform: the JVM build feeds the tools and later Android, and the JS build feeds the web test client. |
 | `content` | Cards, enemies, events, Artifacts, Imprints, Lore Bible snippets, Misprint tables, and authored fallback text, as YAML compiled to a binary bundle. Also the **validator CLI** (schemas, budgets, references). |
-| `sim` | Headless JVM simulator with bots (greedy heuristic and MCTS for combat) for balance reports, Pressure and Delay abuse detection, and calibrating the [08](08-card-dsl.md) cost table |
+| `sim` | Headless JVM simulator with bots for balance reports, Pressure and Delay abuse detection, and calibrating the [08](08-card-dsl.md) cost table. Phase 1 has a turn planner (beam search over the turn, scored by playing out the enemy phase), a one-ply greedy bot and a random floor; MCTS can follow. |
+| `web` | Phase 1 test client: the combat prototype in a browser, built as one self-contained page from `core-rules` compiled to JavaScript |
 | `genai` | The `LlmBackend` interface, context builder, versioned prompt templates, the generation queue, the cache, all validators ([07](07-genai-design.md#validation-layers)), and fallbacks |
 | `llm-service` | A bound service in its own process (`:llm`) that hosts the inference runtime. Isolates memory pressure and crashes from the game. |
 | `app` | Compose UI, navigation, animation event queue, audio and haptics, persistence, settings, TalkBack semantics, localization |
@@ -269,7 +270,7 @@ flowchart LR
 
 ## Repository Layout
 
-Phase 1 created `core-rules`, `cli`, `sim` and `reports`. The rest is planned.
+Phase 1 created `core-rules`, `cli`, `sim`, `web` and `reports`. The rest is planned.
 
 ```
 /app            Android app (Jetpack Compose UI)
@@ -279,6 +280,7 @@ Phase 1 created `core-rules`, `cli`, `sim` and `reports`. The rest is planned.
 /genai          LLM abstraction, context builder, validators, queue, cache
 /llm-service    Bound service hosting the inference runtime (separate process)
 /sim            Headless simulator + bots (JVM)
+/web            Browser test client for the combat prototype (Kotlin/JS, Phase 1)
 /reports        Generated simulation reports, committed so changes can be diffed
 /ml             Python: data generation, LoRA training, conversion, eval (dev only)
 /art            Art bible, prompts, golden set, masters, provenance (binaries in Git LFS; see 12)

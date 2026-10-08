@@ -22,7 +22,7 @@ class KeywordTest {
     fun `Vow and Relic buff the Strike`() {
         val s = start("vowknight", "saltwaste.sandglass_golem").withConstants("order.vow_of_the_sword", "order.gnomon_blade")
         val out = s.ok(UseSignature())
-        assertEquals(GOLEM - 9, out.state.enemies[0].hp, "4 + 2 (Vow) + 3 (Gnomon Blade)")
+        assertEquals(GOLEM - 11, out.state.enemies[0].hp, "4 + 4 (Vow) + 3 (Gnomon Blade)")
         assertEquals(2, out.state.player.block)
     }
 

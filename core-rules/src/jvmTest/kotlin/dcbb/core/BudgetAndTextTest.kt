@@ -24,7 +24,7 @@ class BudgetAndTextTest {
         // Pts column of docs/03 (one decimal there) and the docs/08 worked example.
         val expected = mapOf(
             "order.line_strike" to 12.0,
-            "order.vow_of_the_sword" to 1.6, // budget exception: +2 Strike, tuned by simulation
+            "order.vow_of_the_sword" to 11.2,
             "order.remembered_blow" to 24.0,
             "order.hold_fast" to 12.6,
             "order.sundial_cut" to 12.4,

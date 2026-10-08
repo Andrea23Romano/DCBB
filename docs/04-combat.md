@@ -11,7 +11,7 @@ All numbers here are **starting values for the prototype**. Tuning happens with 
 - You **draw 5** cards each turn.
 - Your **income is 3 energy** each turn: 2 of your faction's color and 1 **Neutral**.
 - **Unspent energy carries over** into your **Reservoir** (cap 6). This is DC's best idea, kept.
-- **You can Borrow up to 2** energy from next turn, which becomes **Debt**. Energy moves both ways in time.
+- **You can Borrow up to 2** energy from next turn, which becomes **Debt**, plus 1 interest the first time each turn. Energy moves both ways in time.
 - **One free Signature Action** per turn, like DC's basic attack, defined per operative.
 - **Enemy intents sit on the Track with countdown clocks.**
   - **Delay** pushes a threat later, but every Delay adds **Pressure** and makes it hit harder.
@@ -54,7 +54,7 @@ flowchart TD
 ### Dawn (start of your turn)
 
 1. Your Block expires.
-2. **Debt is repaid.** Your income is reduced by the amount you Borrowed, taken from the color you Borrowed.
+2. **Debt is repaid.** Your income is reduced by your Debt, starting with the color you Borrowed, then your other colors.
 3. Gain your income and add your Reservoir to it.
 4. Draw 5. The Splinter also refills the Other Hand to 3.
 5. Start-of-turn triggers resolve, including Constants and Afterimages.
@@ -122,7 +122,8 @@ A card with **Attuned** gets its bonus if its **entire cost** was paid with its 
 - **Borrow.**
   - During your turn you may spend up to **2 energy you don't have**. It must be a color in your income.
   - That amount becomes **Debt** and is subtracted from that color's income at your next Dawn.
-  - Debt never exceeds 2.
+  - **Interest.** The first time you Borrow in a turn, you owe 1 extra: Borrow 1 and owe 2, Borrow 2 and owe 3. Borrowing every turn is therefore a real cost, not a free shift.
+  - Debt never exceeds 3.
   - Debt you still owe when a combat ends carries into your next combat and is repaid at its first Dawn. Borrowing to finish a fight is still often right, but it isn't free.
 - **Rationale.** DC caps carryover at 8. We start lower (6) because Borrow adds flexibility in the other direction. Together they make energy a resource you move through time: save it, or take it from tomorrow.
 
@@ -314,7 +315,7 @@ The Phase 1 prototype had to settle these. The engine and its tests follow this 
 
 **Situation.** The Vowknight is at 58/75 HP in round 3.
 
-- **Constants:** *Vow of the Sword*. While kept, Strike deals +2. It breaks if you play a second Skill in a turn.
+- **Constants:** *Vow of the Sword*. While kept, Strike deals +4. It breaks if you play a second Skill in a turn.
 - **Energy at Dawn:** income 2F + 1N, plus 1F in the Reservoir, for **3F + 1N** available.
 - **Present:** Line Strike, Line Strike, Remembered Blow, Litany of Steel, Shield of the Line.
 - **Past:** 6 cards, including 3 Attacks.
@@ -324,21 +325,21 @@ The Phase 1 prototype had to settle these. The engine and its tests follow this 
 
 | # | Action | Paid with | Result |
 |---|---|---|---|
-| 1 | **Strike** on Misprint | free | 4 + 2 (Vow) = 6 → Misprint 20 |
-| 2 | **Remembered Blow** on Misprint | 1F + 1N | 9, +5 for Remember 3 Attacks = 14 → Misprint 6 |
+| 1 | **Strike** on Misprint | free | 4 + 4 (Vow) = 8 → Misprint 18 |
+| 2 | **Remembered Blow** on Misprint | 1F + 1N | 9, +5 for Remember 3 Attacks = 14 → Misprint 4 |
 | 3 | **Line Strike** on Misprint | 1F (Attuned) | 5 + 2 = 7 → Misprint dies, and its Forked intent leaves the Track |
 | 4 | **Litany of Steel** | 1F | Gain 4 Block. Litany triggers (previous card was an Attack): draw 1, which is *Hold the Hour*. That is 1 Skill played this turn. |
-| 5 | Out of energy. Shield or Hold the Hour would be a 2nd Skill and break the Vow (Penance 4 HP). **Borrow 1F** and play the other **Line Strike** on the Brass Proxy instead. Its Guard hasn't resolved yet, so hitting it *now* is efficient. | 1F borrowed (Attuned) | 7 → Proxy 19. Debt 1. |
+| 5 | Out of energy. Shield or Hold the Hour would be a 2nd Skill and break the Vow (Penance 4 HP). **Borrow 1F** and play the other **Line Strike** on the Brass Proxy instead. Its Guard hasn't resolved yet, so hitting it *now* is efficient. | 1F borrowed (Attuned) | 7 → Proxy 19. Debt 2: 1 borrowed plus 1 interest. |
 | 6 | **Dusk** | n/a | Shield of the Line and Hold the Hour are discarded. The Reservoir is empty. |
 | 7 | **Enemy phase** | n/a | Proxy's intent ticks ① → 0: it gains 8 Block and attacks for 6. Your 4 Block absorbs 4 and you take 2 → 56 HP. |
-| 8 | **Next Dawn** | n/a | Debt 1 is repaid from Faith income, so you have only 1F + 1N. The Proxy now has 8 Block, and it sets a new intent after reading your new hand. |
+| 8 | **Next Dawn** | n/a | Debt 2 is repaid from Faith income, so you have only 1N. The Proxy now has 8 Block, and it sets a new intent after reading your new hand. |
 
 **Lessons:**
 
 - Remember rewards a full Past.
 - Litany rewards sequencing.
 - The Vow turns "just play everything" into a real constraint.
-- Borrowing bought 7 damage today at the cost of tomorrow's tempo.
+- Borrowing bought 7 damage today for 2 of tomorrow's energy.
 
 ### Example B: the Track, Delay, Pressure and Fixed
 

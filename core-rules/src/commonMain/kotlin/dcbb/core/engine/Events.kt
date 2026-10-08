@@ -68,8 +68,9 @@ sealed interface GameEvent {
         override val text get() = "Your $name breaks! Penance: lose 4 HP"
     }
 
-    data class Borrowed(val amount: Int) : GameEvent {
-        override val text get() = "You borrow $amount energy from next turn"
+    data class Borrowed(val amount: Int, val interest: Int = 0) : GameEvent {
+        override val text get() = "You borrow $amount energy from next turn" +
+            if (interest > 0) " (+$interest interest)" else ""
     }
 
     data class ParadoxChanged(val from: Int, val to: Int) : GameEvent {

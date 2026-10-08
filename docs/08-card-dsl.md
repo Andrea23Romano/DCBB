@@ -54,11 +54,10 @@ rarity: starter
 cost: { faith: 1 }
 trigger: while_kept            # start_of_turn | end_of_turn | on_play:<kind> | on_shift | on_delay | on_lose_hp | while_kept
 effects:
-  - { op: modify_signature, stat: damage, amount: 2 }
+  - { op: modify_signature, stat: damage, amount: 4 }
 vow:
   restriction: { rule: max_cards_of_type_per_turn, type: skill, max: 1 }
   severity: moderate           # mild | moderate | severe  -> budget credit 4 / 8 / 12
-exception: "Below budget on purpose: in simulation, +4 widened the Vowknight's lead"   # see Budget Targets
 ```
 
 ### Fork cards have faces; Misprint cards have a face table

@@ -43,20 +43,23 @@ class EnergyAndDamageTest {
     }
 
     @Test
-    fun `Borrow takes up to 2 from next turn's income`() {
+    fun `Borrow takes up to 2 from next turn's income, plus 1 interest`() {
         var s = start("vowknight", "saltwaste.sandglass_golem")
             .withPresent("order.line_strike", "order.line_strike", "order.line_strike").withEnergy()
         val (a, b, c) = s.player.present.map { it.uid }
         assertTrue("Borrow" in s.rejects(PlayCard(a)))
 
-        s = s.ok(PlayCard(a, allowBorrow = true)).state
+        val first = s.ok(PlayCard(a, allowBorrow = true))
+        assertEquals(1, first.events.filterIsInstance<dcbb.core.engine.GameEvent.Borrowed>().single().interest)
+        s = first.state
+        assertEquals(mapOf(FAITH to 2), s.player.debt, "Borrow 1, owe 2")
         s = s.ok(PlayCard(b, allowBorrow = true)).state
-        assertEquals(mapOf(FAITH to 2), s.player.debt)
+        assertEquals(mapOf(FAITH to 3), s.player.debt, "interest is charged once per turn")
         assertEquals(GOLEM - 14, s.enemies[0].hp, "borrowed Faith still counts as Attuned")
         s.rejects(PlayCard(c, allowBorrow = true))
 
         s = s.ok(EndTurn).state
-        assertEquals(mapOf(NEUTRAL to 1), s.player.energy, "the Faith income repaid the Debt")
+        assertTrue(s.player.energy.isEmpty(), "Debt 3 eats the whole income of 3")
         assertTrue(s.player.debt.isEmpty())
     }
 

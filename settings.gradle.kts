@@ -13,4 +13,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "dcbb"
 
-include(":core-rules", ":cli", ":sim")
+include(":core-rules", ":cli", ":sim", ":web")
