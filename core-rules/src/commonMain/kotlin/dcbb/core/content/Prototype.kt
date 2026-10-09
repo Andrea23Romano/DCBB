@@ -516,6 +516,8 @@ object Prototype {
             ),
             elite = true,
         ),
+        // Your abandoned self after a Rewind. Its HP and intents come from the run (CombatSetup.echo); these are fallbacks.
+        EnemyDef("echo.you", "Echo of You", Faction.NEUTRAL, 40, RotationAi(listOf(intent(attack(6)))), elite = true),
         // Act boss, London 1843
         EnemyDef(
             "london.lattice_engine", "The Lattice Engine", Faction.CONVERGENCE, 85,
@@ -566,6 +568,7 @@ object Prototype {
         Encounter("misprinted_quarter", "The Misprinted Quarter", listOf("errata.misprint", "errata.misprint")),
         Encounter("unravelling", "The Unravelling", listOf("tear.ravel", "tear.loose_end", "tear.loose_end")),
         Encounter("lattice_engine", "The Lattice Engine", listOf("london.lattice_engine"), elite = true),
+        Encounter("echo_of_you", "An Echo of You", listOf("echo.you"), elite = true, runOnly = true),
     )
 
     // ---- operatives and decks ---------------------------------------------------------------------------------

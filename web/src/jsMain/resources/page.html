@@ -25,6 +25,7 @@
   --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   --radius: 10px;
+  --art-filter: none;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -44,10 +45,12 @@
     --tear: #f07280;
     --good: #6cc48b;
     --bad: #f07280;
+    --art-filter: brightness(0.86) saturate(0.92);
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
+  --art-filter: brightness(0.86) saturate(0.92);
   --bg: #10121a;
   --panel: #191c27;
   --ink: #e5e7ef;
@@ -284,6 +287,23 @@ details[open] { display: grid; gap: 8px; }
 .o-blocked { font-size: 12px; color: var(--bad); }
 .result.is-won .run-title { color: var(--good); }
 .result.is-lost .run-title { color: var(--bad); }
+
+/* Placeholder art (docs/11), keyword tooltips, time travel */
+.art { display: block; width: 100%; height: auto; border-radius: 6px; filter: var(--art-filter); }
+.card .art { aspect-ratio: 160 / 64; }
+.op .art { aspect-ratio: 120 / 80; max-width: 240px; }
+.moment .art { aspect-ratio: 160 / 52; }
+.enemy-top { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: center; }
+.enemy-top .art { aspect-ratio: 96 / 72; }
+.gloss { margin: 0; display: grid; gap: 6px; padding: 8px 10px; border-radius: 8px; background: color-mix(in srgb, var(--accent) 6%, var(--panel)); border: 1px solid var(--line); }
+.gloss div { display: grid; gap: 1px; }
+.gloss dt { font-weight: 700; font-size: 13px; }
+.gloss dd { margin: 0; font-size: 13px; color: var(--muted); }
+.legend summary { font-size: 13px; color: var(--accent); font-weight: 700; }
+.m-return { font-size: 12px; font-weight: 700; color: var(--flux); }
+.moment.is-returning { border-style: dashed; }
+.chiplet.is-anchor { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+.notice.is-anchor { border-color: var(--accent); }
 
 @media (max-width: 640px) {
   .lanes { grid-template-columns: repeat(2, minmax(0, 1fr)); }

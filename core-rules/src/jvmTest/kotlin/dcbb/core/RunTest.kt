@@ -116,8 +116,12 @@ class RunTest {
         assertEquals(s.hp, fight.combat.player.hp)
         // Win quickly by letting the planner play, then check what the run keeps.
         val bot = dcbb.core.bot.PlannerBot(1)
-        while (!(s.screen as Screen.Fight).combat.phase.over) s = s.ok(RunAction.Fight(bot.act(engine, (s.screen as Screen.Fight).combat)))
-        val end = (s.screen as Screen.Fight).combat
+        while (true) {
+            val c = (s.screen as Screen.Fight).combat
+            if (c.phase.over) break
+            s = s.ok(RunAction.Fight(bot.act(engine, c)))
+        }
+        val end = s.screen.combat
         assertEquals(Phase.WON, end.phase)
         s = s.ok(RunAction.Done)
         assertEquals(end.player.hp, s.hp)
@@ -344,8 +348,8 @@ class RunTest {
     fun `beating the boss ends the act in victory, and falling ends the run`() {
         val boss = startRun().copy(step = era.steps + 1).visit(MomentType.BOSS, era.boss)
         val fight = boss.screen as Screen.Fight
-        val dead = boss.copy(screen = fight.copy(combat = fight.combat.copy(phase = Phase.LOST))).ok(RunAction.Done)
-        assertEquals(false, (dead.screen as Screen.Over).won)
+        val dead = boss.copy(anchor = null, screen = fight.copy(combat = fight.combat.copy(phase = Phase.LOST))).ok(RunAction.Done)
+        assertEquals(false, (dead.screen as Screen.Over).won, "with no Anchor left, a fall ends the run")
         val won = boss.copy(screen = fight.copy(combat = fight.combat.copy(phase = Phase.WON))).ok(RunAction.Done)
         assertEquals(true, (won.screen as Screen.Over).won)
         assertNotNull(re.apply(won, RunAction.Done).error)

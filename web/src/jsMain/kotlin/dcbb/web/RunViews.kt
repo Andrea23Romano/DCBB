@@ -11,6 +11,7 @@ import dcbb.core.run.RunEngine
 import dcbb.core.run.RunState
 import dcbb.core.run.Screen
 import dcbb.core.run.ShopKind
+import dcbb.core.text.Glossary
 import dcbb.core.text.RulesText
 import dcbb.web.Views.Companion.esc
 import dcbb.web.Views.Companion.fv
@@ -28,6 +29,7 @@ class RunViews(private val app: App, private val views: Views) {
             append(views.masthead("Act ${s.act} · ${era.name} · $stepLine · seed ${s.seed}", run = true))
             append(runBar(s))
             append(runTools(r))
+            append(rewindConfirm(s))
             append(views.noticeBox())
             append("""<main class="run">""")
             append(
@@ -40,6 +42,7 @@ class RunViews(private val app: App, private val views: Views) {
                     is Screen.PickCard -> pickCard(s, sc)
                     is Screen.Note -> note(sc)
                     is Screen.Over -> over(sc)
+                    is Screen.Fallen -> fallen(s, sc)
                     is Screen.Fight -> ""
                 },
             )
@@ -74,6 +77,13 @@ class RunViews(private val app: App, private val views: Views) {
             val def = re.rc.ripple(rp)
             append("""<span class="chiplet is-ripple" title="${esc(def.text)}"><b>Ripple: ${esc(def.name)}</b> <small>${esc(def.text)}</small></span>""")
         }
+        val anchor = s.anchor
+        val anchorText = if (anchor != null) "Anchor: step ${anchor.step}" else "Anchor spent"
+        append("""<span class="chiplet is-anchor" title="${esc(ANCHOR_TIP)}"><b>${esc(anchorText)}</b></span>""")
+        if (s.branchPool.isNotEmpty()) {
+            append("""<span class="chiplet" title="${esc(POOL_TIP)}"><b>Branch Pool ${s.branchPool.size}</b></span>""")
+        }
+        for (e in s.echoesWaiting) append("""<span class="chiplet is-ripple"><b>An Echo waits in the next act</b></span>""")
         append("""<button type="button" class="linkish${if (app.drawer == Drawer.RUN_DECK) " is-on" else ""}" data-act="drawer" data-id="RUN_DECK">Deck ${s.deck.size}</button>""")
         append("""<button type="button" class="linkish${if (app.drawer == Drawer.RUN_LOG) " is-on" else ""}" data-act="drawer" data-id="RUN_LOG">Run log</button>""")
         append("</div></section>")
@@ -92,6 +102,8 @@ class RunViews(private val app: App, private val views: Views) {
         if (!r.state.over) {
             append("""<button type="button" data-act="run-bot">Bot decides</button>""")
             append(autoButtons(fight = false))
+            val canRewind = re.canRewind(r.state)
+            append("""<button type="button" data-act="run-rewind"${if (canRewind) "" else " disabled"} title="${esc(ANCHOR_TIP)}">Rewind to Anchor</button>""")
         }
         append("""<button type="button" data-act="copy">Copy run code</button>""")
         append("""<button type="button" data-act="to-setup">Leave run</button>""")
@@ -134,6 +146,12 @@ class RunViews(private val app: App, private val views: Views) {
             else -> "Step ${s.step}: choose one Moment"
         }
         append("""<section class="block"><h2 class="run-title">${esc(title)}</h2>""")
+        if (s.anchorOffer) {
+            append(
+                """<div class="notice is-anchor"><span>The Shrine lets you move your Anchor here, for free. Rewinding would bring you back to this step.</span>""" +
+                    """<button type="button" class="primary" data-act="run-anchor">Move your Anchor here</button></div>""",
+            )
+        }
         if (!single) append("""<p class="muted">Each step deals three Moments from the Era Deck. Foresight reveals what they hold, and one Moment of the next step.</p>""")
         append("""<div class="moments">""")
         for ((i, m) in w.options.withIndex()) append(moment(s, m, i))
@@ -158,12 +176,15 @@ class RunViews(private val app: App, private val views: Views) {
         val kind = buildList {
             add(m.type.label)
             if (m.tear) add("Tear")
-            if (m.ambush) add("Ambush")
+            if (m.ambush && m.returning == null) add("Ambush")
+            if (m.echo != null) add("Echo")
         }.joinToString(" · ")
         val details = if (revealed) details(m) else if (hasHidden(m)) """<span class="m-hidden">Foresight reveals more</span>""" else ""
-        val body = """<span class="m-top"><span class="m-type">${esc(kind)}</span>$threat</span>""" +
-            """<span class="m-title">${esc(m.title)}</span><span class="m-hint">${esc(hint(m))}</span>$details"""
-        val cls = "moment t-${m.type.name.lowercase()}"
+        val back = m.returning?.let { ret -> """<span class="m-return" title="${esc(POOL_TIP)}">Returning · ${esc(ret.label)}: ${esc(ret.hint)}</span>""" } ?: ""
+        val body = Art.moment(m, content.operative(s.operativeId)) +
+            """<span class="m-top"><span class="m-type">${esc(kind)}</span>$threat</span>""" +
+            """<span class="m-title">${esc(m.title)}</span>$back<span class="m-hint">${esc(hint(m))}</span>$details"""
+        val cls = "moment t-${m.type.name.lowercase()}${if (m.returning != null) " is-returning" else ""}"
         return if (index != null) {
             """<button type="button" class="$cls" data-act="run-choose" data-id="$index" style="--fc: var(--$color)">$body</button>"""
         } else {
@@ -175,7 +196,11 @@ class RunViews(private val app: App, private val views: Views) {
 
     private fun hint(m: Moment): String = when (m.type) {
         MomentType.COMBAT -> if (m.ambush) "They strike first · Hours · a card" else "15–25 Hours · a card"
-        MomentType.ELITE -> "40–55 Hours · a card · an Artifact"
+        MomentType.ELITE -> if (m.echo != null) {
+            "Your abandoned self, with the ${m.echo!!.deck.size}-card deck you had · Lost Weight: a card from it, or an Artifact"
+        } else {
+            "40–55 Hours · a card · an Artifact"
+        }
         MomentType.EVENT -> "A choice"
         MomentType.ANOMALY -> "Time weirdness"
         MomentType.ANTIQUARIAN -> "Buy cards and Artifacts · Erase · Inscribe"
@@ -186,6 +211,7 @@ class RunViews(private val app: App, private val views: Views) {
     }
 
     private fun details(m: Moment): String = when {
+        m.echo != null -> """<span class="m-detail">Echo of You ${m.echo!!.hp} HP</span>"""
         m.type.fight && m.ref != null -> {
             val foes = content.encounter(m.ref ?: "").enemies.groupingBy { it }.eachCount().entries.joinToString(", ") { (id, c) ->
                 val e = content.enemy(id)
@@ -205,12 +231,27 @@ class RunViews(private val app: App, private val views: Views) {
     private fun reward(s: RunState, r: Screen.Reward): String = buildString {
         append("""<section class="block"><h2 class="run-title">${esc(r.title)}</h2>""")
         append(lines(r.lines))
-        append("""<h3 class="label">Choose a card <span>or skip it for ${RunEngine.SKIP_HOURS} Hours</span></h3><div class="cards">""")
-        for ((i, id) in r.cards.withIndex()) append(defTile(content.card(id), "run-choose", i))
+        if (r.artifacts.isNotEmpty()) {
+            val head = if (r.lostWeight) "Or reclaim an Artifact" else "Choose an Artifact first"
+            append("""<h3 class="label">${esc(head)}</h3><div class="shoplist">""")
+            for ((i, a) in r.artifacts.withIndex()) {
+                val def = re.rc.artifact(a)
+                append(
+                    """<button type="button" class="ware" data-act="run-artifact" data-id="$i"><span class="ware-name">${esc(def.name)}</span>""" +
+                        """<span class="ware-text">${esc(def.text)}</span></button>""",
+                )
+            }
+            append("</div>")
+        }
+        val choose = if (r.lostWeight) "Reclaim a card from your Echo's deck" else "Choose a card"
+        append("""<h3 class="label">${esc(choose)} <span>or skip it for ${RunEngine.SKIP_HOURS} Hours</span></h3><div class="cards">""")
+        val locked = r.artifacts.isNotEmpty() && !r.lostWeight
+        for ((i, id) in r.cards.withIndex()) append(defTile(content.card(id), "run-choose", i, disabled = locked))
         append("</div>")
+        append(legend(r.cards))
         append("""<div class="btns">""")
-        if (!r.glimpsed) append("""<button type="button" data-act="run-glimpse">Glimpse: see the other branch's 3 cards (+${RunEngine.GLIMPSE_PARADOX} Paradox)</button>""")
-        append("""<button type="button" data-act="run-skip">Skip (+${RunEngine.SKIP_HOURS} Hours)</button></div></section>""")
+        if (!r.glimpsed && !r.lostWeight) append("""<button type="button" data-act="run-glimpse"${if (locked) " disabled" else ""}>Glimpse: see the other branch's 3 cards (+${RunEngine.GLIMPSE_PARADOX} Paradox)</button>""")
+        append("""<button type="button" data-act="run-skip"${if (locked) " disabled" else ""}>Skip (+${RunEngine.SKIP_HOURS} Hours)</button></div></section>""")
     }
 
     /** A card as a tile, from its definition (run screens show deck cards, not combat instances). */
@@ -218,12 +259,19 @@ class RunViews(private val app: App, private val views: Views) {
         val inner = """<span class="card-top"><span class="card-cost">${views.costPips(def.cost)}</span>""" +
             """<span class="card-type">${esc(RulesText.typeLine(def))} · ${def.rarity.name.lowercase()}</span></span>""" +
             """<span class="card-name">${esc(def.name)}</span><span class="card-text">${esc(RulesText.card(def))}</span>$extra"""
-        val style = """style="--fc: var(--${fv(def.faction)})""""
+        val style = """style="--fc: var(--${fv(def.faction)})" title="${esc(views.tipText(Glossary.card(def)))}""""
         return if (act != null) {
-            """<button type="button" class="card" data-act="$act" data-id="$id" $style${if (disabled) " disabled" else ""}>$inner</button>"""
+            """<button type="button" class="card" data-act="$act" data-id="$id" $style${if (disabled) " disabled" else ""}>${Art.card(def)}$inner</button>"""
         } else {
-            """<div class="card" $style>$inner</div>"""
+            """<div class="card" $style>${Art.card(def)}$inner</div>"""
         }
+    }
+
+    /** The keywords on the cards shown, explained once below them. */
+    private fun legend(ids: List<String>): String {
+        val entries = ids.flatMap { Glossary.card(content.card(it)) }.distinct()
+        if (entries.isEmpty()) return ""
+        return """<details class="legend"><summary>Keywords on these cards</summary>${views.glossary(entries)}</details>"""
     }
 
     // ---- the Antiquarian --------------------------------------------------------------------------------------
@@ -236,7 +284,9 @@ class RunViews(private val app: App, private val views: Views) {
             val price = """<span class="price${if (item.sold) " is-sold" else ""}">${if (item.sold) "Bought" else "${item.price} Hours"}</span>"""
             append(defTile(content.card(item.ref!!), "run-choose", i, price, disabled = item.sold || item.price > s.hours))
         }
-        append("</div><div class=\"shoplist\">")
+        append("</div>")
+        append(legend(sh.stock.filter { it.kind == ShopKind.CARD }.mapNotNull { it.ref }))
+        append("<div class=\"shoplist\">")
         for ((i, item) in sh.stock.withIndex()) {
             val (name, text) = when (item.kind) {
                 ShopKind.CARD -> continue
@@ -316,7 +366,9 @@ class RunViews(private val app: App, private val views: Views) {
                 append(defTile(def, "run-choose", i))
             }
         }
-        append("""</div><div class="btns"><button type="button" data-act="run-done">${if (pc.back != null) "Cancel" else "Skip"}</button></div></section>""")
+        append("</div>")
+        append(legend(s.deck.distinct()))
+        append("""<div class="btns"><button type="button" data-act="run-done">${if (pc.back != null) "Cancel" else "Skip"}</button></div></section>""")
     }
 
     // ---- notes and the end ------------------------------------------------------------------------------------
@@ -330,6 +382,24 @@ class RunViews(private val app: App, private val views: Views) {
             """<div class="btns"><button type="button" class="primary" data-act="run-new">New run</button>""" +
             """<button type="button" data-act="copy">Copy run code</button><button type="button" data-act="to-setup">Setup</button></div></section>"""
 
+    private fun fallen(s: RunState, f: Screen.Fallen): String {
+        val step = s.anchor?.step ?: 0
+        return """<section class="block result is-lost"><h2 class="run-title modal-title">${esc(f.title)}</h2>${lines(f.lines)}""" +
+            """<p>Your Anchor still holds. Rewind to step $step: you keep what Foresight showed you, Paradox rises by ${RunEngine.REWIND_DEATH_PARADOX}, """ +
+            """and the self you leave behind becomes an Echo you will meet later in the act.</p>""" +
+            """<div class="btns"><button type="button" class="primary" data-act="run-rewind-yes">Rewind to step $step (+${RunEngine.REWIND_DEATH_PARADOX} Paradox)</button>""" +
+            """<button type="button" data-act="run-done">Let the run end</button></div></section>"""
+    }
+
+    /** Rewinding outside combat asks once, in the page (the viewer can't show confirm dialogs). */
+    private fun rewindConfirm(s: RunState): String {
+        if (!app.confirmRewind || !re.canRewind(s) || s.screen is Screen.Fallen) return ""
+        val step = s.anchor?.step ?: 0
+        return """<div class="notice is-anchor" role="alertdialog"><span>Rewind to your Anchor at step $step? You lose everything since, except what Foresight showed you. """ +
+            """Paradox +${RunEngine.REWIND_PARADOX}, your Anchor is spent, and the self you leave behind becomes an Echo.</span>""" +
+            """<button type="button" class="primary" data-act="run-rewind-yes">Rewind</button><button type="button" data-act="run-rewind-no">Cancel</button></div>"""
+    }
+
     private fun lines(ls: List<String>) = if (ls.isEmpty()) "" else """<ul class="lines">${ls.joinToString("") { "<li>${esc(it)}</li>" }}</ul>"""
 
     private fun copyModal(text: String) =
@@ -337,4 +407,11 @@ class RunViews(private val app: App, private val views: Views) {
             """<h2 class="modal-title">Copy the run log</h2><p class="muted">Your browser blocked automatic copying. Select the text and copy it.</p>""" +
             """<textarea id="copy-text" rows="10" readonly spellcheck="false">${esc(text)}</textarea>""" +
             """<button type="button" class="primary" data-act="copy-close">Done</button></div></div>"""
+
+    private companion object {
+        const val ANCHOR_TIP = "Your Anchor holds the run as it was at the start of the act, or where you last Steadied or accepted a Shrine's offer. " +
+            "Rewind back to it outside combat (+3 Paradox) or when you fall (+5). It is spent once used."
+        const val POOL_TIP = "The Moments you don't choose wait in the Branch Pool. Each may return later, changed: fights as Ambushes, " +
+            "Elites Empowered, events as their Consequences, shops Looted, Shrines Desecrated."
+    }
 }

@@ -54,7 +54,7 @@ fun main(args: Array<String>) {
     }
     val decks = listOf("starter", "mid")
     val cells = buildList {
-        for (bot in bots) for (op in content.operatives.keys.sorted()) for (deck in decks) for (enc in content.encounters) {
+        for (bot in bots) for (op in content.operatives.keys.sorted()) for (deck in decks) for (enc in content.encounters.filter { !it.runOnly }) {
             add(CellSpec(bot, op, deck, enc))
         }
     }
@@ -233,7 +233,7 @@ private class Report(val content: Content, val cells: List<Cell>, val seeds: Int
         val header = ops.flatMap { op -> decks.map { "${content.operative(op).name} ($it)" } }
         line("| Encounter | Enemies | " + header.joinToString(" | ") + " |")
         line("|---|---|" + header.joinToString("") { "---|" })
-        for (enc in content.encounters) {
+        for (enc in content.encounters.filter { !it.runOnly }) {
             val enemies = enc.enemies.groupingBy { content.enemy(it).name }.eachCount()
                 .entries.joinToString(", ") { (n, c) -> if (c > 1) "$n ×$c" else n }
             val cols = ops.flatMap { op ->
@@ -319,7 +319,7 @@ private class Report(val content: Content, val cells: List<Cell>, val seeds: Int
         val flags = mutableListOf<String>()
         val greedy = cells.filter { it.spec.bot == primary }
         fun who(c: Cell) = "${content.operative(c.spec.op).name} (${c.spec.deck})"
-        for (enc in content.encounters) {
+        for (enc in content.encounters.filter { !it.runOnly }) {
             val cs = greedy.filter { it.spec.encounter.id == enc.id }
             if (cs.isEmpty()) continue
             val hard = cs.filter { it.winRate < 0.5 }

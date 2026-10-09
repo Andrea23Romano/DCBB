@@ -8,9 +8,9 @@ between fights (it never Glimpses and spends Foresight only to look at Elites). 
 
 | Operative | Act I cleared | Reached the boss | Boss win rate | HP entering the boss | Paradox entering the boss | Boss HP lost (wins) | Died before the boss |
 |---|---|---|---|---|---|---|---|
-| Oracle | 58% | 97% | 60% | 65% | 0.9 | 35% | 3% |
-| Splinter | 48% | 96% | 50% | 66% | 2.4 | 35% | 5% |
-| Vowknight | 100% | 100% | 100% | 68% | 0.9 | 24% | 1% |
+| Oracle | 74% | 100% | 60% | 66% | 0.9 | 37% | 0% |
+| Splinter | 72% | 99% | 52% | 65% | 2.7 | 33% | 1% |
+| Vowknight | 100% | 100% | 100% | 70% | 0.8 | 25% | 0% |
 
 ## What the runs looked like
 
@@ -18,17 +18,27 @@ Averages per run.
 
 | Operative | Fights | Elites | Cards taken | Skipped | Erased | Inscribed | Deck at the end | Hours earned | Hours spent | Artifacts | Foresight spent | Paradox peak |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Oracle | 5.0 | 0.2 | 4.0 | 0.0 | 0.8 | 1.2 | 13.8 | 109.5 | 127.6 | 0.7 | 1.9 | 1.0 |
-| Splinter | 5.0 | 0.1 | 4.0 | 0.0 | 0.8 | 0.9 | 13.8 | 107.7 | 120.5 | 0.8 | 1.8 | 3.4 |
-| Vowknight | 5.3 | 0.3 | 4.3 | 0.0 | 0.8 | 1.1 | 14.2 | 119.5 | 128.9 | 0.8 | 1.9 | 1.0 |
+| Oracle | 6.8 | 0.4 | 5.3 | 0.0 | 1.2 | 1.7 | 13.6 | 147.3 | 183.4 | 0.7 | 2.7 | 3.1 |
+| Splinter | 7.3 | 0.4 | 5.8 | 0.0 | 1.3 | 1.5 | 13.6 | 157.4 | 198.6 | 0.7 | 2.2 | 6.1 |
+| Vowknight | 5.3 | 0.3 | 4.3 | 0.0 | 1.0 | 1.2 | 13.9 | 119.1 | 142.1 | 0.9 | 2.0 | 0.9 |
+
+## Time travel
+
+Returning Moments and Rewinds. The bot always Rewinds when it falls with its Anchor unspent, never otherwise.
+
+| Operative | Returns dealt | Returns taken | Runs that Rewound | Cleared after a Rewind | Echoes fought | Anchor moves |
+|---|---|---|---|---|---|---|
+| Oracle | 5.6 | 1.0 | 41% | 30 of 82 | 0.1 | 0.2 |
+| Splinter | 6.1 | 1.2 | 51% | 44 of 101 | 0.1 | 0.2 |
+| Vowknight | 4.2 | 0.8 | 0% | – | 0.0 | 0.2 |
 
 ## Moments chosen
 
 | Operative | Combat | Elite | Event | Anomaly | Antiquarian | Still Point | Shrine | Cache |
 |---|---|---|---|---|---|---|---|---|
-| Oracle | 3.8 | 0.2 | 1.2 | 0.2 | 0.9 | 1.0 | 0.2 | 0.5 |
-| Splinter | 3.9 | 0.1 | 1.1 | 0.2 | 0.8 | 1.2 | 0.1 | 0.5 |
-| Vowknight | 4.0 | 0.3 | 1.0 | 0.2 | 0.8 | 1.0 | 0.1 | 0.6 |
+| Oracle | 5.0 | 0.4 | 1.7 | 0.2 | 1.3 | 1.7 | 0.2 | 0.5 |
+| Splinter | 5.5 | 0.4 | 1.6 | 0.2 | 1.5 | 1.8 | 0.2 | 0.5 |
+| Vowknight | 4.0 | 0.3 | 1.0 | 0.1 | 1.0 | 1.0 | 0.2 | 0.4 |
 
 ## Fights by kind
 
@@ -36,9 +46,9 @@ Share of max HP lost per fight, and how often that kind of fight ended the run.
 
 | Operative | Threat 1 | Threat 2 | Threat 3 | Elite | Boss | Unravels per fight |
 |---|---|---|---|---|---|---|
-| Oracle | 8% · 549 fights | 30% · 202 fights | 35% · 20 fights · 5 deaths | 52% · 35 fights · 1 deaths | 45% · 194 fights · 78 deaths | 0.00 |
-| Splinter | 8% · 545 fights | 31% · 222 fights · 5 deaths | 43% · 12 fights · 3 deaths | 58% · 29 fights · 1 deaths | 50% · 191 fights · 96 deaths | 0.05 |
-| Vowknight | 6% · 539 fights | 20% · 254 fights | 32% · 19 fights · 1 deaths | 36% · 50 fights | 24% · 199 fights | 0.00 |
+| Oracle | 9% · 747 fights · 2 deaths | 27% · 245 fights · 2 deaths | 36% · 17 fights · 1 deaths | 46% · 74 fights | 49% · 277 fights · 129 deaths | 0.00 |
+| Splinter | 9% · 819 fights · 1 deaths | 31% · 285 fights · 14 deaths | 38% · 10 fights · 3 deaths | 50% · 72 fights · 3 deaths | 48% · 280 fights · 137 deaths | 0.05 |
+| Vowknight | 7% · 572 fights | 21% · 212 fights | 25% · 14 fights | 34% · 65 fights | 25% · 200 fights | 0.00 |
 
 ## Encounters
 
@@ -46,26 +56,27 @@ All operatives together: fights, average share of max HP lost, and deaths.
 
 | Encounter | Fights | HP lost | Deaths |
 |---|---|---|---|
-| The Lattice Engine | 584 | 39% | 174 |
-| A Fraying Street | 341 | 4% | 0 |
-| A Footpad in the Fog | 315 | 7% | 0 |
-| A Rookery Tough | 311 | 9% | 0 |
-| A Squire Errant | 234 | 7% | 0 |
-| A Stray Proxy | 222 | 9% | 0 |
-| A Misprint on Drury Lane | 221 | 11% | 0 |
-| Fog on Fleet Street | 126 | 29% | 0 |
-| Loose Threads | 103 | 24% | 2 |
-| The Lamplighters' Round | 96 | 26% | 0 |
-| Misprinted Alley | 75 | 20% | 0 |
-| Rookery Brawl | 75 | 28% | 0 |
-| Proxy Patrol | 66 | 27% | 2 |
-| Drone Swarm | 63 | 27% | 0 |
-| Order Patrol | 62 | 36% | 1 |
-| The Rent | 52 | 43% | 1 |
-| The Pruner | 35 | 41% | 0 |
-| The Inquisitor | 28 | 61% | 1 |
-| The Unravelling | 17 | 38% | 3 |
-| The Rookery Gang | 10 | 30% | 0 |
-| The Line in the Fog | 8 | 46% | 2 |
-| The Misprinted Quarter | 8 | 30% | 3 |
-| Brass Constables | 8 | 32% | 1 |
+| The Lattice Engine | 757 | 42% | 266 |
+| A Fraying Street | 474 | 6% | 0 |
+| A Footpad in the Fog | 412 | 8% | 0 |
+| A Rookery Tough | 410 | 11% | 1 |
+| A Squire Errant | 330 | 7% | 0 |
+| A Stray Proxy | 295 | 9% | 0 |
+| A Misprint on Drury Lane | 265 | 13% | 2 |
+| Loose Threads | 137 | 28% | 3 |
+| Fog on Fleet Street | 137 | 31% | 4 |
+| The Lamplighters' Round | 94 | 25% | 1 |
+| Rookery Brawl | 87 | 27% | 3 |
+| The Rent | 85 | 39% | 0 |
+| Proxy Patrol | 71 | 29% | 2 |
+| Order Patrol | 62 | 33% | 2 |
+| Misprinted Alley | 59 | 22% | 0 |
+| The Pruner | 54 | 46% | 1 |
+| The Inquisitor | 51 | 62% | 2 |
+| Drone Swarm | 47 | 27% | 1 |
+| An Echo of You | 21 | 11% | 0 |
+| The Rookery Gang | 16 | 28% | 1 |
+| The Unravelling | 9 | 37% | 1 |
+| Brass Constables | 7 | 27% | 0 |
+| The Line in the Fog | 6 | 41% | 2 |
+| The Misprinted Quarter | 3 | 42% | 0 |

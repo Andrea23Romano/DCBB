@@ -501,7 +501,16 @@ The first playable slice ([10](10-roadmap.md#phase-1-status)) builds Act I of *T
 - **Shrines:** your own faction's altar offers its boons ([Shrines](#shrines-and-defection)); Fork, transform and swap boons wait for later systems, so the Errata Seam offers *Stitch yourself tighter* (−2 Paradox) instead. Another faction's altar can be Desecrated.
 - **Artifacts:** Antikythera Gear, Baghdad Cell, Clockwork Sparrow, Piri Reis Fragment, Gnomon Splinter, Lovelace's Notes, Bell of the Still Hour, Byzantine Fire Jar and Misprinted Psalter.
 - **Ripples of *The Notes*:** all except *Ash in the Margins* (it needs the Rift), *Holy Calculation* (Act II) and *A Debt Owed* (the Nexus).
-- **Not yet built:** Returning Moments, Anchors and Rewind, Imprints and XP, Defection and Standing effects, Forks, and Acts II and III.
+
+**Time travel on the map.** [Returning Moments](#returning-moments) and [Anchors and Rewind](#anchors-and-rewind) work as described above. The prototype settles these details:
+
+- **Consequences.** Every Act I event has one, written as a follow-up event: the Copyist in a cell, the Notes at auction, the serial's last number, a cold workshop, the mudlark robbed, the ward overflowing. Anomalies don't return.
+- **Which Moment a return replaces.** One the dealing rules didn't place and Foresight hasn't revealed. The Moment it displaces is not dealt. A Moment returns once at most.
+- **Your Anchor.** Steady moves it automatically. A Shrine offers the move, which you can accept on the next step's Weft. A spent Anchor can't be moved, so you Rewind once per act.
+- **Rewind** restores the run as it was at your Anchor, with the same Era Deck and the same random draws. It doesn't restore Paradox or Foresight charges, and Moments you revealed stay revealed. Rewind outside combat asks for confirmation first. When you fall with your Anchor unspent, you choose between Rewinding (+5 Paradox) and ending the run.
+- **The Echo of You** takes the place of an undealt Moment in a later step of this act, since later acts don't exist yet. Its HP is 60% of your max HP. It plays two of your old cards per round in a seeded order ([03](03-factions-and-operatives.md#enemy-rosters)). Beating it gives Elite Hours and **Lost Weight**: one card from its deck or an Artifact. With no later step left, the Echo waits for the next act.
+
+- **Not yet built:** Imprints and XP, Defection and Standing effects, Forks, and Acts II and III.
 
 ---
 

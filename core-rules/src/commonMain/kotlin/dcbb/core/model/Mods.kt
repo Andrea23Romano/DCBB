@@ -30,6 +30,8 @@ data class CombatMods(
     val attackPerParadox: Int = 0,
     /** Enemy max HP in percent, by faction (The Engine Never Built: Convergence 90). */
     val enemyHpPct: Map<Faction, Int> = emptyMap(),
+    /** Every enemy's max HP in percent (an Empowered Elite: 125). */
+    val hpPct: Int = 100,
     val enemyBoosts: List<EnemyBoost> = emptyList(),
     /** Ambush: the enemies act once before your first turn. */
     val ambush: Boolean = false,
@@ -44,6 +46,7 @@ data class CombatMods(
         enemyHpPct = (enemyHpPct.keys + o.enemyHpPct.keys).associateWith { f ->
             (enemyHpPct[f] ?: 100) * (o.enemyHpPct[f] ?: 100) / 100
         },
+        hpPct = hpPct * o.hpPct / 100,
         enemyBoosts = enemyBoosts + o.enemyBoosts,
         ambush = ambush || o.ambush,
     )

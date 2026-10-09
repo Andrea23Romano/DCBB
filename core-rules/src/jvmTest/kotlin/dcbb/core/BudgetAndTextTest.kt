@@ -165,9 +165,30 @@ class BudgetAndTextTest {
     }
 
     @Test
+    fun `tooltips name exactly the keywords a card uses`() {
+        fun terms(id: String) = dcbb.core.text.Glossary.card(content.card(id)).map { it.term }
+        assertEquals(listOf("Attuned"), terms("order.line_strike"))
+        assertEquals(listOf("Vow", "Constant", "Strike"), terms("order.vow_of_the_sword"))
+        assertEquals(listOf("Delay", "Calculated", "Known"), terms("conv.hold_pattern"))
+        assertTrue("Iterate" in terms("conv.recursive_strike"))
+        assertTrue("Fork card" in terms("errata.two_places_at_once"))
+        assertTrue("Misprinted" in terms("order.line_strike~"))
+        assertTrue("Bleed-through" in terms("errata.crosstalk") && "Paradox" in terms("errata.crosstalk"))
+        // Every authored card's tooltips come from its own effects; none is empty for a keyworded card.
+        for (def in content.authored) {
+            val text = RulesText.typeLine(def) + " " + RulesText.card(def)
+            for (entry in dcbb.core.text.Glossary.card(def)) {
+                val stem = entry.term.substringBefore(" ").substringBefore("-").removeSuffix("ed").lowercase().take(5)
+                val inText = stem in text.lowercase() || entry.term in setOf("Known", "Constant", "Block", "Dawn / Dusk", "Strike", "Fork card", "Misprint", "Shift")
+                assertTrue(inText, "${def.id}: tooltip ${entry.term} but the text says: $text")
+            }
+        }
+    }
+
+    @Test
     fun `rules text respects the 140 character cap`() {
         for (def in content.cards.values) {
-            val text = RulesText.card(def)
+            val text = RulesText.typeLine(def) + " " + RulesText.card(def)
             assertTrue(text.length <= 140, "${def.id} renders ${text.length} characters: $text")
         }
     }

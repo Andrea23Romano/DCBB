@@ -114,6 +114,7 @@ class App(private val root: Element) {
     var session: Session? = null
     var run: RunSession? = null
     var auto = Auto.NONE
+    var confirmRewind = false
     var pick: Pick? = null
     var foresee: ForeseeDraft? = null
     var notice: String? = null
@@ -231,6 +232,14 @@ class App(private val root: Element) {
                 runAct(RunAction.Done)
             }
             "run-bot" -> run?.let { r -> runAct(r.bot.act(runEngine, r.state)) }
+            "run-artifact" -> if (n != null) runAct(RunAction.TakeArtifact(n))
+            "run-anchor" -> runAct(RunAction.SetAnchor)
+            "run-rewind" -> confirmRewind = true
+            "run-rewind-no" -> confirmRewind = false
+            "run-rewind-yes" -> {
+                confirmRewind = false
+                runAct(RunAction.Rewind)
+            }
             "auto-fight" -> startAuto(Auto.FIGHT)
             "auto-run" -> startAuto(Auto.RUN)
             "auto-stop" -> auto = Auto.NONE
@@ -454,6 +463,7 @@ class App(private val root: Element) {
         r.state = out.state
         r.actions += a
         r.log += out.log
+        confirmRewind = false
         r.events += out.events.map { it.text }
         pick = null
         hint = null
@@ -571,7 +581,7 @@ class App(private val root: Element) {
         if (parts.size != 3) return default
         val (op, deck, enc) = parts
         val valid = op in content.operatives && content.decks[op]?.containsKey(deck) == true &&
-            content.encounters.any { it.id == enc }
+            content.encounters.any { it.id == enc && !it.runOnly }
         return if (valid) Setup(op, deck, enc, default.seed) else default
     }
 

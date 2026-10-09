@@ -2,6 +2,7 @@ package dcbb.core.run
 
 import dcbb.core.content.Variants
 import dcbb.core.engine.CombatSetup
+import dcbb.core.engine.EchoSetup
 import dcbb.core.engine.Engine
 import dcbb.core.engine.GameEvent
 import dcbb.core.engine.Rng
@@ -20,10 +21,11 @@ import dcbb.core.state.Phase
  * The run layer (docs/05): a pure reducer over [RunState], like the combat [Engine] it wraps. A run is a seed plus
  * a list of [RunAction]s, so it saves, replays and simulates exactly.
  *
- * This first slice plays Act I of The First Hour: the Weft and its dealing rules, fights with HP, Paradox and Debt
- * carried between them, card rewards with Glimpse and Skip, Inscribe and Erase, the Antiquarian, Still Points,
- * Caches, Shrines, events with a Divergence and its Ripples, Artifacts, Paradox thresholds, and the act boss.
- * Not yet: Returning Moments, Anchors and Rewind, Imprints and XP, Defection, Standing effects, Forks.
+ * This first slice plays Act I of The First Hour: the Weft and its dealing rules, Returning Moments, fights with HP,
+ * Paradox and Debt carried between them, card rewards with Glimpse and Skip, Inscribe and Erase, the Antiquarian,
+ * Still Points, Caches, Shrines, events with a Divergence and its Ripples, Artifacts, Paradox thresholds, Anchors
+ * and Rewind with the Echo of You, and the act boss.
+ * Not yet: Imprints and XP, Defection, Standing effects, Forks, Acts II and III.
  */
 class RunEngine(val rc: RunContent) {
     val content = rc.content
@@ -53,6 +55,17 @@ class RunEngine(val rc: RunContent) {
         const val FORESIGHT_PRICE = 40
         const val CACHE_HOURS = 60
         const val COMBAT_ARTIFACT_PCT = 5
+
+        /** Each Moment in the Branch Pool returns with this chance per step; at most one returns (docs/05). */
+        const val RETURN_PCT = 25
+        const val AMBUSH_HOURS_PCT = 150
+        const val EMPOWERED_HP_PCT = 125
+        const val LOOTED_PRICE_PCT = 70
+        const val REWIND_PARADOX = 3
+        const val REWIND_DEATH_PARADOX = 5
+
+        /** The Moment types that wait in the Branch Pool. Rest and treasure don't wait for you. */
+        private val RETURNABLE = setOf(MomentType.COMBAT, MomentType.ELITE, MomentType.EVENT, MomentType.ANTIQUARIAN, MomentType.SHRINE)
 
         fun cardPrice(r: Rarity): Int = when (r) {
             Rarity.COMMON, Rarity.STARTER -> 45
@@ -91,6 +104,7 @@ class RunEngine(val rc: RunContent) {
         tx.planAct()
         val first = tx.deal(0)
         tx.s = tx.s.copy(screen = Screen.Weft(first))
+        tx.setAnchor(moved = false)
         return tx.outcome()
     }
 
@@ -125,8 +139,15 @@ class RunEngine(val rc: RunContent) {
         for (r in state.ripples) m += rc.ripple(r).mods
         if (state.paradox >= UNSTABLE) m += CombatMods(enemyBoosts = listOf(EnemyBoost(StatusType.MIGHT, 1, eliteOnly = true)))
         if (moment?.ambush == true) m += CombatMods(ambush = true)
+        if (moment?.returning == Returning.EMPOWERED) {
+            m += CombatMods(hpPct = EMPOWERED_HP_PCT, enemyBoosts = listOf(EnemyBoost(StatusType.MIGHT, 1, eliteOnly = true)))
+        }
         return m
     }
+
+    /** Rewind is open outside combat while your Anchor holds, and when you fall. */
+    fun canRewind(state: RunState): Boolean =
+        state.anchor != null && state.screen !is Screen.Fight && state.screen !is Screen.Over
 
     fun canInscribe(id: String): Boolean =
         !Variants.isInscribed(id) && !Variants.isMisprinted(id) && Variants.inscribedId(id) in content.cards
@@ -216,7 +237,30 @@ class RunEngine(val rc: RunContent) {
             return Moment(id, type, title, ref, faction, threat, pinned, tear, ambush)
         }
 
-        fun act(a: RunAction): String? = when (val sc = s.screen) {
+        /** The same Moment under a fresh id (a return, an Echo): ids seed fights and key Foresight. */
+        fun renew(m: Moment): Moment {
+            val id = s.nextId
+            s = s.copy(nextId = id + 1)
+            return m.copy(id = id)
+        }
+
+        fun act(a: RunAction): String? {
+            if (a == RunAction.Rewind) {
+                if (s.anchor == null) return if (s.stats.rewinds > 0) "Your Anchor is spent" else "You have no Anchor"
+                if (s.screen is Screen.Fight) return "You can't Rewind in the middle of a fight"
+                rewind(fromDeath = s.screen is Screen.Fallen)
+                return null
+            }
+            return dispatch(a)
+        }
+
+        private fun dispatch(a: RunAction): String? = when (val sc = s.screen) {
+            is Screen.Fallen -> if (a == RunAction.Done) {
+                s = s.copy(screen = Screen.Over(false, sc.title, sc.lines + chronicle()))
+                null
+            } else {
+                "Rewind to your Anchor, or let the run end"
+            }
             is Screen.Weft -> onWeft(sc, a)
             is Screen.Fight -> onFight(sc, a)
             is Screen.Reward -> onReward(sc, a)
@@ -356,7 +400,45 @@ class RunEngine(val rc: RunContent) {
                     log += "Unstable: the Weave slips, and an Anomaly is dealt."
                 }
             }
-            return options
+            return withReturn(index, options)
+        }
+
+        /**
+         * Returning Moments (docs/05): each Moment in the Branch Pool returns with a 25% chance; at most one does, and
+         * it takes the place of a dealt Moment that no rule placed and Foresight hasn't revealed.
+         */
+        private fun withReturn(index: Int, options: List<Moment>): List<Moment> {
+            if (s.branchPool.isEmpty()) return options
+            val hits = s.branchPool.filter { chance(RETURN_PCT) }
+            val slots = options.indices.filter { replaceable(options[it]) }
+            if (hits.isEmpty() || slots.isEmpty()) return options
+            val back = pick(hits)
+            val returned = returning(back) ?: return options
+            val at = pick(slots)
+            val dealt = options.toMutableList().also { it[at] = returned }
+            s = s.copy(
+                branchPool = s.branchPool.filter { it.id != back.id },
+                plan = s.plan.toMutableList().also { it[index] = dealt },
+                stats = s.stats.copy(returnsDealt = s.stats.returnsDealt + 1),
+            )
+            log += "Returning: ${back.title} comes back ${returned.returning?.label?.lowercase()}."
+            return dealt
+        }
+
+        /** How a Moment comes back, or null when it can't (an event with no Consequence written). */
+        private fun returning(m: Moment): Moment? = when (m.type) {
+            MomentType.COMBAT -> renew(m.copy(returning = Returning.AMBUSH, ambush = true))
+            MomentType.ELITE -> renew(m.copy(returning = Returning.EMPOWERED))
+            MomentType.EVENT -> m.ref?.let { rc.event(it).consequence }?.let { cid ->
+                renew(m.copy(returning = Returning.CONSEQUENCE, ref = cid, title = rc.event(cid).teaser, pinned = false))
+            }
+            MomentType.ANTIQUARIAN -> renew(m.copy(returning = Returning.LOOTED, pinned = false))
+            MomentType.SHRINE -> {
+                val f = pick(listOf(Faction.ORDER, Faction.CONVERGENCE, Faction.ERRATA).filter { it != m.faction })
+                val ev = rc.event(rc.shrines.getValue(f))
+                renew(m.copy(returning = Returning.DESECRATED, faction = f, ref = ev.id, title = "${ev.title}, Desecrated"))
+            }
+            else -> null
         }
 
         private fun replaceable(m: Moment) = !m.pinned && m.id !in s.revealed && m.type in setOf(
@@ -402,7 +484,20 @@ class RunEngine(val rc: RunContent) {
         fun onWeft(w: Screen.Weft, a: RunAction): String? = when (a) {
             is RunAction.Choose -> {
                 val m = w.options.getOrNull(a.index) ?: return "No such Moment"
+                // The branches you didn't take wait in the Branch Pool. A Moment that already returned doesn't again.
+                val unchosen = w.options.filter { it.id != m.id && it.type in RETURNABLE && it.returning == null && !it.ambush }
+                s = s.copy(
+                    branchPool = s.branchPool + unchosen,
+                    anchorOffer = false,
+                    stats = if (m.returning != null) s.stats.copy(returnsTaken = s.stats.returnsTaken + 1) else s.stats,
+                )
                 enter(m)
+                null
+            }
+            RunAction.SetAnchor -> {
+                if (!s.anchorOffer) return "You can move your Anchor only at a Still Point (Steady) or a Shrine"
+                setAnchor(moved = true)
+                log += "You move your Anchor here."
                 null
             }
             RunAction.Foresight -> {
@@ -429,9 +524,9 @@ class RunEngine(val rc: RunContent) {
             log += "Step ${s.step}: ${m.title} (${m.type.label})"
             s = s.copy(stats = s.stats.copy(chosen = s.stats.chosen + (m.type to (s.stats.chosen[m.type] ?: 0) + 1)))
             when (m.type) {
-                MomentType.COMBAT, MomentType.ELITE, MomentType.BOSS -> startFight(m, 1)
+                MomentType.COMBAT, MomentType.ELITE, MomentType.BOSS -> startFight(m, 100)
                 MomentType.EVENT, MomentType.ANOMALY, MomentType.SHRINE -> openEvent(m.ref ?: error("Event Moment without an event"))
-                MomentType.ANTIQUARIAN -> {
+                MomentType.ANTIQUARIAN -> if (m.returning == Returning.LOOTED) looted() else {
                     val stock = stock()
                     s = s.copy(screen = Screen.Shop(stock))
                 }
@@ -442,22 +537,26 @@ class RunEngine(val rc: RunContent) {
 
         // ---- fights -------------------------------------------------------------------------------------------
 
-        fun startFight(m: Moment, hoursMult: Int) {
+        fun startFight(m: Moment, hoursPct: Int) {
             val enc = content.encounter(m.ref ?: error("Fight Moment without an encounter"))
+            val seed = s.seed * 1_000_003L + s.act * 7_919L + m.id * 104_729L
+            val echo = m.echo?.let { EchoSetup(it.hp, Echoes.intents(content, it.deck, seed)) }
             val setup = CombatSetup(
                 operativeId = s.operativeId,
                 deck = s.deck,
                 enemies = enc.enemies,
-                seed = s.seed * 1_000_003L + s.act * 7_919L + m.id * 104_729L,
+                seed = seed,
                 hp = s.hp,
                 paradox = s.paradox,
                 debt = s.debt,
                 maxHp = s.maxHp,
                 mods = mods(s, m),
+                echo = echo,
             )
             val out = engine.start(setup)
             events += out.events
-            s = s.copy(screen = Screen.Fight(m, out.state, hoursMult))
+            val pct = hoursPct * (if (m.returning == Returning.AMBUSH) AMBUSH_HOURS_PCT else 100) / 100
+            s = s.copy(screen = Screen.Fight(m, out.state, pct))
         }
 
         fun onFight(f: Screen.Fight, a: RunAction): String? {
@@ -487,6 +586,7 @@ class RunEngine(val rc: RunContent) {
             s = s.copy(
                 stats = s.stats.copy(
                     fights = s.stats.fights + 1,
+                    echoesFought = s.stats.echoesFought + if (f.moment.echo != null) 1 else 0,
                     elites = s.stats.elites + if (f.moment.type == MomentType.ELITE) 1 else 0,
                     hpLostInFights = s.stats.hpLostInFights + maxOf(0, s.hp - maxOf(0, p.hp)),
                     fightRecords = s.stats.fightRecords + record,
@@ -495,7 +595,12 @@ class RunEngine(val rc: RunContent) {
             when (c.phase) {
                 Phase.LOST -> {
                     val where = if (s.step > era.steps) "at the end of Act ${s.act}" else "at step ${s.step} of Act ${s.act}"
-                    s = s.copy(hp = 0, screen = Screen.Over(false, "You fell", listOf("${enc.name} ended your run in round ${c.round}, $where.") + chronicle()))
+                    val line = "${enc.name} ended your run in round ${c.round}, $where."
+                    s = if (s.anchor != null) {
+                        s.copy(hp = 0, screen = Screen.Fallen("You fell", listOf(line)))
+                    } else {
+                        s.copy(hp = 0, screen = Screen.Over(false, "You fell", listOf(line) + chronicle()))
+                    }
                 }
                 Phase.DRAW -> {
                     carry(c)
@@ -522,19 +627,41 @@ class RunEngine(val rc: RunContent) {
 
         private fun reward(f: Screen.Fight, name: String) {
             val elite = f.moment.type == MomentType.ELITE
-            val hours = (if (elite) 40 + rand(16) else 15 + rand(11)) * f.hoursMult
+            val hours = (if (elite) 40 + rand(16) else 15 + rand(11)) * f.hoursPct / 100
             val lines = mutableListOf<String>()
             gainHours(hours)
             lines += "+$hours Hours"
-            if (elite || chance(COMBAT_ARTIFACT_PCT)) randomArtifact()?.let { lines += gainArtifact(it) }
+            val echo = f.moment.echo
+            if (echo != null) {
+                // Lost Weight: a card from its deck, or an Artifact.
+                val cards = shuffled(echo.deck.distinct().sortedBy { if (content.card(it).rarity == Rarity.STARTER) 1 else 0 })
+                    .sortedBy { if (content.card(it).rarity == Rarity.STARTER) 1 else 0 }.take(3)
+                val artifact = randomArtifact()
+                lines += "Lost Weight: reclaim one card from your Echo's deck, or an Artifact."
+                s = s.copy(screen = Screen.Reward("Victory: $name", cards, lines, elite, artifacts = listOfNotNull(artifact), lostWeight = true))
+                return
+            }
+            val choices = if (f.moment.returning == Returning.EMPOWERED) {
+                shuffled(rc.artifacts.keys.filter { it !in s.artifacts }.sorted()).take(2)
+            } else {
+                if (elite || chance(COMBAT_ARTIFACT_PCT)) randomArtifact()?.let { lines += gainArtifact(it) }
+                emptyList()
+            }
             val cards = rollCards(elite)
-            s = s.copy(screen = Screen.Reward("Victory: $name", cards, lines, elite))
+            s = s.copy(screen = Screen.Reward("Victory: $name", cards, lines, elite, artifacts = choices))
         }
 
         // ---- rewards ------------------------------------------------------------------------------------------
 
         fun onReward(r: Screen.Reward, a: RunAction): String? = when (a) {
+            is RunAction.TakeArtifact -> {
+                val id = r.artifacts.getOrNull(a.index) ?: return "No such Artifact"
+                gainArtifact(id)
+                if (r.lostWeight) advance() else s = s.copy(screen = r.copy(artifacts = emptyList(), lines = r.lines + "Artifact: ${rc.artifact(id).name}."))
+                null
+            }
             is RunAction.Choose -> {
+                if (r.artifacts.isNotEmpty() && !r.lostWeight) return "Choose an Artifact first"
                 val id = r.cards.getOrNull(a.index) ?: return "No such card"
                 s = s.copy(deck = s.deck + id, stats = s.stats.copy(cardsTaken = s.stats.cardsTaken + 1))
                 log += "You take ${content.card(id).name}."
@@ -542,6 +669,7 @@ class RunEngine(val rc: RunContent) {
                 null
             }
             RunAction.Glimpse -> {
+                if (r.lostWeight) return "Lost Weight can't be Glimpsed"
                 if (r.glimpsed) return "You already Glimpsed this reward"
                 s = s.copy(stats = s.stats.copy(glimpses = s.stats.glimpses + 1))
                 val more = rollCards(r.elite, exclude = r.cards.toSet())
@@ -551,6 +679,7 @@ class RunEngine(val rc: RunContent) {
                 null
             }
             RunAction.Skip, RunAction.Done -> {
+                if (r.artifacts.isNotEmpty() && !r.lostWeight) return "Choose an Artifact first"
                 gainHours(SKIP_HOURS)
                 s = s.copy(stats = s.stats.copy(skipped = s.stats.skipped + 1))
                 log += "You skip the cards (+$SKIP_HOURS Hours)."
@@ -720,8 +849,9 @@ class RunEngine(val rc: RunContent) {
                 2 -> {
                     if (r.healed || r.inscribed) return "You already rested"
                     changeParadox(-STEADY)
-                    log += "You steady yourself (−$STEADY Paradox)."
+                    log += "You steady yourself (−$STEADY Paradox)" + if (s.anchor != null) " and move your Anchor here." else "."
                     advance()
+                    setAnchor(moved = true)
                 }
                 else -> return "Choose heal, Inscribe or Steady"
             }
@@ -828,6 +958,10 @@ class RunEngine(val rc: RunContent) {
                 log += "Ripple: ${r.name}."
                 for (e in r.now) applyEffect(e, lines)
             }
+            if (def.kind == EventKind.SHRINE && s.anchor != null) {
+                s = s.copy(anchorOffer = true)
+                lines += "You may move your Anchor to the next step, for free."
+            }
             val note = Screen.Note(def.title, lines.ifEmpty { listOf("Nothing changes, as far as you can tell.") })
             val f = fight
             val pk = picks
@@ -835,7 +969,7 @@ class RunEngine(val rc: RunContent) {
                 f != null -> {
                     val enc = f.encounter ?: s.lastEncounter ?: pick(era.combats.filter { it.threat == 1 }).encounter
                     val e = content.encounter(enc)
-                    startFight(moment(MomentType.COMBAT, e.name, e.id, factionOf(e.id), 2), f.hoursMult)
+                    startFight(moment(MomentType.COMBAT, e.name, e.id, factionOf(e.id), 2), f.hoursMult * 100)
                 }
                 pk != null -> s = s.copy(screen = Screen.PickCard(pk.purpose, pk.count, next = note, back = null))
                 else -> s = s.copy(screen = note)
@@ -908,6 +1042,75 @@ class RunEngine(val rc: RunContent) {
             log += "PARADOX 10: the Weave tears around you. Misprinted: ${names.ifEmpty { "nothing" }}. The Tear will find you next."
         }
 
+        // ---- Anchors and Rewind (docs/05 "Anchors and Rewind") ---------------------------------------------------
+
+        /** Your Anchor holds the run as it is now: the Weft of this step. A spent Anchor can't be moved (one per act). */
+        fun setAnchor(moved: Boolean) {
+            if (moved && s.anchor == null) return
+            s = s.copy(
+                anchor = s.copy(anchor = null, anchorOffer = false),
+                anchorOffer = false,
+                stats = if (moved) s.stats.copy(anchorMoves = s.stats.anchorMoves + 1) else s.stats,
+            )
+        }
+
+        /**
+         * Back to the Anchor. Restored: HP, deck, Hours, Artifacts, Standing, the Ledger, the Era Deck and the Branch
+         * Pool. Not restored: Paradox (+3, or +5 from death), Foresight charges, and whatever Foresight revealed.
+         * Your abandoned self becomes an Echo in a later step of the act.
+         */
+        fun rewind(fromDeath: Boolean) {
+            val anchor = s.anchor ?: return
+            val now = s
+            val echo = EchoSpec(now.deck, maxOf(1, now.maxHp * Echoes.HP_PCT / 100), now.step)
+            s = anchor.copy(
+                paradox = now.paradox,
+                foresight = now.foresight,
+                revealed = anchor.revealed + now.revealed,
+                nextId = now.nextId,
+                stats = now.stats.copy(
+                    rewinds = now.stats.rewinds + 1,
+                    rewindsFromDeath = now.stats.rewindsFromDeath + if (fromDeath) 1 else 0,
+                ),
+                anchor = null,
+                anchorOffer = false,
+                echoesWaiting = now.echoesWaiting,
+            )
+            log += if (fromDeath) "You Rewind from your death to your Anchor at step ${s.step}." else "You Rewind to your Anchor at step ${s.step}."
+            insertEcho(echo)
+            changeParadox(if (fromDeath) REWIND_DEATH_PARADOX else REWIND_PARADOX)
+        }
+
+        /** The Echo takes the place of a Moment in a later step of this act, or waits for the next act. */
+        private fun insertEcho(echo: EchoSpec) {
+            val enc = content.encounter(Echoes.ENCOUNTER)
+            val spots = (s.step until s.plan.size).flatMap { i -> s.plan[i].indices.map { i to it } }
+                .filter { (i, j) -> replaceable(s.plan[i][j]) }
+            if (spots.isEmpty()) {
+                s = s.copy(echoesWaiting = s.echoesWaiting + echo)
+                log += "Your Echo slips into the next act."
+                return
+            }
+            val (i, j) = spots[s.rng.nextInt(spots.size, Stream.ENEMY).let { (v, r) -> s = s.copy(rng = r); v }]
+            val m = moment(MomentType.ELITE, enc.name, enc.id, op.faction, 3).copy(echo = echo)
+            s = s.copy(plan = s.plan.map { it.toMutableList() }.also { it[i][j] = m })
+            log += "Your abandoned self becomes an Echo. It waits at step ${i + 1}."
+        }
+
+        /** A Looted Antiquarian: half the stock at −30%, or nothing at all (docs/05). */
+        private fun looted() {
+            if (chance(50)) {
+                s = s.copy(screen = Screen.Note("Looted", listOf("Someone got here first. The shelves are bare and the Antiquarian is gone.")))
+                return
+            }
+            val stock = stock()
+            val goods = stock.filter { it.kind == ShopKind.CARD || it.kind == ShopKind.ARTIFACT }
+            val kept = shuffled(goods).take((goods.size + 1) / 2).toSet()
+            val left = stock.filter { it.kind != ShopKind.CARD && it.kind != ShopKind.ARTIFACT || it in kept }
+                .map { if (it in kept) it.copy(price = it.price * LOOTED_PRICE_PCT / 100) else it }
+            s = s.copy(screen = Screen.Shop(left))
+        }
+
         // ---- Caches -------------------------------------------------------------------------------------------
 
         private fun openCache() {
@@ -940,6 +1143,7 @@ class RunEngine(val rc: RunContent) {
             add("Deck: ${s.deck.size} cards · taken ${st.cardsTaken}, skipped ${st.skipped}, Erased ${st.erased}, Inscribed ${st.inscribed}")
             add("Hours earned ${st.hoursEarned}, spent ${st.hoursSpent} · Foresight spent ${st.foresightSpent} · Glimpses ${st.glimpses}")
             add("Paradox peak ${st.paradoxPeak} · out-of-combat Unravels ${st.unravels}")
+            add("Returning Moments dealt ${st.returnsDealt}, taken ${st.returnsTaken} · Rewinds ${st.rewinds} · Echoes fought ${st.echoesFought}")
             if (s.artifacts.isNotEmpty()) add("Artifacts: " + s.artifacts.joinToString(", ") { rc.artifact(it).name })
             if (s.ripples.isNotEmpty()) add("Ripples: " + s.ripples.joinToString(", ") { rc.ripple(it).name })
             if (s.ledger.isNotEmpty()) add("Ledger: " + s.ledger.joinToString(", "))

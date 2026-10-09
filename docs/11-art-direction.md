@@ -219,6 +219,18 @@ Production rules for each kind of asset. "AI + finishing" means generated in a h
 | **VFX** (Branch Variant, Tear rip, Track tick) | Engine shaders | n/a | AGSL + static fallback | n/a | Motion test on device |
 | **Store assets** | AI + heavy finishing (consider a human illustrator for key art and the logo) | Google Play: 512×512 icon, 1024×500 feature graphic | PNG | Brand-safe, no small text in art | Store page test |
 
+### Placeholders in the prototype
+
+Until the golden set exists, the web test client draws **procedural placeholders** from these rules, so play-tests already show each faction and card type at a glance:
+
+- the vellum ground with woven threads
+- each faction's medium: gold diaper on lapis, cyan engraving on porcelain, torn collage with a magenta misprint offset, and rips into the void
+- the era palette for era subjects
+- the frame's top shape by card type, and the thread color by rarity
+- one emblem per card's main effect (a blade, a shield, an eye, an hourglass, a gear...) or a bust per enemy
+
+They hold no text, and each one is seeded by its subject's id, so it never changes between visits. They are placeholders: no asset ships from them.
+
 ---
 
 ## Readability Tests

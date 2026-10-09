@@ -167,4 +167,5 @@ data class EnemyDef(
     val elite: Boolean = false,
 )
 
-data class Encounter(val id: String, val name: String, val enemies: List<String>, val elite: Boolean = false)
+/** [runOnly] encounters need run data (an Echo's deck), so the combat lab and the fight simulator skip them. */
+data class Encounter(val id: String, val name: String, val enemies: List<String>, val elite: Boolean = false, val runOnly: Boolean = false)

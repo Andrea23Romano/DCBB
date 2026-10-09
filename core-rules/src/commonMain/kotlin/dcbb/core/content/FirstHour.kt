@@ -120,6 +120,7 @@ object FirstHour {
                 choice("report", "Take the page. The Line will judge it.", standing(Faction.ORDER, 1), hours(40), flag("scribe_reported")),
                 choice("read", "Read it first.", paradox(2), RunEffect.Foresight(1), flag("read_forbidden_page")),
             ),
+            consequence = "london.copyist_in_a_cell",
         ),
         EventDef(
             "london.the_notes", "The Notes", "Ink and Brass", EventKind.DIVERGENCE,
@@ -132,6 +133,7 @@ object FirstHour {
                 choice("stranger", "Give them to the stranger from 2049.", flag("london.notes_to_stranger"), ripples = listOf("bootstrapped", "signal_loop")),
                 choice("untouched", "Let history run.", flag("london.notes_untouched"), ripples = listOf("as_written", "tear_notices")),
             ),
+            consequence = "london.notes_at_auction",
         ),
         EventDef(
             "london.penny_dreadful", "A Penny Dreadful", "A Boy Crying the News", EventKind.ENCOUNTER,
@@ -142,6 +144,7 @@ object FirstHour {
                 choice("author", "Find out who writes it.", paradox(1), RunEffect.GainCard(CardPool(rarity = Rarity.UNCOMMON)), flag("london.author_sought")),
                 choice("walk", "Walk on."),
             ),
+            consequence = "london.penny_dreadful_ending",
         ),
         EventDef(
             "london.babbage_workshop", "Babbage's Workshop", "Brass behind a Shutter", EventKind.ENCOUNTER,
@@ -152,6 +155,7 @@ object FirstHour {
                 choice("sell", "Strip the brass and sell it.", hours(60), standing(Faction.CONVERGENCE, -1)),
                 choice("leave", "Leave it counting.", flag("london.engine_left_counting")),
             ),
+            consequence = "london.workshop_cold",
         ),
         EventDef(
             "london.mudlark", "The Mudlark", "Low Tide at Blackfriars", EventKind.ENCOUNTER,
@@ -162,6 +166,7 @@ object FirstHour {
                 choice("patrols", "Pay her for the patrols.", hours(-15), RunEffect.Foresight(1)),
                 choice("leave", "Leave her to the tide."),
             ),
+            consequence = "london.mudlark_robbed",
         ),
         EventDef(
             "london.broad_street", "The Night Ward", "Lanterns at a Ward Door", EventKind.ENCOUNTER,
@@ -170,6 +175,69 @@ object FirstHour {
             listOf(
                 choice("work", "Work the night shift.", RunEffect.LoseHp(6), RunEffect.Pick(Purpose.INSCRIBE), standing(Faction.ORDER, 1)),
                 choice("laudanum", "Take laudanum from the dispensary.", RunEffect.HealPct(20), paradox(1)),
+                choice("leave", "Keep walking."),
+            ),
+            consequence = "london.ward_overflowing",
+        ),
+        // Consequences: what an event became while you were elsewhere (docs/05 "Returning Moments").
+        EventDef(
+            "london.copyist_in_a_cell", "The Copyist, in a Cell", "A Name in the Charge Book", EventKind.ENCOUNTER,
+            "The scribe from the cellar is in a cell at Bow Street now, her page held as evidence. A sergeant of the " +
+                "Line sits by the door with the keys on his belt. She recognizes you before he does.",
+            listOf(
+                choice("free", "Get her out.", RunEffect.LoseHp(5), standing(Faction.ORDER, -1), standing(Faction.ERRATA, 1), flag("scribe_freed")),
+                choice("bribe", "Pay the sergeant to look away.", hours(-30), standing(Faction.ERRATA, 1), flag("scribe_freed")),
+                choice("testify", "Tell the sergeant what you saw.", standing(Faction.ORDER, 1), hours(25), flag("scribe_testified")),
+            ),
+        ),
+        EventDef(
+            "london.notes_at_auction", "The Notes, at Auction", "A Gavel on King Street", EventKind.DIVERGENCE,
+            "The notes you walked past have surfaced in an auction room on King Street. The stranger in the oilskin " +
+                "coat is bidding against an Order envoy and a man from the British Museum. History is for sale.",
+            listOf(
+                choice("burn", "Outbid them all, then burn the notes.", hours(-40), flag("london.notes_burned"), ripples = listOf("engine_never_built", "order_takes_credit")),
+                choice("copy", "Bid for the Order.", hours(-20), flag("london.notes_to_order"), ripples = listOf("canon_of_engines", "scriptorium")),
+                choice("stranger", "Let the stranger win.", flag("london.notes_to_stranger"), ripples = listOf("bootstrapped", "signal_loop")),
+                choice("untouched", "Let the Museum have them.", flag("london.notes_untouched"), ripples = listOf("as_written", "tear_notices")),
+            ),
+        ),
+        EventDef(
+            "london.penny_dreadful_ending", "The Last Number", "The Final Number Is Out", EventKind.ENCOUNTER,
+            "The serial's last number is out. The knight dies in it, at a door you recognize, on a night with this " +
+                "same fog. The printer's boy has three copies left.",
+            listOf(
+                choice("read", "Read the ending.", RunEffect.Foresight(1), paradox(1)),
+                choice("burn", "Buy the print run and burn it.", hours(-30), paradox(-1)),
+                choice("walk", "Let the ending stand."),
+            ),
+        ),
+        EventDef(
+            "london.workshop_cold", "A Cold Workshop", "A Shutter Left Open", EventKind.ENCOUNTER,
+            "Someone has been to Babbage's workshop since you. The counting column is gone. Brass shavings trail out " +
+                "of the door, and a concentric-circle sigil is scratched into the bench.",
+            listOf(
+                choice("follow", "Follow the shavings.", RunEffect.Fight("stray_proxy"), standing(Faction.CONVERGENCE, -1)),
+                choice("sell", "Sweep up the shavings for a jeweller.", hours(35)),
+                choice("leave", "Leave it cold."),
+            ),
+        ),
+        EventDef(
+            "london.mudlark_robbed", "The Mudlark, Robbed", "A Bruise at Low Tide", EventKind.ENCOUNTER,
+            "The mudlark again, thinner, with a bruise on her cheek. Someone took the coin from her, and she knows " +
+                "which lodging house they went into.",
+            listOf(
+                choice("give", "Give her money for a room.", hours(-20), RunEffect.Foresight(1), standing(Faction.ERRATA, 1)),
+                choice("collect", "Go and get the coin back.", RunEffect.Fight("fleet_street")),
+                choice("leave", "Walk on."),
+            ),
+        ),
+        EventDef(
+            "london.ward_overflowing", "The Ward, Overflowing", "Cots in the Street", EventKind.ENCOUNTER,
+            "The fever ward has spilled into the street: cots under the lamps, a priest and a surgeon arguing over " +
+                "the same patient. The surgeon recognizes you and holds out an apron.",
+            listOf(
+                choice("help", "Take the apron.", RunEffect.LoseHp(8), standing(Faction.ORDER, 1), RunEffect.GainCard(CardPool(rarity = Rarity.UNCOMMON))),
+                choice("supplies", "Take what supplies are left.", RunEffect.HealPct(25), paradox(1)),
                 choice("leave", "Keep walking."),
             ),
         ),

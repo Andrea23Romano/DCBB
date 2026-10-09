@@ -286,7 +286,7 @@ Squads appear in any era, with era skins: a Brass Proxy is clockwork in 1495 and
 | Loose End | Tear | 12 | Unpick: Blank the top card of your Future + Attack 4 ① |
 | Ravel | Tear | 34 | Unpick: Erase the top card of your Future + Attack 6 ① → Attack 14 ① |
 | **The Rent** (elite) | Tear | 82 | Snip (your Constants don't trigger next turn) + Attack 6 ① → Charge Attack 20 ② → Unpick: Blank the top 2 cards of your Future + Attack 8 ① |
-| Echo of You | (yours) | 60% of your max HP | Plays your deck (from a Rewind or from the Archive). Cards are mapped to intents deterministically: Attacks → Attack, Skills → Guard or Buff, Constants → passives. |
+| Echo of You | (yours) | 60% of your max HP | Plays your deck (from a Rewind or from the Archive), two cards per round in a seeded order. Cards are mapped to intents deterministically: Attacks → Attack, Skills → Guard (or Might +1 when they give no Block), Constants → Plate 2. |
 
 ### Bosses
 

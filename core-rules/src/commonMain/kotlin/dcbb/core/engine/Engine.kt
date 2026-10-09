@@ -51,7 +51,12 @@ data class CombatSetup(
     val maxHp: Int? = null,
     /** Rule changes the run brings in: Artifacts, Ripples, Paradox thresholds, Ambush. */
     val mods: CombatMods = CombatMods.NONE,
+    /** An Echo of You in this fight: its HP and the intents its old deck becomes (docs/05 "Anchors and Rewind"). */
+    val echo: EchoSetup? = null,
 )
+
+/** What the [Engine.ECHO] enemy of a fight plays: [intents] in a loop, at [hp]. */
+data class EchoSetup(val hp: Int, val intents: List<dcbb.core.model.IntentSpec>)
 
 data class Outcome(val state: CombatState, val events: List<GameEvent>, val error: String? = null)
 
@@ -90,6 +95,9 @@ class Engine(val content: Content) {
         const val NEUTRAL_INCOME = 1
         const val LOOSE_END = "tear.loose_end"
 
+        /** The enemy an Echo of You uses: its HP and intents come from [CombatSetup.echo]. */
+        const val ECHO = "echo.you"
+
         /** Loop guard from docs/08: no turn plays more than this many cards. */
         const val PLAY_CAP = 60
     }
@@ -102,7 +110,10 @@ class Engine(val content: Content) {
         val deck = setup.deck.map { CardInst(uid++, content.card(it).id) }
         val (future, shuffledRng) = rng.shuffled(deck, Stream.SHUFFLE)
         rng = shuffledRng
-        val enemies = setup.enemies.map { id -> newEnemy(content.enemy(id), uid++, mods) }
+        val enemies = setup.enemies.map { id ->
+            val echo = setup.echo?.takeIf { id == ECHO }
+            newEnemy(content.enemy(id), uid++, mods, baseHp = echo?.hp, script = echo?.intents)
+        }
         val maxHp = setup.maxHp ?: op.maxHp
         val player = PlayerState(
             operativeId = op.id,
@@ -141,12 +152,18 @@ class Engine(val content: Content) {
     }
 
     /** An enemy as it enters a fight, with the run's HP changes and starting statuses. */
-    private fun newEnemy(def: EnemyDef, uid: Int, mods: CombatMods): EnemyState {
-        val pct = mods.enemyHpPct[def.faction] ?: 100
-        val hp = max(1, (def.maxHp * pct + 50) / 100)
+    private fun newEnemy(
+        def: EnemyDef,
+        uid: Int,
+        mods: CombatMods,
+        baseHp: Int? = null,
+        script: List<dcbb.core.model.IntentSpec>? = null,
+    ): EnemyState {
+        val pct = (mods.enemyHpPct[def.faction] ?: 100) * mods.hpPct / 100
+        val hp = max(1, ((baseHp ?: def.maxHp) * pct + 50) / 100)
         val statuses = mods.enemyBoosts.filter { it.matches(def) }
             .fold(emptyMap<StatusType, Int>()) { acc, b -> acc.plusOne(b.status, b.n) }
-        return EnemyState(uid, def.id, hp, hp, statuses = statuses)
+        return EnemyState(uid, def.id, hp, hp, statuses = statuses, script = script?.takeIf { it.isNotEmpty() })
     }
 
     fun apply(state: CombatState, action: Action): Outcome {
@@ -1256,7 +1273,13 @@ class Engine(val content: Content) {
                         lastCardBlock = p.lastCardBlock,
                         selfStatuses = cur.statuses,
                     )
-                    val (spec, aiState) = def.ai.next(slot, cur.aiState, view)
+                    val script = cur.script
+                    val (spec, aiState) = if (script != null) {
+                        val i = cur.aiState["i"] ?: 0
+                        script[i % script.size].copy(slot = slot) to (cur.aiState + ("i" to i + 1))
+                    } else {
+                        def.ai.next(slot, cur.aiState, view)
+                    }
                     val slow = cur.status(StatusType.SLOW) > 0
                     val item = TrackItem(
                         id = newUid(),

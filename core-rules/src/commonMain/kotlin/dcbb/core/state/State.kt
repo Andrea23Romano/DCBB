@@ -92,6 +92,8 @@ data class EnemyState(
     val statuses: Map<StatusType, Int> = emptyMap(),
     val aiState: Map<String, Int> = emptyMap(),
     val alive: Boolean = true,
+    /** Intents played in a loop instead of the definition's AI (an Echo of You plays your old deck). */
+    val script: List<dcbb.core.model.IntentSpec>? = null,
 ) {
     fun status(type: StatusType): Int = statuses[type] ?: 0
 }

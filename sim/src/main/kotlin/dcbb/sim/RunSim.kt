@@ -133,6 +133,23 @@ private class RunReport(val re: RunEngine, val byOp: Map<String, List<RunState>>
         }
         appendLine()
 
+        appendLine("## Time travel")
+        appendLine()
+        appendLine("Returning Moments and Rewinds. The bot always Rewinds when it falls with its Anchor unspent, never otherwise.")
+        appendLine()
+        appendLine("| Operative | Returns dealt | Returns taken | Runs that Rewound | Cleared after a Rewind | Echoes fought | Anchor moves |")
+        appendLine("|---|---|---|---|---|---|---|")
+        for ((op, states) in byOp) {
+            fun a(f: (RunState) -> Number) = num(states.map { f(it).toDouble() }.avg())
+            val rewound = states.filter { it.stats.rewinds > 0 }
+            val saved = rewound.count { (it.screen as? Screen.Over)?.won == true }
+            appendLine(
+                "| ${name(op)} | ${a { it.stats.returnsDealt }} | ${a { it.stats.returnsTaken }} | ${pct(rewound.size.toDouble() / states.size)} | " +
+                    "${if (rewound.isEmpty()) "–" else "$saved of ${rewound.size}"} | ${a { it.stats.echoesFought }} | ${a { it.stats.anchorMoves }} |",
+            )
+        }
+        appendLine()
+
         appendLine("## Moments chosen")
         appendLine()
         val types = MomentType.entries.filter { it != MomentType.BOSS }

@@ -20,6 +20,7 @@ import dcbb.core.state.CombatState
 import dcbb.core.state.Phase
 import dcbb.core.state.TrackItem
 import dcbb.core.state.TrackKind
+import dcbb.core.text.Glossary
 import dcbb.core.text.RulesText
 
 /** HTML for every screen, rendered from the app's state. All text from the game is escaped. */
@@ -40,6 +41,7 @@ class Views(private val app: App) {
             val on = app.setup.op == id
             append(
                 """<button type="button" class="op${if (on) " is-on" else ""}" data-act="op" data-id="$id" aria-pressed="$on" style="--fc: var(--${fv(op.faction)})">""" +
+                    Art.operative(op) +
                     """<span class="op-name">${esc(op.name)}</span>""" +
                     """<span class="op-meta">${op.faction.label} · ${op.maxHp} HP</span>""" +
                     """<span class="op-sig">${esc(signatureLine(op.signature, 0))}</span>""" +
@@ -84,7 +86,7 @@ class Views(private val app: App) {
         append("</section>")
 
         append("""<section class="block"><h2 class="label">Encounter</h2><div class="encs">""")
-        for (enc in content.encounters) {
+        for (enc in content.encounters.filter { !it.runOnly }) {
             val on = app.setup.enc == enc.id
             val enemies = enc.enemies.groupingBy { it }.eachCount().entries.joinToString(", ") { (id, c) ->
                 val e = content.enemy(id)
@@ -199,7 +201,7 @@ class Views(private val app: App) {
             val tag = if (target) "button type=\"button\" data-act=\"enemy\" data-id=\"${e.uid}\"" else "article"
             val close = if (target) "button" else "article"
             append("""<$tag class="$cls" style="--fc: var(--${fv(def.faction)})" aria-label="${esc(def.name)}">""")
-            append("""<span class="enemy-head"><span class="enemy-name">${esc(def.name)}</span><span class="tag">${def.faction.label}${if (def.elite) " · Elite" else ""}</span></span>""")
+            append("""<span class="enemy-top">${Art.enemy(def, content.operative(st.player.operativeId))}<span class="enemy-head"><span class="enemy-name">${esc(def.name)}</span><span class="tag">${if (e.script != null) "Echo" else def.faction.label}${if (def.elite) " · Elite" else ""}</span></span></span>""")
             if (!e.alive) {
                 append("""<span class="nums">Defeated</span>""")
             } else {
@@ -208,7 +210,7 @@ class Views(private val app: App) {
                 val intents = st.track.filter { it.kind == TrackKind.INTENT && it.enemyUid == e.uid }.sortedBy { it.countdown }
                 if (intents.isNotEmpty()) {
                     append("""<span class="intents">""")
-                    for (i in intents) append("""<span class="intent">${dial(i.countdown)}<span>${intentText(st, i)}</span></span>""")
+                    for (i in intents) append("""<span class="intent" title="${esc(intentTip(i))}">${dial(i.countdown)}<span>${intentText(st, i)}</span></span>""")
                     append("</span>")
                 }
             }
@@ -233,10 +235,12 @@ class Views(private val app: App) {
                 val chosen = app.pick?.track == item.id
                 val cls = "chip ${if (item.kind == TrackKind.SCHEDULED) "is-yours" else "is-foe"}${if (selectable) " is-target" else ""}${if (chosen) " is-chosen" else ""}"
                 val body = """<span class="who">${esc(who)}</span><span>${intentText(st, item)}</span>"""
+                val tip = if (item.kind == TrackKind.INTENT) intentTip(item) else tipText(Glossary.face(dcbb.core.model.Face(CardType.SKILL, item.effects)) + Glossary.SCHEDULE)
+                val title = if (tip.isEmpty()) "" else """ title="${esc(tip)}""""
                 if (selectable) {
-                    append("""<button type="button" class="$cls" data-act="track" data-id="${item.id}">$body</button>""")
+                    append("""<button type="button" class="$cls" data-act="track" data-id="${item.id}"$title>$body</button>""")
                 } else {
-                    append("""<div class="$cls">$body</div>""")
+                    append("""<div class="$cls"$title>$body</div>""")
                 }
             }
             append("</div>")
@@ -329,10 +333,11 @@ class Views(private val app: App) {
             """<span class="card-text">${esc(cardText(c))}</span>""" +
             if (tags.isEmpty()) "" else """<span class="card-tags">${tags.joinToString(" · ")}</span>"""
         val style = """style="--fc: var(--${fv(def.faction)})""""
+        val tip = """title="${esc(tipText(instGlossary(c)))}""""
         return if (interactive) {
-            """<button type="button" class="$cls" data-act="card" data-id="${c.uid}" $style aria-pressed="$chosen">$inner</button>"""
+            """<button type="button" class="$cls" data-act="card" data-id="${c.uid}" $style $tip aria-pressed="$chosen">${Art.card(def)}$inner</button>"""
         } else {
-            """<div class="$cls" $style>$inner</div>"""
+            """<div class="$cls" $style $tip>${Art.card(def)}$inner</div>"""
         }
     }
 
@@ -392,6 +397,13 @@ class Views(private val app: App) {
         if (inst != null) append(""" <span class="card-cost">${costPips(engine.effectiveCost(st, inst))}</span>""")
         append("""</div><button type="button" class="ghost" data-act="cancel">Cancel</button></div>""")
         append("""<p class="sheet-text">${esc(text)}</p>""")
+        val gloss = if (inst != null && face != null) {
+            (if (faces.size > 1 || inst.face != null || inst.granted != null) Glossary.face(face) else Glossary.card(content.card(inst.defId))) +
+                instStates(inst)
+        } else {
+            Glossary.signature(op.signature)
+        }
+        append(glossary(gloss.distinct()))
 
         if (faces != null && faces.size > 1) {
             append(choiceRow("Face", faces.indices.joinToString("") { i ->
@@ -560,7 +572,11 @@ class Views(private val app: App) {
         }
         val line = when (st.phase) {
             Phase.WON -> "Round ${st.round} · ${p.hp}/${p.maxHp} HP left. Your HP, Paradox and any Debt carry on."
-            Phase.LOST -> "You fell in round ${st.round}. The run ends here."
+            Phase.LOST -> if (app.run?.state?.anchor != null) {
+                "You fell in round ${st.round}. Your Anchor still holds: continue to Rewind, or let the run end."
+            } else {
+                "You fell in round ${st.round}. The run ends here."
+            }
             else -> "The fight hit the ${st.roundCap}-round cap."
         }
         return """<div class="modal" role="dialog" aria-label="$title"><div class="modal-box result $cls">""" +
@@ -660,7 +676,35 @@ class Views(private val app: App) {
     }
 
     internal fun statuses(map: Map<StatusType, Int>) =
-        map.entries.sortedBy { it.key.ordinal }.joinToString("") { (k, v) -> """<span class="status s-${k.name.lowercase()}">${k.label} $v</span>""" }
+        map.entries.sortedBy { it.key.ordinal }.joinToString("") { (k, v) ->
+            """<span class="status s-${k.name.lowercase()}" title="${esc(Glossary.status(k).text)}">${k.label} $v</span>"""
+        }
+
+    /** Keyword explanations as a definition list (the selected card's tooltips). */
+    internal fun glossary(entries: List<Glossary.Entry>): String {
+        if (entries.isEmpty()) return ""
+        return """<dl class="gloss">""" + entries.joinToString("") { """<div><dt>${esc(it.term)}</dt><dd>${esc(it.text)}</dd></div>""" } + "</dl>"
+    }
+
+    internal fun tipText(entries: List<Glossary.Entry>) = entries.joinToString("\n") { "${it.term}: ${it.text}" }
+
+    /** The card's keywords, plus what has happened to this copy (Known, Blank, Misprinted...). */
+    private fun instGlossary(c: CardInst): List<Glossary.Entry> {
+        val base = c.face?.let { Glossary.face(it) } ?: Glossary.card(content.card(c.defId))
+        return (base + instStates(c)).distinct()
+    }
+
+    private fun instStates(c: CardInst): List<Glossary.Entry> = buildList {
+        if (c.known) add(Glossary.KNOWN)
+        if (c.blank) add(Glossary.BLANK)
+        if (c.bleed) add(Glossary.BLEED)
+        if (c.face != null) add(Glossary.MISPRINT)
+        if (c.granted != null) add(Glossary.FORK)
+        if (c.retainThisTurn) add(Glossary.RETAIN)
+    }
+
+    private fun intentTip(item: TrackItem): String =
+        tipText(Glossary.intent(item.actions + item.alt.orEmpty(), item.fixed, item.forked, item.pressure > 0))
 
     internal fun meter(value: Int, max: Int, label: String): String {
         val pct = if (max <= 0) 0 else (100 * value.coerceIn(0, max) / max)

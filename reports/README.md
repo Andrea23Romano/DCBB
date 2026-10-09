@@ -58,6 +58,7 @@ The first baseline raised six findings. Their status after tuning pass 2:
   - At the Antiquarian it Erases a basic card, Inscribes, then buys.
   - At Still Points it heals below 60% HP, Steadies at Paradox 4 or more, and Inscribes otherwise.
   - It never Glimpses. It spends Foresight only to look at an Elite.
+  - It accepts every Anchor a Shrine offers, and always Rewinds when it falls with its Anchor unspent. It never Rewinds otherwise.
   - It is a baseline for run-level balance, not a strong player.
 
 ### What changed to get here
@@ -68,21 +69,30 @@ The first baseline raised six findings. Their status after tuning pass 2:
 - **Threat-3 fights** shrank to two strong enemies, or a Ravel with two Loose Ends. With three full enemies they took 60–80% of max HP from the weaker operatives.
 - **The run bot** stopped picking up a second copy of a Constant. Two *Paradox Engines* on top of Paradox carried from earlier fights Unravelled the Splinter every other round.
 - **A bug the tests caught.** Dealing a step could lose its own changes: the Frayed Tear Moments, and the shop's random draws.
+- **Time travel (second pass).** Returning Moments, Anchors and Rewind joined the run. Their tests caught two more bugs:
+  - Fights entered from the map paid 1% of their Hours.
+  - Steady could create a fresh Anchor after one was spent, which allowed up to three Rewinds per act.
 
 ### What the runs say
 
-1. **The operative gap carries into runs.** With the same bot, the Vowknight clears Act I in 100% of runs, the Oracle in 58% and the Splinter in 48%.
+1. **The operative gap carries into runs.** With the same bot, the Vowknight clears Act I in 100% of runs, the Oracle in 74% and the Splinter in 72%. Without Rewind they were at 58% and 48%.
    - The Vowknight kills the Lattice Engine in about 5 rounds; the others need 9–11, and the boss scales with time.
    - With mid decks at full HP, the Oracle beats the boss 93% of the time and the Splinter 66%. With starter decks, 14% and 10%: an act boss should beat a starter deck.
    - Rebalancing the operatives is parked by decision. When it resumes, these two reports measure it.
-2. **Paradox is now a run resource.** The Splinter enters the boss at 2.4 Paradox on average and peaks at 3.4 per run; the others stay near 1.
-3. **Threat tiers read as intended:**
-   - threat-1 openers cost 6–8% of max HP (the fight report flags them *trivial*, which is their job)
-   - threat 2 costs 20–31%
-   - threat 3 costs 32–43%
-   - Elites cost 36–58%
-4. **The bot is the weak link between fights.** It takes only about 4 cards, 0.2 Elites and one Inscribe per run, and often ends with unspent Hours. A human will build stronger decks, so read the clear rates as a floor.
-5. **Unwrite is real counterplay.** Deleting an install keeps the Lattice Engine a Subroutine short, and the bot already does it.
+2. **Rewind is the Oracle's and the Splinter's safety net.**
+   - 41% of Oracle runs and 51% of Splinter runs fall once and Rewind. About 40% of those go on to clear the act.
+   - Most falls happen at the boss. The Anchor is usually still at step 1, so the Rewind replays the whole act at +5 Paradox.
+   - Echoes rarely get fought (0.1 per run). A Rewind at the boss leaves no later step for the Echo, and the bot treats an Echo like any Elite.
+   - The bot never Rewinds by choice. A player who Rewinds out of a bad Elite will use it differently, so these numbers say little about that use yet.
+3. **Paradox is now a run resource.** The Splinter enters the boss at 2.7 Paradox on average and peaks at 6.1 per run (a Rewind from death adds 5). The others stay near 1, or near 3 for an Oracle who Rewinds.
+4. **Returning Moments are common.** About 5–6 come back per run and the bot takes one of them. Fights return as Ambushes, which the bot dislikes, so it takes them less.
+5. **Threat tiers read as intended:**
+   - threat-1 openers cost 7–9% of max HP (the fight report flags them *trivial*, which is their job)
+   - threat 2 costs 21–31%
+   - threat 3 costs 25–38%
+   - Elites cost 34–50%
+6. **The bot is the weak link between fights.** It takes only 4–6 cards, 0.3–0.4 Elites and about 1.5 Inscribes per run. A human will build stronger decks, so read the clear rates as a floor.
+7. **Unwrite is real counterplay.** Deleting an install keeps the Lattice Engine a Subroutine short, and the bot already does it.
 
 ## Tuning pass 2
 

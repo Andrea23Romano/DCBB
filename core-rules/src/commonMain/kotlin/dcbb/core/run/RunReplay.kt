@@ -7,7 +7,8 @@ import dcbb.core.engine.Replay
  * saves"). The web client copies these codes into bug reports; `sim --replay` plays them back.
  *
  * Format: `r1 <operative> <seed> <era> <action> <action> ...`, where run actions are lowercase:
- * `c<i>` choose option i · `f` spend Foresight · `g` Glimpse · `k` skip a card reward · `n` done / continue / leave.
+ * `c<i>` choose option i · `f` spend Foresight · `g` Glimpse · `k` skip a card reward · `n` done / continue / leave ·
+ * `a<i>` take Artifact i · `r` Rewind · `m` move your Anchor here.
  * Fight actions use the combat replay tokens (`E`, `S/…`, `P/…`, `F/…`, see [Replay]).
  */
 data class RunReplay(val operative: String, val seed: Long, val era: String, val actions: List<RunAction>) {
@@ -40,6 +41,9 @@ data class RunReplay(val operative: String, val seed: Long, val era: String, val
             RunAction.Glimpse -> "g"
             RunAction.Skip -> "k"
             RunAction.Done -> "n"
+            is RunAction.TakeArtifact -> "a${a.index}"
+            RunAction.Rewind -> "r"
+            RunAction.SetAnchor -> "m"
             is RunAction.Fight -> Replay.encode(a.action)
         }
 
@@ -48,7 +52,10 @@ data class RunReplay(val operative: String, val seed: Long, val era: String, val
             t == "g" -> RunAction.Glimpse
             t == "k" -> RunAction.Skip
             t == "n" -> RunAction.Done
+            t == "r" -> RunAction.Rewind
+            t == "m" -> RunAction.SetAnchor
             t.length > 1 && t[0] == 'c' && t.drop(1).all { it.isDigit() } -> RunAction.Choose(t.drop(1).toInt())
+            t.length > 1 && t[0] == 'a' && t.drop(1).all { it.isDigit() } -> RunAction.TakeArtifact(t.drop(1).toInt())
             else -> RunAction.Fight(Replay.decode(t))
         }
     }

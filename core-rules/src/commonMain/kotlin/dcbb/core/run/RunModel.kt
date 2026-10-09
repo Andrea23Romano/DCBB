@@ -23,6 +23,18 @@ enum class MomentType(val label: String) {
     val fight: Boolean get() = this == COMBAT || this == ELITE || this == BOSS
 }
 
+/** How a Moment from the Branch Pool comes back (docs/05 "Returning Moments"). */
+enum class Returning(val label: String, val hint: String) {
+    AMBUSH("Ambush", "The enemies act first · +50% Hours"),
+    EMPOWERED("Empowered", "+25% HP, +1 Might · choose 1 of 2 Artifacts"),
+    CONSEQUENCE("Consequence", "What happened after you walked past"),
+    LOOTED("Looted", "Half the stock at −30%, or nothing at all"),
+    DESECRATED("Desecrated", "Another faction has claimed it"),
+}
+
+/** Your abandoned self after a Rewind: the deck it had when you rewound, at 60% of your max HP. */
+data class EchoSpec(val deck: List<String>, val hp: Int, val fromStep: Int)
+
 /** One card of the Era Deck. The title, type, sigil and threat always show; [ref] stays hidden until Foresight. */
 data class Moment(
     val id: Int,
@@ -40,6 +52,10 @@ data class Moment(
     val tear: Boolean = false,
     /** The enemies act before your first turn. */
     val ambush: Boolean = false,
+    /** Set when this Moment came back from the Branch Pool. */
+    val returning: Returning? = null,
+    /** An Echo of You: the Elite fight against your abandoned self. */
+    val echo: EchoSpec? = null,
 )
 
 /** Run-level counters for the Chronicle and for simulation reports. */
@@ -61,6 +77,12 @@ data class RunStats(
     val fightRecords: List<FightRecord> = emptyList(),
     /** Which Moment types you chose on the Weft. */
     val chosen: Map<MomentType, Int> = emptyMap(),
+    val returnsDealt: Int = 0,
+    val returnsTaken: Int = 0,
+    val rewinds: Int = 0,
+    val rewindsFromDeath: Int = 0,
+    val anchorMoves: Int = 0,
+    val echoesFought: Int = 0,
 )
 
 data class FightRecord(
@@ -82,11 +104,25 @@ sealed interface Screen {
     /** Choose one Moment of the step. */
     data class Weft(val options: List<Moment>) : Screen
 
-    /** A fight in progress; once it is over, Done carries the result into the run. */
-    data class Fight(val moment: Moment, val combat: CombatState, val hoursMult: Int = 1) : Screen
+    /** A fight in progress; once it is over, Done carries the result into the run. [hoursPct] scales its Hours. */
+    data class Fight(val moment: Moment, val combat: CombatState, val hoursPct: Int = 100) : Screen
 
-    /** Hours and any Artifact are already yours; choose a card (or Glimpse, or skip for Hours). */
-    data class Reward(val title: String, val cards: List<String>, val lines: List<String>, val elite: Boolean, val glimpsed: Boolean = false) : Screen
+    /**
+     * Hours (and any found Artifact) are already yours; choose a card, Glimpse, or skip for Hours. An Empowered Elite
+     * offers [artifacts] to choose one from first. Lost Weight, after an Echo, offers one card *or* the Artifact.
+     */
+    data class Reward(
+        val title: String,
+        val cards: List<String>,
+        val lines: List<String>,
+        val elite: Boolean,
+        val glimpsed: Boolean = false,
+        val artifacts: List<String> = emptyList(),
+        val lostWeight: Boolean = false,
+    ) : Screen
+
+    /** You fell, but your Anchor still holds: Rewind (+5 Paradox) or let the run end. */
+    data class Fallen(val title: String, val lines: List<String>) : Screen
 
     /** The Antiquarian. */
     data class Shop(val stock: List<ShopItem>) : Screen
@@ -163,6 +199,14 @@ data class RunState(
     val tearAmbush: Boolean = false,
     val lastEncounter: String? = null,
     val stats: RunStats = RunStats(),
+    /** Unchosen Moments that may come back, changed (docs/05 "Returning Moments"). */
+    val branchPool: List<Moment> = emptyList(),
+    /** The run as it was at your Anchor; null once spent. The snapshot never holds an anchor of its own. */
+    val anchor: RunState? = null,
+    /** A Shrine lets you move your Anchor to this step, until you choose a Moment. */
+    val anchorOffer: Boolean = false,
+    /** Echoes with no later step left in this act: they wait for the next one. */
+    val echoesWaiting: List<EchoSpec> = emptyList(),
 ) {
     fun standingWith(f: Faction): Int = standing[f] ?: 0
     val over: Boolean get() = screen is Screen.Over
@@ -184,6 +228,15 @@ sealed interface RunAction {
 
     /** Leave, continue, or go back, depending on the screen. */
     data object Done : RunAction
+
+    /** Take Artifact [index] of a reward (an Empowered Elite's choice, or Lost Weight). */
+    data class TakeArtifact(val index: Int) : RunAction
+
+    /** Return to your Anchor: outside combat (+3 Paradox) or when you fall (+5). */
+    data object Rewind : RunAction
+
+    /** Move your Anchor to this step, when a Shrine offers it. */
+    data object SetAnchor : RunAction
 
     /** A combat action while a fight is on. */
     data class Fight(val action: Action) : RunAction

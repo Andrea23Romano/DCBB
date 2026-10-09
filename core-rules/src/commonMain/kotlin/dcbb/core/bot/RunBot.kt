@@ -9,6 +9,7 @@ import dcbb.core.model.Rarity
 import dcbb.core.run.MomentType
 import dcbb.core.run.Perk
 import dcbb.core.run.Purpose
+import dcbb.core.run.Returning
 import dcbb.core.run.RunAction
 import dcbb.core.run.RunEffect
 import dcbb.core.run.RunEngine
@@ -42,12 +43,15 @@ class RunBot(private val seed: Long = 0, private val fightBot: (Long) -> Bot = {
         is Screen.Rest -> rest(re, s, sc)
         is Screen.Event -> event(re, s, sc)
         is Screen.PickCard -> RunAction.Choose(pickCard(re, s, sc.purpose))
+        // Falling with an Anchor in hand: always Rewind (+5 Paradox beats the end of the run).
+        is Screen.Fallen -> if (s.anchor != null) RunAction.Rewind else RunAction.Done
         is Screen.Note, is Screen.Over -> RunAction.Done
     }
 
     private fun hpFrac(s: RunState) = s.hp.toDouble() / s.maxHp
 
     private fun weft(re: RunEngine, s: RunState, w: Screen.Weft): RunAction {
+        if (s.anchorOffer) return RunAction.SetAnchor
         if (w.options.size == 1) return RunAction.Choose(0)
         val unseenElite = w.options.any { it.type == MomentType.ELITE && it.id !in s.revealed }
         if (unseenElite && s.foresight > 0) return RunAction.Foresight
@@ -62,6 +66,11 @@ class RunBot(private val seed: Long = 0, private val fightBot: (Long) -> Bot = {
                 MomentType.SHRINE -> if (m.faction == re.content.operative(s.operativeId).faction) 3.5 else 1.5
                 MomentType.CACHE -> 6.0
                 MomentType.BOSS -> 100.0
+            } + when (m.returning) {
+                Returning.AMBUSH -> -1.5
+                Returning.EMPOWERED -> -4.0
+                Returning.LOOTED -> -1.0
+                else -> 0.0
             }
             i to v
         }
@@ -91,6 +100,7 @@ class RunBot(private val seed: Long = 0, private val fightBot: (Long) -> Bot = {
     }
 
     private fun reward(re: RunEngine, s: RunState, r: Screen.Reward): RunAction {
+        if (r.artifacts.isNotEmpty()) return RunAction.TakeArtifact(0)
         val best = r.cards.withIndex().maxByOrNull { cardScore(re, s, re.content.card(it.value)) }
         return if (best != null && cardScore(re, s, re.content.card(best.value)) >= 1.0) RunAction.Choose(best.index) else RunAction.Skip
     }
@@ -186,7 +196,7 @@ object RunRunner {
                 // A bot slip (an illegal play): fall back to the safest move for the screen.
                 val fallback = when (val sc = s.screen) {
                     is Screen.Fight -> RunAction.Fight(dcbb.core.engine.EndTurn)
-                    is Screen.Shop, is Screen.PickCard, is Screen.Rest, is Screen.Note -> RunAction.Done
+                    is Screen.Shop, is Screen.PickCard, is Screen.Rest, is Screen.Note, is Screen.Fallen -> RunAction.Done
                     is Screen.Reward -> RunAction.Skip
                     is Screen.Event -> RunAction.Choose(sc.options.indexOfFirst { it.blocked == null }.coerceAtLeast(0))
                     else -> RunAction.Choose(0)

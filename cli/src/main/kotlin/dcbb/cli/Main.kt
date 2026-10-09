@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
     val opts = args.toList().chunked(2).filter { it.size == 2 }.associate { (k, v) -> k.removePrefix("--") to v }
     val op = opts["op"] ?: choose("Operative", content.operatives.keys.sorted()) ?: return
     val deck = opts["deck"] ?: choose("Deck", content.decks.getValue(op).keys.toList()) ?: return
-    val enc = opts["enc"] ?: choose("Encounter", content.encounters.map { it.id }) { id ->
+    val enc = opts["enc"] ?: choose("Encounter", content.encounters.filter { !it.runOnly }.map { it.id }) { id ->
         val e = content.encounter(id)
         "${e.name}${if (e.elite) " (elite)" else ""}: " + e.enemies.joinToString(", ") { content.enemy(it).name }
     } ?: return

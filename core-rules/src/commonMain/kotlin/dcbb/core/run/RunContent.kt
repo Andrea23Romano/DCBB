@@ -95,6 +95,8 @@ data class EventDef(
     val choices: List<ChoiceDef>,
     /** A Shrine's faction. */
     val faction: Faction? = null,
+    /** The designer-written follow-up dealt when this event returns from the Branch Pool. */
+    val consequence: String? = null,
 )
 
 /** A fight the era can deal, with its threat pips (1 easy, 3 hard). */
@@ -149,6 +151,7 @@ class RunContent(
             (era.events + era.divergence + era.anomalies).forEach { event(it) }
         }
         for (id in shrines.values) event(id)
+        for (e in events) e.consequence?.let { event(it) }
         for (e in events) for (c in e.choices) c.ripples.forEach { ripple(it) }
     }
 }
