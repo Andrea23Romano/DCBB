@@ -31,7 +31,7 @@ class Views(private val app: App) {
     // ---- setup screen ---------------------------------------------------------------------------------------
 
     fun setup(): String = buildString {
-        append(masthead("Play Act I of The First Hour, or test single fights in the lab. Everything runs on the same rules engine as the simulator."))
+        append(masthead("Play The First Hour, or test single fights in the lab. Everything runs on the same rules engine as the simulator."))
         append(noticeBox())
         append("""<main class="setup">""")
 
@@ -44,17 +44,18 @@ class Views(private val app: App) {
                     Art.operative(op) +
                     """<span class="op-name">${esc(op.name)}</span>""" +
                     """<span class="op-meta">${op.faction.label} · ${op.maxHp} HP</span>""" +
-                    """<span class="op-sig">${esc(signatureLine(op.signature, 0))}</span>""" +
+                    """<span class="op-sig">${esc(signatureLine(op.signature))}</span>""" +
                     """<span class="op-blurb">${esc(BLURBS[id] ?: "")}</span></button>""",
             )
         }
         append("</div></section>")
 
-        val era = app.runEngine.rc.eras.first()
+        val eras = app.runEngine.rc.eras
         append(
-            """<section class="block runstart"><h2 class="label">The First Hour · Act ${era.act}: ${esc(era.name)}</h2>""" +
-                """<p>${era.steps} steps on the Weft, then the act boss. HP, Paradox and Debt carry between fights; """ +
-                """rewards, the Antiquarian, Still Points, events and a Divergence shape your deck.</p>""" +
+            """<section class="block runstart"><h2 class="label">The First Hour · ${eras.size} acts</h2>""" +
+                """<p>${esc(eras.joinToString(", then ") { it.name })}. Each act is a Weft of ${eras.joinToString("/") { it.steps.toString() }} steps """ +
+                """and a boss; the last is the Nexus, where a rival faction's champion comes for the Gnomon. HP, Paradox and Debt """ +
+                """carry between fights; fights give XP, and each level an Imprint.</p>""" +
                 """<div class="start"><div class="seed"><label for="seed" class="label">Seed</label>""" +
                 """<input id="seed" type="number" inputmode="numeric" value="${app.setup.seed}">""" +
                 """<button type="button" data-act="reroll">New seed</button></div><div class="btns">""" +
@@ -116,6 +117,9 @@ class Views(private val app: App) {
     }
 
     // ---- combat screen ----------------------------------------------------------------------------------------
+    //
+    // The enemies stay pinned to the top of the screen and you stay pinned to the bottom (HP, Block, what is about to
+    // hit you, energy, End turn); your hand and everything else scroll between them.
 
     fun combat(): String {
         val r = app.run
@@ -125,25 +129,29 @@ class Views(private val app: App) {
         return buildString {
             if (r != null) {
                 val fight = r.state.screen as dcbb.core.run.Screen.Fight
-                append(masthead("${opDef.name} · ${fight.moment.title} · step ${minOf(r.state.step, app.runEngine.era(r.state).steps)} · round ${st.round}", run = true))
-                append(app.runViews.runBar(r.state))
-                append(tools(r.undo.isNotEmpty(), st.phase.over, inRun = true))
+                val era = app.runEngine.era(r.state)
+                val where = if (r.state.step > era.steps) "the boss" else "step ${r.state.step}"
+                append(topbar("${opDef.name} vs ${fight.moment.title} · Act ${roman(r.state.act)} · $where · round ${st.round}", tools(r.undo.isNotEmpty(), st.phase.over, inRun = true)))
+                append(app.runViews.fightLine(r.state))
             } else if (s != null) {
-                append(masthead("${opDef.name} · ${s.setup.deck} deck · ${content.encounter(s.setup.enc).name} · seed ${s.setup.seed} · round ${st.round}"))
-                append(tools(s.undo.isNotEmpty(), st.phase.over, inRun = false))
+                append(topbar("${opDef.name} vs ${content.encounter(s.setup.enc).name} · ${s.setup.deck} deck · seed ${s.setup.seed} · round ${st.round}", tools(s.undo.isNotEmpty(), st.phase.over, inRun = false), lab = true))
             }
             append(noticeBox())
             append("""<main class="board">""")
-            append(enemies(st))
-            append(track(st))
-            append(you(st))
+            append(foes(st))
+            append(yourTrack(st))
+            append(constantsRow(st))
             append(present(st))
-            if (opDef.otherHandSize > 0) append(otherHand(st))
+            if (engine.otherHandSize(st) > 0) append(otherHand(st))
             append(drawer(st))
-            append(logSection(if (r != null) r.fightLog() else s?.log.orEmpty()))
             if (r != null) append(app.runViews.runDrawer(r.state))
+            append(logSection(if (r != null) r.fightLog() else s?.log.orEmpty()))
+            append(playerBar(st))
             append("</main>")
-            app.pick?.let { append(sheet(st, it)) }
+            app.pick?.let {
+                append("""<div class="sheet-space" aria-hidden="true"></div>""")
+                append(sheet(st, it))
+            }
             if (st.pending != null) app.foresee?.let { append(foreseeModal(st, it)) }
             if (st.phase.over && app.showResult) {
                 append(if (r != null) runResultModal(st) else resultModal(st, s?.actions?.size ?: 0))
@@ -152,25 +160,41 @@ class Views(private val app: App) {
         }
     }
 
-    internal fun masthead(line: String, run: Boolean = false) =
-        """<header class="masthead"><h1 class="brand">Anachronist <span>${if (run) "The First Hour" else "Combat Lab"}</span></h1><p class="where">${esc(line)}</p></header>"""
+    internal fun masthead(line: String) =
+        """<header class="masthead"><h1 class="brand">Anachronist <span>Lab</span></h1><p class="where">${esc(line)}</p></header>"""
+
+    /** The slim header of the run and fight screens: where you are, and the tools. */
+    internal fun topbar(line: String, tools: String, lab: Boolean = false) =
+        """<header class="topbar"><p class="tb-where"><b class="tb-brand">Anachronist</b> <span class="tb-sub">${if (lab) "Combat Lab" else "The First Hour"}</span> """ +
+            """<span class="tb-line">${esc(line)}</span></p>$tools</header>"""
+
+    /** A small menu of buttons. It closes on its own: every action re-renders the page. */
+    internal fun menu(label: String, items: String, end: Boolean = false) =
+        """<details class="menu${if (end) " is-end" else ""}"><summary>${esc(label)}</summary><div class="menu-list">$items</div></details>"""
 
     private fun tools(canUndo: Boolean, over: Boolean, inRun: Boolean) = buildString {
         append("""<nav class="tools" aria-label="Fight tools">""")
+        if (inRun && over) append("""<button type="button" class="primary" data-act="run-done">Continue</button>""")
         append("""<button type="button" data-act="undo"${if (canUndo) "" else " disabled"}>Undo</button>""")
-        append("""<button type="button" data-act="hint"${if (over) " disabled" else ""}>Hint</button>""")
-        append("""<button type="button" data-act="bot-turn"${if (over) " disabled" else ""}>Bot plays turn</button>""")
-        if (inRun) {
-            if (over) append("""<button type="button" class="primary" data-act="run-done">Continue</button>""")
-            if (!over) append(app.runViews.autoButtons(fight = true))
-            append("""<button type="button" data-act="copy">Copy run code</button>""")
-            append("""<button type="button" data-act="to-setup">Leave run</button>""")
-        } else {
-            append("""<button type="button" data-act="restart">Restart</button>""")
-            append("""<button type="button" data-act="new-seed">New seed</button>""")
-            append("""<button type="button" data-act="copy">Copy log</button>""")
-            append("""<button type="button" data-act="to-setup">Setup</button>""")
+        if (!over) append("""<button type="button" data-act="hint">Hint</button>""")
+        if (app.auto != Auto.NONE) {
+            append("""<button type="button" class="primary" data-act="auto-stop">Stop the bot</button>""")
+        } else if (!over) {
+            append(
+                menu(
+                    "Bot",
+                    """<button type="button" data-act="bot-turn">Bot plays this turn</button>""" +
+                        if (inRun) """<button type="button" data-act="auto-fight">Bot plays this fight</button><button type="button" data-act="auto-run">Bot plays on through the run</button>""" else "",
+                ),
+            )
         }
+        val more = if (inRun) {
+            """<button type="button" data-act="copy">Copy run code</button><button type="button" data-act="to-setup">Leave run</button>"""
+        } else {
+            """<button type="button" data-act="restart">Restart</button><button type="button" data-act="new-seed">New seed</button>""" +
+                """<button type="button" data-act="copy">Copy log</button><button type="button" data-act="to-setup">Setup</button>"""
+        }
+        append(menu("More", more, end = true))
         append("</nav>")
     }
 
@@ -185,113 +209,154 @@ class Views(private val app: App) {
         return """<div class="notice" role="status"><span>${esc(notice)}</span><button type="button" data-act="dismiss">Dismiss</button></div>"""
     }
 
-    private fun enemies(st: CombatState): String = buildString {
+    /** The enemies, pinned to the top: HP, Block, statuses and their intents. Tap one to target it. */
+    private fun foes(st: CombatState): String = buildString {
         val wantsEnemy = pickNeedsEnemy(st)
-        append("""<section class="enemies" aria-label="Enemies">""")
+        val need = pickTrackNeed(st)
+        val candidates = if (need == TrackNeed.NONE) emptySet() else engine.trackCandidates(st, need).map { it.id }.toSet()
+        val n = st.enemies.size
+        append("""<section class="foes" data-n="${minOf(n, 4)}" aria-label="Enemies"><div class="foe-row">""")
         for (e in st.enemies) {
             val def = content.enemy(e.defId)
             val target = wantsEnemy && e.alive
             val chosen = app.pick?.target == e.uid
             val cls = buildList {
-                add("enemy")
+                add("foe")
                 if (!e.alive) add("is-dead")
-                if (target) add("is-target")
                 if (chosen) add("is-chosen")
             }.joinToString(" ")
-            val tag = if (target) "button type=\"button\" data-act=\"enemy\" data-id=\"${e.uid}\"" else "article"
-            val close = if (target) "button" else "article"
-            append("""<$tag class="$cls" style="--fc: var(--${fv(def.faction)})" aria-label="${esc(def.name)}">""")
-            append("""<span class="enemy-top">${Art.enemy(def, content.operative(st.player.operativeId))}<span class="enemy-head"><span class="enemy-name">${esc(def.name)}</span><span class="tag">${if (e.script != null) "Echo" else def.faction.label}${if (def.elite) " · Elite" else ""}</span></span></span>""")
-            if (!e.alive) {
-                append("""<span class="nums">Defeated</span>""")
+            append("""<article class="$cls" style="--fc: var(--${fv(def.faction)})" aria-label="${esc(def.name)}">""")
+            val tag = (if (e.script != null) "Echo" else def.faction.label) + if (def.elite) " · Elite" else ""
+            val head = """<span class="foe-id">${Art.enemy(def, content.operative(st.player.operativeId))}""" +
+                """<span class="foe-names"><span class="foe-name">${esc(def.name)}</span><span class="tag">${esc(tag)}</span></span></span>"""
+            val stats = if (!e.alive) {
+                """<span class="nums">Defeated</span>"""
             } else {
-                append(meter(e.hp, e.maxHp, "HP"))
-                append("""<span class="nums"><span>HP ${e.hp}/${e.maxHp}</span>${if (e.block > 0) "<span>Block ${e.block}</span>" else ""}${statuses(e.statuses)}</span>""")
+                meter(e.hp, e.maxHp, "HP") +
+                    """<span class="nums"><span><b>${e.hp}</b>/${e.maxHp} HP</span>${if (e.block > 0) "<span>Block ${e.block}</span>" else ""}${statuses(e.statuses)}</span>"""
+            }
+            if (target) {
+                append("""<button type="button" class="foe-main is-target" data-act="enemy" data-id="${e.uid}" aria-pressed="$chosen">$head$stats</button>""")
+            } else {
+                append("""<div class="foe-main">$head$stats</div>""")
+            }
+            if (e.alive) {
                 val intents = st.track.filter { it.kind == TrackKind.INTENT && it.enemyUid == e.uid }.sortedBy { it.countdown }
                 if (intents.isNotEmpty()) {
                     append("""<span class="intents">""")
-                    for (i in intents) append("""<span class="intent" title="${esc(intentTip(i))}">${dial(i.countdown)}<span>${intentText(st, i)}</span></span>""")
+                    for (i in intents) {
+                        val body = """${dial(i.countdown)}<span>${intentText(st, i)}</span>"""
+                        val tip = esc(intentTip(i))
+                        if (i.id in candidates) {
+                            val on = app.pick?.track == i.id
+                            append("""<button type="button" class="intent is-target${if (on) " is-chosen" else ""}" data-act="track" data-id="${i.id}" aria-pressed="$on" title="$tip">$body</button>""")
+                        } else {
+                            append("""<span class="intent" title="$tip">$body</span>""")
+                        }
+                    }
                     append("</span>")
                 }
             }
-            append("</$close>")
-        }
-        append("</section>")
-    }
-
-    private fun track(st: CombatState): String = buildString {
-        val need = pickTrackNeed(st)
-        val candidates = if (need == TrackNeed.NONE) emptySet() else engine.trackCandidates(st, need).map { it.id }.toSet()
-        append("""<section class="track" aria-label="The Track"><h2 class="label">The Track <span>what lands, and when</span></h2><div class="lanes">""")
-        val lanes = listOf(1 to "Next enemy phase", 2 to "In 2", 3 to "In 3", 4 to "Later")
-        for ((c, title) in lanes) {
-            val items = st.track.filter { if (c == 4) it.countdown >= 4 else it.countdown == c }
-                .sortedWith(compareBy({ if (it.kind == TrackKind.SCHEDULED) 0 else 1 }, { it.order }))
-            append("""<div class="lane"><h3>${dial(c)} $title</h3>""")
-            if (items.isEmpty()) append("""<p class="empty">Nothing</p>""")
-            for (item in items) {
-                val who = if (item.kind == TrackKind.SCHEDULED) "You" else item.enemyUid?.let { st.enemy(it) }?.let { content.enemy(it.defId).name } ?: "?"
-                val selectable = item.id in candidates
-                val chosen = app.pick?.track == item.id
-                val cls = "chip ${if (item.kind == TrackKind.SCHEDULED) "is-yours" else "is-foe"}${if (selectable) " is-target" else ""}${if (chosen) " is-chosen" else ""}"
-                val body = """<span class="who">${esc(who)}</span><span>${intentText(st, item)}</span>"""
-                val tip = if (item.kind == TrackKind.INTENT) intentTip(item) else tipText(Glossary.face(dcbb.core.model.Face(CardType.SKILL, item.effects)) + Glossary.SCHEDULE)
-                val title = if (tip.isEmpty()) "" else """ title="${esc(tip)}""""
-                if (selectable) {
-                    append("""<button type="button" class="$cls" data-act="track" data-id="${item.id}"$title>$body</button>""")
-                } else {
-                    append("""<div class="$cls"$title>$body</div>""")
-                }
-            }
-            append("</div>")
+            append("</article>")
         }
         append("</div></section>")
     }
 
-    private fun you(st: CombatState): String = buildString {
+    /** Your own Scheduled effects on the Track (enemy intents show on the enemies). */
+    private fun yourTrack(st: CombatState): String {
+        val mine = st.track.filter { it.kind == TrackKind.SCHEDULED }.sortedWith(compareBy({ it.countdown }, { it.order }))
+        if (mine.isEmpty()) return ""
+        val need = pickTrackNeed(st)
+        val candidates = if (need == TrackNeed.NONE) emptySet() else engine.trackCandidates(st, need).map { it.id }.toSet()
+        return buildString {
+            append("""<section class="mytrack" aria-label="Your Scheduled effects"><span class="label">Scheduled</span>""")
+            for (item in mine) {
+                val tip = esc(tipText(Glossary.face(dcbb.core.model.Face(CardType.SKILL, item.effects)) + Glossary.SCHEDULE))
+                val body = """${dial(item.countdown)}<span>${esc(item.label)}</span>"""
+                if (item.id in candidates) {
+                    val on = app.pick?.track == item.id
+                    append("""<button type="button" class="chip is-yours is-target${if (on) " is-chosen" else ""}" data-act="track" data-id="${item.id}" title="$tip">$body</button>""")
+                } else {
+                    append("""<span class="chip is-yours" title="$tip">$body</span>""")
+                }
+            }
+            append("</section>")
+        }
+    }
+
+    private fun constantsRow(st: CombatState): String {
+        val p = st.player
+        if (p.constants.isEmpty()) return ""
+        return buildString {
+            append("""<section class="consts" aria-label="Your Constants"><span class="label">Constants ${p.constants.size}/${Engine.CONSTANT_SLOTS}${if (p.constantsSilenced) " · snipped this turn" else ""}</span>""")
+            for (c in p.constants) {
+                val def = content.card(c.defId)
+                val text = RulesText.card(def)
+                append("""<span class="const" style="--fc: var(--${fv(def.faction)})" title="${esc(tipText(Glossary.card(def)))}"><b>${esc(def.name)}</b><small>${esc(text)}</small></span>""")
+            }
+            append("</section>")
+        }
+    }
+
+    /** You, pinned to the bottom: HP, Block, what lands next, Paradox, energy, your Signature Action and End turn. */
+    private fun playerBar(st: CombatState): String = buildString {
         val p = st.player
         val op = content.operative(p.operativeId)
-        append("""<section class="you" aria-label="You" style="--fc: var(--${fv(op.faction)})">""")
-        append("""<div class="you-head"><h2 class="you-name">${esc(op.name)}</h2><span class="nums"><span>HP ${p.hp}/${p.maxHp}</span><span>Block ${p.block}</span>${statuses(p.statuses)}</span></div>""")
-        append(meter(p.hp, p.maxHp, "Your HP"))
-
+        append("""<section class="me" aria-label="You" style="--fc: var(--${fv(op.faction)})"><div class="me-in">""")
+        append("""<div class="me-row">""")
+        append("""<span class="me-hp">${meter(p.hp, p.maxHp, "Your HP")}<span class="nums"><span><b>${p.hp}</b>/${p.maxHp} HP</span></span></span>""")
+        append("""<span class="nums me-block" title="${esc(Glossary.BLOCK.text)}">Block <b>${p.block}</b></span>""")
+        append(incoming(st))
+        val cap = engine.unravelAt(st)
+        append(
+            """<span class="me-pdx${if (p.paradox >= cap - 3) " is-high" else ""}" title="${esc(Glossary.PARADOX.text)}">""" +
+                pdxBar(p.paradox, cap) + """<span class="nums"><span>Paradox <b>${p.paradox}</b>${if (cap != 10) "/$cap" else ""}</span></span></span>""",
+        )
+        if (p.statuses.isNotEmpty()) append("""<span class="nums">${statuses(p.statuses)}</span>""")
+        if (p.debtTotal > 0) {
+            val debtWhen = if (st.phase.over) "carried into your next fight" else "repaid at your next Dawn"
+            append("""<span class="debt" title="Debt: $debtWhen">Debt ${p.debtTotal}</span>""")
+        }
+        append("</div>")
         val pool = EnergyColor.entries.filter { p.energyOf(it) > 0 }.joinToString("") { c -> pip(c).repeat(p.energyOf(c)) }
-        val debtWhen = if (st.phase.over) "carried into your next fight" else "repaid at your next Dawn"
-        val debt = if (p.debtTotal > 0) """<span class="debt">Debt ${p.debtTotal}: $debtWhen</span>""" else ""
-        val borrowLeft = Engine.BORROW_LIMIT - p.borrowedThisTurn
-        val interest = if (p.borrowedThisTurn == 0) " (first Borrow +${Engine.BORROW_INTEREST} interest)" else ""
-        append("""<div class="row energy"><span class="label">Energy</span><span class="pool" aria-label="${p.energyTotal} energy">${pool.ifEmpty { "<span class=\"muted\">none</span>" }}</span>$debt<span class="muted">Borrow left $borrowLeft$interest</span></div>""")
+        val sigOn = app.pick != null && app.pick?.uid == null
+        append("""<div class="me-row me-act"><span class="pool" aria-label="${p.energyTotal} energy">${pool.ifEmpty { "<span class=\"muted\">No energy</span>" }}</span>""")
+        append(
+            """<span class="me-btns"><button type="button" class="sig${if (sigOn) " is-on" else ""}" data-act="sig" title="${esc(signatureLine(st))}"""" +
+                """${if (p.signatureUsed || st.phase.over) " disabled" else ""}>${esc(signatureShort(st))}${if (p.signatureUsed) " · used" else ""}</button>""" +
+                """<button type="button" class="primary" data-act="end"${if (st.phase.over || st.pending != null) " disabled" else ""}>End turn</button></span>""",
+        )
+        append("</div></div></section>")
+    }
 
-        val seg = (1..10).joinToString("") { i -> """<i class="${if (i <= p.paradox) "on" else ""}${if (i == 10) " last" else ""}"></i>""" }
-        append("""<div class="row"><span class="label">Paradox</span><span class="pdx" role="img" aria-label="Paradox ${p.paradox} of 10">$seg</span><span class="nums">${p.paradox}/10${if (p.paradox >= 7) " · Unravel at 10" else ""}</span></div>""")
-
-        val constants = if (p.constants.isEmpty()) {
-            """<span class="muted">none</span>"""
-        } else {
-            p.constants.joinToString("") { c ->
-                val def = content.card(c.defId)
-                """<span class="const" style="--fc: var(--${fv(def.faction)})" title="${esc(RulesText.card(def))}"><b>${esc(def.name)}</b><small>${esc(RulesText.card(def))}</small></span>"""
+    /** Damage from the intents that land in the coming enemy phase, and what gets through your Block (and Plate). */
+    private fun incoming(st: CombatState): String {
+        var lo = 0
+        var hi = 0
+        for (i in st.track.filter { it.kind == TrackKind.INTENT && it.countdown <= 1 }) {
+            if (i.forked && i.collapsed == null) {
+                val a = engine.intentDamage(st, i, 0)
+                val b = engine.intentDamage(st, i, 1)
+                lo += minOf(a, b)
+                hi += maxOf(a, b)
+            } else {
+                val d = engine.intentDamage(st, i)
+                lo += d
+                hi += d
             }
         }
-        append("""<div class="row constants"><span class="label">Constants ${p.constants.size}/3${if (p.constantsSilenced) " · snipped this turn" else ""}</span>$constants</div>""")
-
-        val known = p.future.count { it.known }
-        append(
-            """<div class="row zones">""" +
-                zoneButton(Drawer.FUTURE, "Future ${p.future.size}${if (known > 0) " ($known Known)" else ""}") +
-                zoneButton(Drawer.PAST, "Past ${p.past.size}") +
-                zoneButton(Drawer.ERASED, "Erased ${p.erased.size}") + "</div>",
-        )
-
-        val sigOn = app.pick != null && app.pick?.uid == null
-        val strikeBonus = p.constants.sumOf { engine.constantSpec(it)?.strikeDamage ?: 0 }
-        append(
-            """<div class="row act">""" +
-                """<button type="button" class="sig${if (sigOn) " is-on" else ""}" data-act="sig"${if (p.signatureUsed || st.phase.over) " disabled" else ""}>""" +
-                """${esc(signatureLine(op.signature, strikeBonus))}${if (p.signatureUsed) " · used" else ""}</button>""" +
-                """<button type="button" class="primary" data-act="end"${if (st.phase.over || st.pending != null) " disabled" else ""}>End turn</button></div>""",
-        )
-        append("</section>")
+        val guard = st.player.block + st.player.status(StatusType.PLATE)
+        val loseLo = maxOf(0, lo - guard)
+        val loseHi = maxOf(0, hi - guard)
+        val range = { a: Int, b: Int -> if (a == b) "$b" else "$a–$b" }
+        val cls = when {
+            loseHi == 0 -> "is-safe"
+            loseHi >= st.player.hp -> "is-lethal"
+            else -> "is-hurt"
+        }
+        val tip = "Damage from the intents that land in the coming enemy phase, against your Block (plus Plate at the end of your turn)."
+        val lose = if (hi == 0) "" else if (loseHi == 0) " · blocked" else " · <b>−${range(loseLo, loseHi)}</b> HP"
+        return """<span class="incoming nums $cls" title="${esc(tip)}">Incoming ${range(lo, hi)}$lose</span>"""
     }
 
     private fun zoneButton(d: Drawer, text: String) =
@@ -299,14 +364,19 @@ class Views(private val app: App) {
 
     private fun present(st: CombatState): String = buildString {
         val p = st.player
-        append("""<section class="hand" aria-label="Your Present"><h2 class="label">Present <span>${p.present.size}/10 · tap a card, tap again to play</span></h2><div class="cards">""")
+        val known = p.future.count { it.known }
+        append("""<section class="hand" aria-label="Your Present"><div class="hand-head"><h2 class="label">Present <span>${p.present.size}/10 · tap a card twice to play it</span></h2><span class="zones">""")
+        append(zoneButton(Drawer.FUTURE, "Future ${p.future.size}${if (known > 0) " · $known Known" else ""}"))
+        append(zoneButton(Drawer.PAST, "Past ${p.past.size}"))
+        append(zoneButton(Drawer.ERASED, "Erased ${p.erased.size}"))
+        append("""</span></div><div class="cards">""")
         if (p.present.isEmpty()) append("""<p class="empty">Your Present is empty.</p>""")
         for (c in p.present) append(cardTile(st, c, interactive = true))
         append("</div></section>")
     }
 
     private fun otherHand(st: CombatState): String = buildString {
-        append("""<section class="hand other" aria-label="Your Other Hand"><h2 class="label">Other Hand <span>Shift swaps these with your Present</span></h2><div class="cards">""")
+        append("""<section class="hand other" aria-label="Your Other Hand"><div class="hand-head"><h2 class="label">Other Hand <span>Shift swaps these with your Present</span></h2></div><div class="cards">""")
         if (st.player.otherHand.isEmpty()) append("""<p class="empty">Empty</p>""")
         for (c in st.player.otherHand) append(cardTile(st, c, interactive = false))
         append("</div></section>")
@@ -362,15 +432,17 @@ class Views(private val app: App) {
         return """<span class="dl-name" style="--fc: var(--${fv(def.faction)})">${esc(def.name)}</span><span class="dl-text">${esc(cardText(c))}</span>"""
     }
 
+    /** The last few lines of the fight (this round and the one before), or the whole log. */
     private fun logSection(log: List<String>): String {
         val full = app.drawer == Drawer.LOG
-        val lines = if (full) log else log.takeLast(14)
-        return """<section class="log" aria-label="Combat log"><h2 class="label">Log</h2><ol class="log-lines">""" +
+        val lastRounds = log.indices.filter { log[it].startsWith("— Round") }.takeLast(2).firstOrNull() ?: 0
+        val lines = if (full) log else log.drop(lastRounds).takeLast(12)
+        return """<section class="log" aria-label="Combat log"><div class="hand-head"><h2 class="label">Log</h2>""" +
+            """<button type="button" class="linkish" data-act="drawer" data-id="LOG">${if (full) "Recent lines only" else "Full log (${log.size} lines)"}</button></div><ol class="log-lines">""" +
             lines.joinToString("") { line ->
                 val round = line.startsWith("— Round")
                 """<li${if (round) " class=\"round\"" else ""}>${esc(line)}</li>"""
-            } + "</ol>" +
-            """<button type="button" class="linkish" data-act="drawer" data-id="LOG">${if (full) "Show recent lines" else "Show the full log (${log.size} lines)"}</button></section>"""
+            } + "</ol></section>"
     }
 
     // ---- the play sheet ---------------------------------------------------------------------------------------
@@ -389,13 +461,15 @@ class Views(private val app: App) {
             text = if (faces.size > 1) RulesText.face(face) else cardText(inst)
         } else {
             title = op.signature.label
-            text = signatureLine(op.signature, p.constants.sumOf { engine.constantSpec(it)?.strikeDamage ?: 0 })
+            text = signatureLine(st)
         }
 
+        val verb = if (inst == null) "Use ${op.signature.label}" else "Play"
         append("""<div class="sheet" role="dialog" aria-label="${esc(title)}"><div class="sheet-inner">""")
-        append("""<div class="sheet-head"><div><b class="sheet-title">${esc(title)}</b>""")
+        append("""<div class="sheet-head"><div class="sheet-name"><b class="sheet-title">${esc(title)}</b>""")
         if (inst != null) append(""" <span class="card-cost">${costPips(engine.effectiveCost(st, inst))}</span>""")
-        append("""</div><button type="button" class="ghost" data-act="cancel">Cancel</button></div>""")
+        append("""</div><span class="btns"><button type="button" class="ghost" data-act="cancel">Cancel</button>""")
+        append("""<button type="button" class="primary" data-act="play">${esc(verb)}</button></span></div>""")
         append("""<p class="sheet-text">${esc(text)}</p>""")
         val gloss = if (inst != null && face != null) {
             (if (faces.size > 1 || inst.face != null || inst.granted != null) Glossary.face(face) else Glossary.card(content.card(inst.defId))) +
@@ -403,7 +477,6 @@ class Views(private val app: App) {
         } else {
             Glossary.signature(op.signature)
         }
-        append(glossary(gloss.distinct()))
 
         if (faces != null && faces.size > 1) {
             append(choiceRow("Face", faces.indices.joinToString("") { i ->
@@ -449,14 +522,13 @@ class Views(private val app: App) {
         if (inst != null) append(payRow(st, inst, pick))
 
         app.notice?.let { append("""<p class="sheet-error" role="alert">${esc(it)}</p>""") }
-        val verb = if (inst == null) "Use ${op.signature.label}" else "Play ${content.card(inst.defId).name}"
-        append("""<div class="sheet-foot"><button type="button" class="primary" data-act="play">${esc(verb)}</button></div>""")
+        append(glossary(gloss.distinct()))
         append("</div></div>")
     }
 
     private fun shiftRows(st: CombatState, pick: Pick, count: Int, playing: CardInst?): String = buildString {
         val p = st.player
-        val hasOther = content.operative(p.operativeId).otherHandSize > 0
+        val hasOther = engine.otherHandSize(st) > 0
         val outs = p.present.filter { it.uid != playing?.uid && pick.shifts.none { s -> s.presentUid == it.uid } }
         val chosen = pick.shifts.joinToString(", ") { s ->
             "${cardName(st, s.presentUid)} ⇄ ${s.otherUid?.let { cardName(st, it) } ?: "top of your Future"}"
@@ -499,9 +571,10 @@ class Views(private val app: App) {
             withBorrow != null -> "Not enough energy. Turn on Borrow to play it."
             else -> "Not enough energy, even with Borrow."
         }
+        val borrowLeft = engine.borrowLimit(st) - st.player.borrowedThisTurn
         val styles = choice("pay", 0, pick.pay == PayStyle.AUTO, "Attuned first", "A") +
             choice("pay", 0, pick.pay == PayStyle.NEUTRAL_FIRST, "Neutral first", "N") +
-            choice("borrow", 0, pick.borrow, if (pick.borrow) "Borrow: on" else "Borrow: off")
+            choice("borrow", 0, pick.borrow, if (pick.borrow) "Borrow: on ($borrowLeft left)" else "Borrow: off ($borrowLeft left)")
         return """<div class="choice-row"><span class="label">Pay</span><span class="pay-preview">$preview</span><div class="choices">$styles</div></div>"""
     }
 
@@ -721,23 +794,58 @@ class Views(private val app: App) {
             pip(EnergyColor.FLUX).repeat(cost.flux) + if (cost.generic > 0) """<span class="pip p-generic">${cost.generic}</span>""" else ""
     }
 
-    internal fun signatureLine(sig: Signature, strikeBonus: Int) = when (sig) {
-        Signature.STRIKE -> "Strike · deal ${Engine.STRIKE_DAMAGE + strikeBonus}"
-        Signature.FORECAST -> "Forecast · Foresee 2"
+    /** Strike's damage and Forecast's reach in this fight: Relics, Imprints, the MERIDIAN Shard. */
+    private fun strikeDamage(st: CombatState) =
+        Engine.STRIKE_DAMAGE + st.mods.signatureBonus + st.player.constants.sumOf { engine.constantSpec(it)?.strikeDamage ?: 0 }
+
+    private fun forecastReach(st: CombatState) = Engine.FORECAST + st.mods.signatureBonus + st.mods.foreseeBonus
+
+    private fun signatureShort(st: CombatState) = when (content.operative(st.player.operativeId).signature) {
+        Signature.STRIKE -> "Strike ${strikeDamage(st)}"
+        Signature.FORECAST -> "Forecast"
+        Signature.SHIFT -> "Shift"
+    }
+
+    private fun signatureLine(st: CombatState) = when (content.operative(st.player.operativeId).signature) {
+        Signature.STRIKE -> "Strike · deal ${strikeDamage(st)}"
+        Signature.FORECAST -> "Forecast · Foresee ${forecastReach(st)}"
         Signature.SHIFT -> "Shift · swap 1 card"
     }
 
-    private fun place(enemyId: String) = when (enemyId.substringBefore('.')) {
-        "london" -> "London 1843"
-        "milan" -> "Milan 1495"
-        "saltwaste" -> "Salt Waste 1191"
-        "tear" -> "The Tear"
-        else -> "Faction squad"
+    internal fun signatureLine(sig: Signature) = when (sig) {
+        Signature.STRIKE -> "Strike · deal ${Engine.STRIKE_DAMAGE}"
+        Signature.FORECAST -> "Forecast · Foresee ${Engine.FORECAST}"
+        Signature.SHIFT -> "Shift · swap 1 card"
+    }
+
+    /** Paradox as segments up to the Unravel (10, or 12 with Unstable Equilibrium). */
+    internal fun pdxBar(paradox: Int, cap: Int): String {
+        val seg = (1..cap).joinToString("") { i -> """<i class="${if (i <= paradox) "on" else ""}${if (i == cap) " last" else ""}"></i>""" }
+        return """<span class="pdx" role="img" aria-label="Paradox $paradox of $cap">$seg</span>"""
+    }
+
+    private fun place(enemyId: String) = when {
+        enemyId in NEXUS -> "The Nexus"
+        else -> when (enemyId.substringBefore('.')) {
+            "london" -> "London 1843"
+            "milan" -> "Milan 1495"
+            "saltwaste" -> "Salt Waste 1191"
+            "tear" -> "The Tear"
+            else -> "Faction squad"
+        }
     }
 
     internal fun cap(s: String) = s.replaceFirstChar { it.uppercase() }
 
+    internal fun roman(n: Int) = when (n) {
+        1 -> "I"
+        2 -> "II"
+        3 -> "III"
+        else -> n.toString()
+    }
+
     companion object {
+        private val NEXUS = setOf("order.aurelian", "conv.meridian_ascendant", "errata.thousandfold")
         private val BLURBS = mapOf(
             "vowknight" to "Takes Vows that power up a free Strike. The most forgiving operative: high HP and plenty of Block.",
             "oracle" to "Foresees the Future so Calculated cards hit harder, and installs Subroutines that work every turn.",

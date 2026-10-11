@@ -87,6 +87,7 @@ Imprints are level-up passives ([05](05-run-structure.md#imprints)).
 | Imprint | Requirement | Effect |
 |---|---|---|
 | Steadfast | 4+ Order cards | Start each combat with Plate 1. |
+| Oathbound | n/a | Your Strike deals 2 more damage. |
 | Keeper of Vows | 2+ Vows in deck | The first Vow you break each combat causes no Penance. |
 | Long Memory | 3+ Remember cards | Remember also counts cards in the Erased. |
 
@@ -137,6 +138,7 @@ Imprints are level-up passives ([05](05-run-structure.md#imprints)).
 | Imprint | Requirement | Effect |
 |---|---|---|
 | Precomputed | 4+ Convergence cards | Forecast becomes Foresee 3. |
+| Deep Forecast | n/a | Start of each combat: Foresee 2. |
 | Cache Hit | 2+ Subroutines | Your first Subroutine each combat costs 1 less. |
 | Bayesian Prior | 3+ Calculated cards | The first Known card you play each turn draws 1 card. |
 
@@ -197,7 +199,8 @@ Imprints are level-up passives ([05](05-run-structure.md#imprints)).
 |---|---|---|
 | Margin Notes | 4+ Errata cards | Your Other Hand holds 4 cards. |
 | Unstable Equilibrium | 3+ Paradox cards | Unravel happens at 12 Paradox instead of 10. |
-| Plural (legendary) | 2+ Fork cards | Once per turn, when you play a Fork card, also resolve its other face at half value. |
+| Doubled Breath | n/a | Start each combat with 1 Flux energy and draw 1 card. |
+| Plural (legendary) | 2+ Fork cards | Once per turn, when you play a Fork card, also resolve its other face at half value. Not in the prototype yet: it waits for Forks. |
 
 ---
 
@@ -248,7 +251,7 @@ Hybrids are unlocked by **Defecting** ([06](06-meta-progression.md#unlocks)). Th
 
 ## Enemy Rosters
 
-Enemy stats are prototype values, tuned once by simulation so that a normal fight costs about 15–25% of your max HP and an elite 35–50% ([reports](../reports/README.md)). Intents use the vocabulary in [04](04-combat.md#enemies-and-intents).
+Enemy stats are prototype values, tuned once by simulation so that a normal fight costs about 15–25% of your max HP and an elite 35–50% ([reports](../reports/README.md)). Intents use the vocabulary in [04](04-combat.md#enemies-and-intents). The numbers here are Act I's: later acts scale every fight but the boss's ([05](05-run-structure.md#between-acts-and-across-them)).
 
 ### Era natives
 
@@ -265,6 +268,14 @@ Era natives can be anyone who lived in that era, on any side of its conflicts. I
 | Salt Wraith | Salt Waste 1191 | 22 | Unpick: Blank the top card of your Future + Attack 5 ① → Attack 9 ① | Tear-touched |
 | Sandglass Golem | Salt Waste 1191 | 38 | Plate 2 + Attack 4 ① → Charge Attack 12 ② | Rarely alone |
 | Mirage | Salt Waste 1191 | 20 | Forked: Attack 12 / Guard 8 ① | Errata-touched |
+| Swiss Pikeman | Milan 1495 | 30 | Guard 8 + Attack 5 ① → Attack 6×2 ① | |
+| Leonardo's Lion | Milan 1495 | 42 | Attack 9 ① → **Charge** Attack 6×3 ② | Clockwork, and years early |
+| Sforza Knight | Milan 1495 | 44 | Plate 2 + Attack 4 (first turn) → Attack 11 ① → Guard 10 + Attack 6 ① | |
+| **Capitano di Ventura** (elite) | Milan 1495 | 70 | Attack 9 ① ↔ Guard 10 + Attack 5 ①, plus **Charge of the Company** 22 ③ | Brings a Crossbowman |
+| Crusader Knight | Salt Waste 1191 | 40 | Guard 10 + Attack 6 ① → Attack 14 ① → Attack 7×2 ① | |
+| Ayyubid Horse Archer | Salt Waste 1191 | 26 | Attack 4×3 ① → **Charge** Attack 15 ② | |
+| Glassborn | Salt Waste 1191 | 30 | Unpick: Blank the top card of your Future + Attack 7 ① → Guard 6 + Attack 6 ① | The Gnomon's glass, walking |
+| **Black Glass Sentinel** (elite) | Salt Waste 1191 | 92 | Plate 3 + Attack 8 → Unpick: Blank 2 + Attack 10 → Attack 12, plus **The Shadow Falls** 24 ③ (Fixed) | |
 
 ### Faction squads
 
@@ -274,7 +285,7 @@ Squads appear in any era, with era skins: a Brass Proxy is clockwork in 1495 and
 |---|---|---|---|
 | Squire of the Line | Order | 24 | Attack 8 ① ↔ Guard 6 ① |
 | Sergeant-at-Arms | Order | 34 | Plate 2 (first turn) → Attack 10 ① |
-| Penitent | Order | 26 | Martyr: gains Might 1 when it loses HP · Attack 5 ×2 ① |
+| Penitent | Order | 26 | Martyr: gains Might 1 when it loses HP · Attack 5 ×2 ①. The prototype simplifies Martyr to a rotation: Attack 5×2 ① → Might 2 + Attack 4 ① |
 | **Inquisitor** (elite) | Order | 60 | Strike 7 ① every round + **Purge 30 ③ (Fixed)**, which recharges |
 | Brass Proxy | Convergence | 26 | **Predictive**: more Attacks than Skills in your Present → Guard 8 + Attack 6; otherwise Attack 10 |
 | Calculating Engine | Convergence | 30 | Glitch 2 ① → Attack 7 ① → Guard 7 ① |
@@ -282,7 +293,7 @@ Squads appear in any era, with era skins: a Brass Proxy is clockwork in 1495 and
 | **Pruner** (elite) | Convergence | 56 | A jab, Attack 7 ①, every round · **Prune** ①: **Disrupt** (Delay your Scheduled items 1) and Erase the top card of your Future → Charge Attack 14 ② |
 | Misprint | Errata | 26 | **Forked**: Attack 14 / Weak 2 ① |
 | Double | Errata | 36 | Copies the last card you played as its intent (damage → Attack, Block → Guard; Attack 8 if there is nothing to copy) |
-| **Seam-runner** (elite) | Errata | 44 | Untargetable every other round ("in the Margins") · Forked: Attack 15 / Steal a card from your Present (returned on death) |
+| **Seam-runner** (elite) | Errata | 44 | Untargetable every other round ("in the Margins") · Forked: Attack 15 / Steal a card from your Present (returned on death). The prototype, 48 HP, has no untargetable rounds or stealing yet: Forked Attack 14 / Attack 5 + Erase the top card of your Future ①, and *Into the Margins*: Guard 12 ② |
 | Loose End | Tear | 12 | Unpick: Blank the top card of your Future + Attack 4 ① |
 | Ravel | Tear | 34 | Unpick: Erase the top card of your Future + Attack 6 ① → Attack 14 ① |
 | **The Rent** (elite) | Tear | 82 | Snip (your Constants don't trigger next turn) + Attack 6 ① → Charge Attack 20 ② → Unpick: Blank the top 2 cards of your Future + Attack 8 ① |
@@ -293,10 +304,10 @@ Squads appear in any era, with era skins: a Brass Proxy is clockwork in 1495 and
 | Boss | Where | HP | Mechanics | Fixed signature move |
 |---|---|---|---|---|
 | **The Lattice Engine** | Act I, London 1843 | 85 | Predictive. Every other round it installs a Subroutine on itself, whose rider joins every later intent: *Bulwark.sub* (Guard 4), *Lance.sub* (Attack 3), *Jacquard.sub* (Glitch 1), *Overclock.sub* (Might +1). In between it reads your Present: Attack-heavy hands meet Guard 6 + Attack 5, anything else Attack 10. Unwrite can delete an install. | **Cascade** ③: Attack 5 × installed Subroutines |
-| **The Automa Cavaliere** | Act II, Milan 1495 | 150 | Its heart depends on your Act II Divergence choice ([02](02-world-and-lore.md#the-mvp-mission-the-first-hour)): MERIDIAN's escapement → Predictive + Glitch; Order relic → its own Vow (+Might when you break the pattern it forbids); Errata misprint → Forked intents. | **Joust** ③: Attack 28 |
-| **Grand Master Aurelian** | Nexus (Order champion) | 200 | Liturgical cycle of Fixed hits. Gains Might when you play 3+ Attacks in a turn. Phase 2, *The Last Hour*: he Disrupts your Scheduled items, all his intents become Fixed, and a Loose End crawls through the Tear when the phase begins. His End arrives as a wound. | **Canon Unbroken** ④: Attack 40 |
-| **MERIDIAN Ascendant** | Nexus (Convergence champion) | 180 | Predictive twice per round, Subroutines, Disrupt. Phase 2, *Optimal Line*: each round it copies the most-played card in your deck as its intent. **Recompute**: once per fight, at 25% HP, it restores 30 HP and changes its Fixed move. It cannot accept losing as an answer. | **Convergence** ③: Erase 2 cards from your Present, then Attack 20 |
-| **The Thousandfold** | Nexus (Errata champion) | 170 | Two Forked intents per round. Summons Doubles. Phase 2, *Thousand Selves*: every 2 rounds she swaps HP with a Double, so you must find the right self. **Dissent**: each round, one Double attacks her instead of you, because her versions want different endings. | **Chorus** ③: Attack 4 × (Doubles + 1) to you, Weak 2 |
+| **The Automa Cavaliere** | Act II, Milan 1495 | 120 | Its heart depends on your Act II Divergence choice ([02](02-world-and-lore.md#the-mvp-mission-the-first-hour)). MERIDIAN's escapement → Predictive: Attack-heavy hands meet Guard 10 + Attack 4 + Glitch 1, anything else Attack 10. Order relic → Fixed hits, and its own Vow: when you played 3+ Attacks in your last turn, it gains Might 1. Errata misprint → Forked intents (Attack 13 / Guard 10 + Weak 2, then Attack 6×2 / Attack 4 + Exposed 2). An empty chest → Guard 10 + Attack 5 → Attack 10 → Attack 5×2. | **Joust** ③: Attack 22 (Fixed) |
+| **Grand Master Aurelian** | Nexus (Order champion) | 160 | Liturgical cycle of Fixed hits: Attack 9 → Guard 12 + Attack 5 → Attack 6×2. *Litany*: when you played 3+ Attacks in your last turn, he gains Might 1. Phase 2 at half HP, *The Last Hour*: a Loose End crawls through the Tear, he Disrupts your Scheduled items, and all his intents become Fixed. His End arrives as a wound. | **Canon Unbroken** ④, ③ in phase 2: Attack 30 (Fixed) |
+| **MERIDIAN Ascendant** | Nexus (Convergence champion) | 150 | Predictive twice per round: Guard 10 + Attack 6 against Attack-heavy hands, Attack 12 otherwise, and a second read that Glitches or Disrupts. Phase 2 at half HP, *Optimal Line*: its main intent copies the last card you played. **Recompute**: once per fight, at 25% HP, it restores 25 HP and changes its Fixed move to Attack 9×2 ②. It cannot accept losing as an answer. Its Subroutines and copying your most-played card wait for later. | **Convergence** ③: Erase the top card of your Future, then Attack 16 (Fixed) |
+| **The Thousandfold** | Nexus (Errata champion) | 130 | Two Forked intents per round (Attack 10 / Guard 10, and Attack 5×2 / Attack 8 or a new Double). Opens by summoning a Double. Phase 2 at half HP, *Thousand Selves*: two more Doubles at once, and harder forks. Swapping HP with a Double every 2 rounds and **Dissent** (each round, one Double attacks her instead of you, because her versions want different endings) wait for later. | **Chorus** ③: Attack 4 × (Doubles + 1) to you, 5 in phase 2, and Weak 1 (Fixed) |
 
 **Which champion you face.**
 

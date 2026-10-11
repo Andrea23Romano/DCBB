@@ -345,14 +345,21 @@ class RunTest {
     }
 
     @Test
-    fun `beating the boss ends the act in victory, and falling ends the run`() {
+    fun `beating the act boss leads to its reward, and falling ends the run`() {
         val boss = startRun().copy(step = era.steps + 1).visit(MomentType.BOSS, era.boss)
         val fight = boss.screen as Screen.Fight
         val dead = boss.copy(anchor = null, screen = fight.copy(combat = fight.combat.copy(phase = Phase.LOST))).ok(RunAction.Done)
         assertEquals(false, (dead.screen as Screen.Over).won, "with no Anchor left, a fall ends the run")
         val won = boss.copy(screen = fight.copy(combat = fight.combat.copy(phase = Phase.WON))).ok(RunAction.Done)
-        assertEquals(true, (won.screen as Screen.Over).won)
-        assertNotNull(re.apply(won, RunAction.Done).error)
+        val reward = won.screen as Screen.Reward
+        assertTrue(reward.boss && won.actDone)
+        assertEquals(3, reward.artifacts.size)
+        assertTrue(reward.artifacts.all { FirstHour.run.artifact(it).boss })
+        assertEquals(3, reward.cards.toSet().size)
+        assertTrue(reward.cards.any { content.card(it).rarity in setOf(Rarity.RARE, Rarity.LEGENDARY) })
+        assertTrue(reward.cards.none { content.card(it).rarity in setOf(Rarity.COMMON, Rarity.STARTER) })
+        assertEquals(boss.hours + RunEngine.BOSS_HOURS, won.hours)
+        assertNotNull(re.apply(won, RunAction.Glimpse).error, "a boss's reward can't be Glimpsed")
     }
 
     /** Ends the current fight as a win, keeping the combat's HP. */

@@ -21,11 +21,11 @@ import dcbb.core.state.Phase
  * The run layer (docs/05): a pure reducer over [RunState], like the combat [Engine] it wraps. A run is a seed plus
  * a list of [RunAction]s, so it saves, replays and simulates exactly.
  *
- * This first slice plays Act I of The First Hour: the Weft and its dealing rules, Returning Moments, fights with HP,
- * Paradox and Debt carried between them, card rewards with Glimpse and Skip, Inscribe and Erase, the Antiquarian,
- * Still Points, Caches, Shrines, events with a Divergence and its Ripples, Artifacts, Paradox thresholds, Anchors
- * and Rewind with the Echo of You, and the act boss.
- * Not yet: Imprints and XP, Defection, Standing effects, Forks, Acts II and III.
+ * It plays The First Hour's three acts: the Weft and its dealing rules, Returning Moments, fights with HP, Paradox
+ * and Debt carried between them, card rewards with Glimpse and Skip, Inscribe and Erase, the Antiquarian, Still
+ * Points, Caches, Shrines, events with a Divergence per act and their Ripples, Artifacts and boss Artifacts, Paradox
+ * thresholds, Anchors and Rewind with the Echo of You, XP and Imprints, Standing, the act bosses and the Nexus.
+ * Not yet: Defection, Forks.
  */
 class RunEngine(val rc: RunContent) {
     val content = rc.content
@@ -64,6 +64,21 @@ class RunEngine(val rc: RunContent) {
         const val REWIND_PARADOX = 3
         const val REWIND_DEATH_PARADOX = 5
 
+        /** XP per fight, and the total XP each level needs: 2 at 20, 3 at 50 ... 8 at 350 (docs/05 "Imprints"). */
+        const val XP_COMBAT = 10
+        const val XP_ELITE = 25
+        const val XP_BOSS = 50
+        val LEVELS = listOf(20, 50, 90, 140, 200, 270, 350)
+        const val LEVEL_HP = 3
+        const val BOSS_HOURS = 90
+        const val ACT_PARADOX_RELIEF = 1
+        const val HEAL_AFTER_FIGHT = 4
+
+        /** Standing +2 or more: that faction's cards cost this much at the Antiquarian, in percent (docs/05 "Standing"). */
+        const val FRIEND_PRICE_PCT = 80
+        const val HOSTILE = -2
+        const val FRIENDLY = 2
+
         /** The Moment types that wait in the Branch Pool. Rest and treasure don't wait for you. */
         private val RETURNABLE = setOf(MomentType.COMBAT, MomentType.ELITE, MomentType.EVENT, MomentType.ANTIQUARIAN, MomentType.SHRINE)
 
@@ -100,10 +115,11 @@ class RunEngine(val rc: RunContent) {
             nextId = 1,
         )
         val tx = Tx(initial)
-        tx.log += "The First Hour · Act ${era.act}: ${era.name}"
+        tx.log += "The First Hour · Act ${roman(era.act)}: ${era.name}"
         tx.planAct()
         val first = tx.deal(0)
         tx.s = tx.s.copy(screen = Screen.Weft(first))
+        tx.recordAct()
         tx.setAnchor(moved = false)
         return tx.outcome()
     }
@@ -127,22 +143,72 @@ class RunEngine(val rc: RunContent) {
 
     // ---- queries for UIs and bots -----------------------------------------------------------------------------
 
+    /** Acts are numbered I, II, III on screen. */
+    fun roman(act: Int): String = listOf("I", "II", "III", "IV", "V").getOrElse(act - 1) { act.toString() }
+
     fun era(state: RunState): EraDef = rc.era(state.eraId)
 
     fun perks(state: RunState): Set<Perk> =
-        state.artifacts.flatMap { rc.artifact(it).perks }.toSet() + state.ripples.flatMap { rc.ripple(it).perks }
+        state.artifacts.flatMap { rc.artifact(it).perks }.toSet() + state.ripples.flatMap { rc.ripple(it).perks } +
+            state.imprints.flatMap { rc.imprint(it).perks }
+
+    /** How many of your Artifacts, Ripples and Imprints carry [perk] (some perks stack). */
+    fun perkCount(state: RunState, perk: Perk): Int =
+        state.artifacts.count { perk in rc.artifact(it).perks } + state.ripples.count { perk in rc.ripple(it).perks } +
+            state.imprints.count { perk in rc.imprint(it).perks }
 
     /** The rule changes the run brings into a fight with [moment]. */
     fun mods(state: RunState, moment: Moment? = null): CombatMods {
         var m = CombatMods.NONE
         for (a in state.artifacts) m += rc.artifact(a).mods
         for (r in state.ripples) m += rc.ripple(r).mods
+        for (i in state.imprints) m += rc.imprint(i).mods
+        if (moment != null && moment.type != MomentType.BOSS && moment.echo == null) m += era(state).scaling
         if (state.paradox >= UNSTABLE) m += CombatMods(enemyBoosts = listOf(EnemyBoost(StatusType.MIGHT, 1, eliteOnly = true)))
         if (moment?.ambush == true) m += CombatMods(ambush = true)
         if (moment?.returning == Returning.EMPOWERED) {
             m += CombatMods(hpPct = EMPOWERED_HP_PCT, enemyBoosts = listOf(EnemyBoost(StatusType.MIGHT, 1, eliteOnly = true)))
         }
         return m
+    }
+
+    /** The Paradox at which you Unravel, in and out of combat. */
+    fun unravelAt(state: RunState): Int = mods(state).unravelAt
+
+    /** The level [xp] reaches. */
+    fun levelFor(xp: Int): Int = 1 + LEVELS.count { xp >= it }
+
+    /** XP still needed for the next level, or null at the top. */
+    fun xpToNext(state: RunState): Int? = LEVELS.firstOrNull { it > state.xp }?.let { it - state.xp }
+
+    /** Whether your deck meets an Imprint's requirement. */
+    fun meets(state: RunState, req: ImprintReq?): Boolean {
+        if (req == null) return true
+        val deck = state.deck.map { content.card(it) }
+        val n = when {
+            req.faction != null -> deck.count { it.faction == req.faction }
+            req.trait != null -> deck.count { hasTrait(it, req.trait) }
+            else -> 0
+        }
+        return n >= req.n
+    }
+
+    fun hasTrait(def: CardDef, trait: DeckTrait): Boolean {
+        val words = dcbb.core.text.Glossary.card(def)
+        return when (trait) {
+            DeckTrait.VOW -> dcbb.core.text.Glossary.VOW in words
+            DeckTrait.REMEMBER -> dcbb.core.text.Glossary.REMEMBER in words
+            DeckTrait.SUBROUTINE -> dcbb.core.text.Glossary.SUBROUTINE in words
+            DeckTrait.CALCULATED -> dcbb.core.text.Glossary.CALCULATED in words
+            DeckTrait.PARADOX -> dcbb.core.text.Glossary.PARADOX in words
+        }
+    }
+
+    /** "4+ Order cards", "2+ Vows". */
+    fun describe(req: ImprintReq): String = "${req.n}+ " + when {
+        req.faction != null -> "${req.faction.label} cards"
+        req.trait != null -> req.trait.label
+        else -> "cards"
     }
 
     /** Rewind is open outside combat while your Anchor holds, and when you fall. */
@@ -153,6 +219,17 @@ class RunEngine(val rc: RunContent) {
         !Variants.isInscribed(id) && !Variants.isMisprinted(id) && Variants.inscribedId(id) in content.cards
 
     fun eraseCost(state: RunState) = ERASE_PRICE + ERASE_STEP * state.erases
+
+    /** A card's price at the Antiquarian: by rarity, less for Relics (Canon of Engines) and friendly factions' cards. */
+    fun cardCost(state: RunState, id: String): Int {
+        val def = content.card(id)
+        var price = cardPrice(def.rarity)
+        if (def.constant?.kind == ConstantKind.RELIC && Perk.RELIC_DISCOUNT in perks(state)) price = price * 3 / 4
+        if (def.faction != Faction.NEUTRAL && def.faction != Faction.ERA && state.standingWith(def.faction) >= FRIENDLY) {
+            price = price * FRIEND_PRICE_PCT / 100
+        }
+        return price
+    }
 
     fun inscribeCost(state: RunState) = INSCRIBE_PRICE - if (Perk.INSCRIBE_DISCOUNT in perks(state)) INSCRIBE_DISCOUNT else 0
 
@@ -262,6 +339,7 @@ class RunEngine(val rc: RunContent) {
                 "Rewind to your Anchor, or let the run end"
             }
             is Screen.Weft -> onWeft(sc, a)
+            is Screen.LevelUp -> onLevelUp(sc, a)
             is Screen.Fight -> onFight(sc, a)
             is Screen.Reward -> onReward(sc, a)
             is Screen.Shop -> onShop(sc, a)
@@ -294,15 +372,17 @@ class RunEngine(val rc: RunContent) {
                 counts[t] = (counts[t] ?: 0) - 1
             }
 
-            // Pinned by the rules: a Still Point before the boss, an Antiquarian in steps 3–6, the Divergence in 4–7.
+            // Pinned by the rules: a Still Point before the boss, an Antiquarian in steps 3–6, the Divergence in 4–7
+            // (3–5 in a Nexus act).
             slots[steps - 1] += placeholder(MomentType.STILL_POINT, pinned = true).also { take(MomentType.STILL_POINT) }
             slots[2 + rand(4, Stream.SHUFFLE)] += placeholder(MomentType.ANTIQUARIAN, pinned = true).also { take(MomentType.ANTIQUARIAN) }
             val divergence = rc.event(era.divergence)
-            slots[3 + rand(4, Stream.SHUFFLE)] += moment(MomentType.EVENT, divergence.teaser, divergence.id, pinned = true)
+            val dv = era.divergenceSteps
+            slots[dv.first - 1 + rand(dv.last - dv.first + 1, Stream.SHUFFLE)] += moment(MomentType.EVENT, divergence.teaser, divergence.id, pinned = true)
                 .also { take(MomentType.EVENT) }
 
-            // Elites: steps 3 and later, one per step at most, never your own faction's.
-            val elites = shuffled(era.elites.filter { factionOf(it) != op.faction }).take(counts[MomentType.ELITE] ?: 0)
+            // Elites: steps 3 and later, one per step at most, never your own faction's (unless it hunts you).
+            val elites = shuffled(era.elites.filter { hunts(factionOf(it)) }).take(counts[MomentType.ELITE] ?: 0)
             for (e in elites) {
                 val open = (2 until steps).filter { i -> slots[i].size < 3 && slots[i].none { it.type == MomentType.ELITE } }
                 if (open.isEmpty()) break
@@ -339,7 +419,7 @@ class RunEngine(val rc: RunContent) {
             // Fill in what each placeholder is: fights by threat tier, sampled events, a Shrine's faction.
             val events = ArrayDeque(shuffled(era.events))
             val anomalies = ArrayDeque(shuffled(era.anomalies))
-            val tiers = era.combats.filter { factionOf(it.encounter) != op.faction }.groupBy { it.threat }
+            val tiers = era.combats.filter { hunts(factionOf(it.encounter)) }.groupBy { it.threat }
             val decks = mutableMapOf<Int, ArrayDeque<String>>()
             fun drawFight(want: Int): Pair<String, Int> {
                 val order = listOf(want, want - 1, want + 1, want - 2, want + 2).filter { it in 1..3 && tiers[it] != null }
@@ -348,12 +428,13 @@ class RunEngine(val rc: RunContent) {
                 if (deck.isEmpty()) deck.addAll(shuffled(tiers.getValue(tier).map { it.encounter }))
                 return deck.removeFirst() to tier
             }
+            fun tierAt(i: Int) = if (i < 3) 1 else if (i < 6) 2 else 3
             val plan = slots.mapIndexed { i, slot ->
                 slot.map { m ->
                     when {
                         m.ref != null -> m
                         m.type == MomentType.COMBAT -> {
-                            val (enc, tier) = drawFight(if (i < 3) 1 else if (i < 6) 2 else 3)
+                            val (enc, tier) = drawFight(tierAt(i))
                             m.copy(title = content.encounter(enc).name, ref = enc, faction = factionOf(enc), threat = tier)
                         }
                         m.type == MomentType.EVENT -> {
@@ -374,7 +455,25 @@ class RunEngine(val rc: RunContent) {
                 }
             }
             s = s.copy(plan = plan)
+
+            // Standing −2 or worse: that faction's squads hunt you, one more fight this act (docs/05 "Standing").
+            for (f in listOf(Faction.ORDER, Faction.CONVERGENCE, Faction.ERRATA)) {
+                if (s.standingWith(f) > HOSTILE) continue
+                val theirs = era.combats.filter { factionOf(it.encounter) == f }
+                val spots = (1 until s.plan.size).flatMap { i -> s.plan[i].indices.map { i to it } }
+                    .filter { (i, j) -> s.plan[i][j].let { it.type != MomentType.COMBAT && it.type != MomentType.ELITE && replaceable(it) } }
+                if (theirs.isEmpty() || spots.isEmpty()) continue
+                val (i, j) = pick(spots, Stream.SHUFFLE)
+                val near = theirs.minBy { kotlin.math.abs(it.threat - tierAt(i)) }.threat
+                val fight = pick(theirs.filter { it.threat == near }, Stream.SHUFFLE)
+                val m = moment(MomentType.COMBAT, content.encounter(fight.encounter).name, fight.encounter, f, fight.threat)
+                s = s.copy(plan = s.plan.map { it.toMutableList() }.also { it[i][j] = m })
+                log += "${f.label} squads hunt you this act."
+            }
         }
+
+        /** Whether [f]'s fights can be dealt: never your own faction's, unless your Standing with it fell below 0. */
+        private fun hunts(f: Faction): Boolean = f != op.faction || s.standingWith(f) < 0
 
         private fun placeholder(type: MomentType, pinned: Boolean = false): Moment =
             moment(type, pick(era.titles[type] ?: listOf(type.label), Stream.SHUFFLE), pinned = pinned)
@@ -460,6 +559,11 @@ class RunEngine(val rc: RunContent) {
         }
 
         fun advance() {
+            while (s.levelsPending > 0) if (offerImprints()) return
+            if (s.actDone) {
+                nextAct()
+                return
+            }
             if (s.tearAmbush) {
                 s = s.copy(tearAmbush = false)
                 val enc = pick(era.tearFights)
@@ -474,11 +578,118 @@ class RunEngine(val rc: RunContent) {
                 val options = deal(next - 1)
                 s = s.copy(screen = Screen.Weft(options))
             } else {
-                val boss = content.encounter(era.boss)
+                val boss = content.encounter(bossFor())
                 val m = moment(MomentType.BOSS, boss.name, boss.id, factionOf(boss.id), 3)
                 s = s.copy(screen = Screen.Weft(listOf(m)))
-                log += "The act's last knot: ${boss.name}."
+                log += if (era.nexus.isNotEmpty()) "The Nexus: ${boss.name} comes for the Gnomon." else "The act's last knot: ${boss.name}."
             }
+        }
+
+        /**
+         * The act boss: in a Nexus act, the champion of a faction you don't belong to where your Standing is lowest
+         * (ties broken by the seed); otherwise the encounter the Ledger picks, or the era's own.
+         */
+        fun bossFor(): String {
+            if (era.nexus.isNotEmpty()) {
+                val rivals = era.nexus.keys.filter { it != op.faction }
+                val low = rivals.minOf { s.standingWith(it) }
+                val tied = rivals.filter { s.standingWith(it) == low }
+                return era.nexus.getValue(if (tied.size == 1) tied.first() else pick(tied))
+            }
+            return era.bossByFlag.entries.firstOrNull { it.key in s.ledger }?.value ?: era.boss
+        }
+
+        // ---- acts ---------------------------------------------------------------------------------------------
+
+        /** The run as this act begins, for the Chronicle and the simulator. */
+        fun recordAct() {
+            val r = ActRecord(s.act, s.eraId, s.hp, s.maxHp, s.deck.size, s.level, s.artifacts.size, s.paradox, s.hours)
+            s = s.copy(stats = s.stats.copy(acts = s.stats.acts + r))
+        }
+
+        /**
+         * The next act (docs/05): a full heal, Paradox −1 (−2 with Paradox Sink), Foresight from what grants it per
+         * act, a new Anchor at its first step, an empty Branch Pool, and any Echo still waiting.
+         */
+        private fun nextAct() {
+            val next = rc.nextEra(s.eraId) ?: error("No act after ${s.eraId}")
+            val lines = mutableListOf<String>()
+            s = s.copy(
+                eraId = next.id,
+                act = next.act,
+                step = 1,
+                actDone = false,
+                anchorKept = false,
+                branchPool = emptyList(),
+                tearAdded = false,
+                plan = emptyList(),
+            )
+            log += "Act ${roman(next.act)}: ${next.name}"
+            val missing = s.maxHp - s.hp
+            heal(missing)
+            if (missing > 0) lines += "You are fully healed (+$missing HP)."
+            val relief = if (Perk.PARADOX_SINK in perks(s)) 2 else ACT_PARADOX_RELIEF
+            if (s.paradox > 0) {
+                lines += "Paradox −${minOf(relief, s.paradox)}."
+                changeParadox(-relief)
+            }
+            val sight = perkCount(s, Perk.FORESIGHT_PER_ACT)
+            if (sight > 0) {
+                s = s.copy(foresight = s.foresight + sight)
+                lines += "+$sight Foresight."
+            }
+            planAct()
+            val waiting = s.echoesWaiting
+            s = s.copy(echoesWaiting = emptyList())
+            for (e in waiting) {
+                placeEcho(e, from = 1)
+                lines += "Your Echo is somewhere in this act."
+            }
+            val first = deal(0)
+            s = s.copy(screen = Screen.Weft(first))
+            recordAct()
+            setAnchor(moved = false)
+            lines += "Your Anchor is set at the start of the act."
+            s = s.copy(screen = Screen.Note("Act ${roman(next.act)}: ${next.name}", listOf(next.intro).filter { it.isNotEmpty() } + lines, next = Screen.Weft(first)))
+        }
+
+        // ---- XP and Imprints (docs/05 "Imprints") ----------------------------------------------------------------
+
+        fun gainXp(n: Int) {
+            val before = s.level
+            val xp = s.xp + n
+            val level = levelFor(xp)
+            s = s.copy(xp = xp, level = level, levelsPending = s.levelsPending + (level - before))
+            repeat(level - before) {
+                applyEffect(RunEffect.MaxHp(LEVEL_HP), mutableListOf())
+            }
+            if (level > before) log += "Level ${level}: +${LEVEL_HP * (level - before)} max HP."
+        }
+
+        /** Offers the next Imprint: 2 of your operative's and 1 universal, whose deck requirements you meet. */
+        private fun offerImprints(): Boolean {
+            val level = s.level - s.levelsPending + 1
+            val open = rc.imprints.values.filter { (it.repeatable || it.id !in s.imprints) && meets(s, it.requires) }
+            val mine = shuffled(open.filter { it.operative == s.operativeId }.sortedBy { it.id }).take(2)
+            val universal = shuffled(open.filter { it.operative == null }.sortedBy { it.id })
+            val options = (mine + universal).take(3).map { it.id }
+            if (options.isEmpty()) {
+                s = s.copy(levelsPending = s.levelsPending - 1)
+                return false
+            }
+            s = s.copy(screen = Screen.LevelUp(level, options))
+            return true
+        }
+
+        fun onLevelUp(l: Screen.LevelUp, a: RunAction): String? {
+            val i = (a as? RunAction.Choose)?.index ?: return "Choose an Imprint"
+            val id = l.options.getOrNull(i) ?: return "No such Imprint"
+            val def = rc.imprint(id)
+            s = s.copy(imprints = s.imprints + id, levelsPending = s.levelsPending - 1)
+            log += "Imprint: ${def.name}."
+            for (e in def.onGain) applyEffect(e, mutableListOf())
+            advance()
+            return null
         }
 
         fun onWeft(w: Screen.Weft, a: RunAction): String? = when (a) {
@@ -580,7 +791,7 @@ class RunEngine(val rc: RunContent) {
             val enc = content.encounter(f.moment.ref!!)
             val unravels = c.enemies.count { it.defId == Engine.LOOSE_END } - enc.enemies.count { it == Engine.LOOSE_END }
             val record = FightRecord(
-                s.step, f.moment.type, enc.id, f.moment.threat, s.hp, maxOf(0, p.hp), s.maxHp, c.round, c.phase == Phase.WON,
+                s.act, s.step, f.moment.type, enc.id, f.moment.threat, s.hp, maxOf(0, p.hp), s.maxHp, c.round, c.phase == Phase.WON,
                 paradoxBefore = s.paradox, unravels = unravels,
             )
             s = s.copy(
@@ -594,7 +805,7 @@ class RunEngine(val rc: RunContent) {
             )
             when (c.phase) {
                 Phase.LOST -> {
-                    val where = if (s.step > era.steps) "at the end of Act ${s.act}" else "at step ${s.step} of Act ${s.act}"
+                    val where = if (s.step > era.steps) "at the end of Act ${roman(s.act)}" else "at step ${s.step} of Act ${roman(s.act)}"
                     val line = "${enc.name} ended your run in round ${c.round}, $where."
                     s = if (s.anchor != null) {
                         s.copy(hp = 0, screen = Screen.Fallen("You fell", listOf(line)))
@@ -610,10 +821,24 @@ class RunEngine(val rc: RunContent) {
                     carry(c)
                     s = s.copy(lastEncounter = enc.id)
                     log += "You win (${p.hp}/${p.maxHp} HP)."
-                    if (f.moment.type == MomentType.BOSS) {
-                        s = s.copy(screen = Screen.Over(true, "Act ${s.act} complete", listOf("${enc.name} falls. ${era.name} is behind you.") + chronicle()))
-                    } else {
-                        reward(f, enc.name)
+                    val mend = HEAL_AFTER_FIGHT * perkCount(s, Perk.HEAL_AFTER_FIGHT)
+                    if (mend > 0) heal(mend)
+                    gainXp(
+                        when (f.moment.type) {
+                            MomentType.BOSS -> XP_BOSS
+                            MomentType.ELITE -> XP_ELITE
+                            else -> XP_COMBAT
+                        },
+                    )
+                    when {
+                        f.moment.type != MomentType.BOSS -> reward(f, enc.name)
+                        rc.nextEra(s.eraId) != null -> bossReward(enc.name)
+                        else -> s = s.copy(
+                            screen = Screen.Over(
+                                true, "The Nexus holds",
+                                listOf("${enc.name} falls. The knot at the First Hour holds, for now, and no faction owns it.") + chronicle(),
+                            ),
+                        )
                     }
                 }
             }
@@ -642,13 +867,48 @@ class RunEngine(val rc: RunContent) {
                 return
             }
             val choices = if (f.moment.returning == Returning.EMPOWERED) {
-                shuffled(rc.artifacts.keys.filter { it !in s.artifacts }.sorted()).take(2)
+                shuffled(normalArtifacts()).take(2)
             } else {
                 if (elite || chance(COMBAT_ARTIFACT_PCT)) randomArtifact()?.let { lines += gainArtifact(it) }
                 emptyList()
             }
-            val cards = rollCards(elite)
+            val cards = rollCards(elite, n = if (Perk.QUICK_STUDY in perks(s)) 4 else 3)
             s = s.copy(screen = Screen.Reward("Victory: $name", cards, lines, elite, artifacts = choices))
+        }
+
+        /** An act boss's reward (docs/05 "Bosses"): 90 Hours, 1 of 3 boss Artifacts, 1 of 3 rare cards, then the next act. */
+        private fun bossReward(name: String) {
+            gainHours(BOSS_HOURS)
+            val next = rc.nextEra(s.eraId)!!
+            val artifacts = shuffled(rc.artifacts.values.filter { it.boss && it.id !in s.artifacts }.map { it.id }.sorted()).take(3)
+            val cards = bossCards()
+            s = s.copy(
+                actDone = true,
+                stats = s.stats.copy(actsCleared = s.stats.actsCleared + 1),
+                screen = Screen.Reward(
+                    "$name falls", cards,
+                    listOf("+$BOSS_HOURS Hours", "Act ${roman(next.act)}, ${next.name}, comes next. You will be fully healed."),
+                    elite = true, artifacts = artifacts, boss = true,
+                ),
+            )
+        }
+
+        /**
+         * A boss's cards (docs/05 "After combat"): 3 rares, each with a 15% chance to be a legendary instead, from your
+         * faction, neutral and this era's cards. Thin pools fill up with uncommons, never with legendaries.
+         */
+        private fun bossCards(): List<String> {
+            val out = mutableListOf<String>()
+            fun pool(r: Rarity) = content.authored.filter { def ->
+                def.rarity == r && payable(s, def) && def.id !in out &&
+                    (def.faction == op.faction || def.faction == Faction.NEUTRAL || isEraCard(def))
+            }
+            repeat(3) {
+                val first = if (chance(15)) Rarity.LEGENDARY else Rarity.RARE
+                listOf(first, Rarity.RARE, Rarity.UNCOMMON).firstNotNullOfOrNull { r -> pool(r).takeIf { it.isNotEmpty() } }
+                    ?.let { out += pick(it).id }
+            }
+            return out
         }
 
         // ---- rewards ------------------------------------------------------------------------------------------
@@ -670,9 +930,10 @@ class RunEngine(val rc: RunContent) {
             }
             RunAction.Glimpse -> {
                 if (r.lostWeight) return "Lost Weight can't be Glimpsed"
+                if (r.boss) return "A boss's reward can't be Glimpsed"
                 if (r.glimpsed) return "You already Glimpsed this reward"
                 s = s.copy(stats = s.stats.copy(glimpses = s.stats.glimpses + 1))
-                val more = rollCards(r.elite, exclude = r.cards.toSet())
+                val more = rollCards(r.elite, exclude = r.cards.toSet(), n = if (Perk.QUICK_STUDY in perks(s)) 4 else 3)
                 log += "Glimpse: you see the other branch's cards."
                 s = s.copy(screen = r.copy(cards = r.cards + more, glimpsed = true))
                 changeParadox(GLIMPSE_PARADOX)
@@ -740,7 +1001,10 @@ class RunEngine(val rc: RunContent) {
 
         private fun isEraCard(def: CardDef) = def.faction == Faction.ERA && def.id.startsWith(era.cardPrefix)
 
-        fun randomArtifact(): String? = rc.artifacts.keys.filter { it !in s.artifacts }.takeIf { it.isNotEmpty() }?.let { pick(it.sorted()) }
+        /** A random Artifact you don't hold. Boss Artifacts only come from bosses. */
+        fun randomArtifact(): String? = normalArtifacts().takeIf { it.isNotEmpty() }?.let { pick(it) }
+
+        private fun normalArtifacts(): List<String> = rc.artifacts.values.filter { !it.boss && it.id !in s.artifacts }.map { it.id }.sorted()
 
         fun gainArtifact(id: String): String {
             val def = rc.artifact(id)
@@ -766,21 +1030,14 @@ class RunEngine(val rc: RunContent) {
             for (r in listOf(Rarity.COMMON, Rarity.COMMON, Rarity.UNCOMMON, Rarity.UNCOMMON, Rarity.RARE)) {
                 drawCard(r, cards.toSet())?.let { cards += it }
             }
-            val artifacts = shuffled(rc.artifacts.keys.filter { it !in s.artifacts }.sorted()).take(2)
-            return cards.map { ShopItem(ShopKind.CARD, it, cardCost(it)) } +
+            val artifacts = shuffled(normalArtifacts()).take(2)
+            return cards.map { ShopItem(ShopKind.CARD, it, cardCost(s, it)) } +
                 artifacts.map { ShopItem(ShopKind.ARTIFACT, it, rc.artifact(it).price) } +
                 listOf(
                     ShopItem(ShopKind.ERASE, null, eraseCost(s)),
                     ShopItem(ShopKind.INSCRIBE, null, inscribeCost(s)),
                     ShopItem(ShopKind.FORESIGHT, null, FORESIGHT_PRICE),
                 )
-        }
-
-        private fun cardCost(id: String): Int {
-            val def = content.card(id)
-            val base = cardPrice(def.rarity)
-            val relic = def.constant?.kind == ConstantKind.RELIC && Perk.RELIC_DISCOUNT in perks(s)
-            return if (relic) base * 3 / 4 else base
         }
 
         fun onShop(sh: Screen.Shop, a: RunAction): String? {
@@ -908,11 +1165,13 @@ class RunEngine(val rc: RunContent) {
         fun openEvent(id: String) {
             val def = rc.event(id)
             val own = def.faction == null || def.faction == op.faction
+            // Standing +2: a faction's altar offers you its boons as if it were yours (docs/05 "Standing").
+            val friend = def.faction != null && (def.faction == op.faction || s.standingWith(def.faction) >= FRIENDLY)
             val options = def.choices
                 .filter { c ->
                     when (c.requires) {
                         Requirement.NONE -> true
-                        Requirement.OWN_FACTION -> def.faction == op.faction
+                        Requirement.OWN_FACTION -> friend
                         Requirement.OTHER_FACTION -> !own
                     }
                 }
@@ -1019,10 +1278,11 @@ class RunEngine(val rc: RunContent) {
 
         /** Out of combat, Paradox is a 0..10 meter too; reaching 10 Unravels (docs/05 "Unravel"). */
         fun changeParadox(delta: Int) {
-            val to = (s.paradox + delta).coerceIn(0, UNRAVEL)
+            val cap = unravelAt(s)
+            val to = (s.paradox + delta).coerceIn(0, cap)
             s = s.copy(paradox = to)
             notePeak()
-            if (to >= UNRAVEL) unravel()
+            if (to >= cap) unravel()
         }
 
         private fun notePeak() {
@@ -1063,6 +1323,8 @@ class RunEngine(val rc: RunContent) {
             val anchor = s.anchor ?: return
             val now = s
             val echo = EchoSpec(now.deck, maxOf(1, now.maxHp * Echoes.HP_PCT / 100), now.step)
+            // Anchorite: the first Rewind each act leaves the Anchor in place.
+            val keep = Perk.ANCHORITE in perks(now) && !now.anchorKept
             s = anchor.copy(
                 paradox = now.paradox,
                 foresight = now.foresight,
@@ -1072,29 +1334,39 @@ class RunEngine(val rc: RunContent) {
                     rewinds = now.stats.rewinds + 1,
                     rewindsFromDeath = now.stats.rewindsFromDeath + if (fromDeath) 1 else 0,
                 ),
-                anchor = null,
+                anchor = if (keep) anchor else null,
+                anchorKept = now.anchorKept || keep,
                 anchorOffer = false,
                 echoesWaiting = now.echoesWaiting,
             )
             log += if (fromDeath) "You Rewind from your death to your Anchor at step ${s.step}." else "You Rewind to your Anchor at step ${s.step}."
+            if (keep) log += "Anchorite: your Anchor holds."
             insertEcho(echo)
             changeParadox(if (fromDeath) REWIND_DEATH_PARADOX else REWIND_PARADOX)
         }
 
         /** The Echo takes the place of a Moment in a later step of this act, or waits for the next act. */
         private fun insertEcho(echo: EchoSpec) {
-            val enc = content.encounter(Echoes.ENCOUNTER)
-            val spots = (s.step until s.plan.size).flatMap { i -> s.plan[i].indices.map { i to it } }
-                .filter { (i, j) -> replaceable(s.plan[i][j]) }
-            if (spots.isEmpty()) {
+            if (placeEcho(echo, from = s.step)) return
+            if (rc.nextEra(s.eraId) != null) {
                 s = s.copy(echoesWaiting = s.echoesWaiting + echo)
                 log += "Your Echo slips into the next act."
-                return
+            } else {
+                log += "Your Echo has no later step to wait in. It unravels into the Weave."
             }
+        }
+
+        /** Puts an Echo in a step from index [from] on; false when no Moment there can be replaced. */
+        private fun placeEcho(echo: EchoSpec, from: Int): Boolean {
+            val enc = content.encounter(Echoes.ENCOUNTER)
+            val spots = (from until s.plan.size).flatMap { i -> s.plan[i].indices.map { i to it } }
+                .filter { (i, j) -> replaceable(s.plan[i][j]) }
+            if (spots.isEmpty()) return false
             val (i, j) = spots[s.rng.nextInt(spots.size, Stream.ENEMY).let { (v, r) -> s = s.copy(rng = r); v }]
             val m = moment(MomentType.ELITE, enc.name, enc.id, op.faction, 3).copy(echo = echo)
             s = s.copy(plan = s.plan.map { it.toMutableList() }.also { it[i][j] = m })
             log += "Your abandoned self becomes an Echo. It waits at step ${i + 1}."
+            return true
         }
 
         /** A Looted Antiquarian: half the stock at −30%, or nothing at all (docs/05). */
@@ -1139,6 +1411,7 @@ class RunEngine(val rc: RunContent) {
         /** The run's story so far, for the end screen (the GenAI Chronicle comes later). */
         fun chronicle(): List<String> = buildList {
             val st = s.stats
+            add("Acts cleared: ${st.actsCleared} · level ${s.level} (${s.xp} XP)" + if (s.imprints.isNotEmpty()) " · Imprints: " + s.imprints.joinToString(", ") { rc.imprint(it).name } else "")
             add("Fights won: ${st.fightRecords.count { it.won }} (${st.elites} elite) · HP lost in fights: ${st.hpLostInFights} · healed: ${st.healed}")
             add("Deck: ${s.deck.size} cards · taken ${st.cardsTaken}, skipped ${st.skipped}, Erased ${st.erased}, Inscribed ${st.inscribed}")
             add("Hours earned ${st.hoursEarned}, spent ${st.hoursSpent} · Foresight spent ${st.foresightSpent} · Glimpses ${st.glimpses}")

@@ -12,6 +12,15 @@ enum class Perk(val text: String) {
     RELIC_DISCOUNT("Relic cards cost 25% less at the Antiquarian"),
     INSCRIBE_DISCOUNT("Inscribe costs 20 Hours less at the Antiquarian"),
     CONVERGENCE_REWARDS("Convergence cards appear twice as often in card rewards"),
+    QUICK_STUDY("Card rewards offer 4 cards"),
+
+    /** Counted per source: two of them give +2 Foresight at each new act. */
+    FORESIGHT_PER_ACT("+1 Foresight at the start of each act"),
+    ANCHORITE("Your first Rewind each act leaves your Anchor in place"),
+    PARADOX_SINK("−2 Paradox at the start of each act, instead of −1"),
+
+    /** Counted per source. */
+    HEAL_AFTER_FIGHT("Heal 4 HP after each fight you win"),
 }
 
 /** Out-of-place artifacts (docs/05 "Artifacts"): passives for the rest of the run. */
@@ -25,6 +34,34 @@ data class ArtifactDef(
     val perks: Set<Perk> = emptySet(),
     /** Applied once, when you gain it. */
     val onGain: List<RunEffect> = emptyList(),
+    /** A boss Artifact: strong, with a drawback, offered only after an act boss (docs/05 "Boss Artifacts"). */
+    val boss: Boolean = false,
+)
+
+/** What an Imprint asks of your deck (docs/03 "Sample Imprints"): [n] cards of a faction, or with a trait. */
+data class ImprintReq(val n: Int, val faction: Faction? = null, val trait: DeckTrait? = null)
+
+/** Card traits Imprints count, read from the cards' keywords. */
+enum class DeckTrait(val label: String) {
+    VOW("Vows"),
+    REMEMBER("Remember cards"),
+    SUBROUTINE("Subroutines"),
+    CALCULATED("Calculated cards"),
+    PARADOX("Paradox cards"),
+}
+
+/** A level-up passive (docs/05 "Imprints"). Universal when [operative] is null. */
+data class ImprintDef(
+    val id: String,
+    val name: String,
+    val text: String,
+    val operative: String? = null,
+    val requires: ImprintReq? = null,
+    val mods: CombatMods = CombatMods.NONE,
+    val perks: Set<Perk> = emptySet(),
+    val onGain: List<RunEffect> = emptyList(),
+    /** Can be taken more than once (Thick Skin). */
+    val repeatable: Boolean = false,
 )
 
 /** A Divergence's lasting change to the run (docs/05 "Divergence events and Ripples"). */
@@ -121,37 +158,57 @@ data class EraDef(
     val composition: Map<MomentType, Int>,
     /** Era-flavored titles for Moments that aren't fights or events. */
     val titles: Map<MomentType, List<String>>,
+    /** Where the Divergence is dealt (docs/05: steps 4–7, or 3–5 in Act III). */
+    val divergenceSteps: IntRange = 4..7,
+    /** The act boss changes with the Ledger: the first flag you hold picks its encounter (the Automaton's Heart). */
+    val bossByFlag: Map<String, String> = emptyMap(),
+    /** A Nexus act: the boss is the champion of a faction you don't belong to, where your Standing is lowest. */
+    val nexus: Map<Faction, String> = emptyMap(),
+    /** How much harder this act's fights are than Act I's, for everything but the boss and your Echo. */
+    val scaling: CombatMods = CombatMods.NONE,
+    /** Read when the act begins. */
+    val intro: String = "",
 )
 
 /** Everything a run needs besides the combat content. */
 class RunContent(
     val content: Content,
+    /** The mission's acts, in order. */
     val eras: List<EraDef>,
     events: List<EventDef>,
     artifacts: List<ArtifactDef>,
     ripples: List<RippleDef>,
     /** Shrine event per faction. */
     val shrines: Map<Faction, String>,
+    imprints: List<ImprintDef> = emptyList(),
 ) {
     val events: Map<String, EventDef> = events.associateBy { it.id }
     val artifacts: Map<String, ArtifactDef> = artifacts.associateBy { it.id }
     val ripples: Map<String, RippleDef> = ripples.associateBy { it.id }
+    val imprints: Map<String, ImprintDef> = imprints.associateBy { it.id }
 
     fun era(id: String): EraDef = eras.firstOrNull { it.id == id } ?: error("Unknown era $id")
     fun event(id: String): EventDef = events[id] ?: error("Unknown event $id")
     fun artifact(id: String): ArtifactDef = artifacts[id] ?: error("Unknown artifact $id")
     fun ripple(id: String): RippleDef = ripples[id] ?: error("Unknown ripple $id")
+    fun imprint(id: String): ImprintDef = imprints[id] ?: error("Unknown imprint $id")
+
+    /** The act after [eraId], or null after the last. */
+    fun nextEra(eraId: String): EraDef? = eras.getOrNull(eras.indexOfFirst { it.id == eraId } + 1)
 
     init {
         for (era in eras) {
             require(era.steps >= 7) { "${era.id}: the dealing rules need at least 7 steps" }
             require(era.composition.values.sum() == era.steps * 3) { "${era.id}: the Era Deck must deal 3 Moments per step" }
             for (f in era.combats) content.encounter(f.encounter)
-            (era.elites + era.tearFights + era.boss).forEach { content.encounter(it) }
+            (era.elites + era.tearFights + era.boss + era.bossByFlag.values + era.nexus.values).forEach { content.encounter(it) }
+            require(era.divergenceSteps.first >= 1 && era.divergenceSteps.last < era.steps) { "${era.id}: the Divergence must come before the last step" }
             (era.events + era.divergence + era.anomalies).forEach { event(it) }
         }
         for (id in shrines.values) event(id)
         for (e in events) e.consequence?.let { event(it) }
         for (e in events) for (c in e.choices) c.ripples.forEach { ripple(it) }
+        require(eras.map { it.act } == (1..eras.size).toList()) { "Acts must run 1, 2, 3 in order" }
+        for (i in imprints) i.operative?.let { content.operative(it) }
     }
 }

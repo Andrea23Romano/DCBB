@@ -83,9 +83,26 @@ data class RunStats(
     val rewindsFromDeath: Int = 0,
     val anchorMoves: Int = 0,
     val echoesFought: Int = 0,
+    val actsCleared: Int = 0,
+    /** Where each act began: the run's trajectory, for the Chronicle and the simulator. */
+    val acts: List<ActRecord> = emptyList(),
+)
+
+/** The run as an act began. */
+data class ActRecord(
+    val act: Int,
+    val era: String,
+    val hp: Int,
+    val maxHp: Int,
+    val deck: Int,
+    val level: Int,
+    val artifacts: Int,
+    val paradox: Int,
+    val hours: Int,
 )
 
 data class FightRecord(
+    val act: Int,
     val step: Int,
     val type: MomentType,
     val encounter: String,
@@ -119,7 +136,12 @@ sealed interface Screen {
         val glimpsed: Boolean = false,
         val artifacts: List<String> = emptyList(),
         val lostWeight: Boolean = false,
+        /** An act boss's reward: rare cards, and one of three boss Artifacts to take first. */
+        val boss: Boolean = false,
     ) : Screen
+
+    /** You reached [level]: +3 max HP, and choose one Imprint of [options] (docs/05 "Imprints"). */
+    data class LevelUp(val level: Int, val options: List<String>) : Screen
 
     /** You fell, but your Anchor still holds: Rewind (+5 Paradox) or let the run end. */
     data class Fallen(val title: String, val lines: List<String>) : Screen
@@ -207,6 +229,16 @@ data class RunState(
     val anchorOffer: Boolean = false,
     /** Echoes with no later step left in this act: they wait for the next one. */
     val echoesWaiting: List<EchoSpec> = emptyList(),
+    /** Experience from fights; each level grants +3 max HP and an Imprint (docs/05 "Imprints"). */
+    val xp: Int = 0,
+    val level: Int = 1,
+    /** Level-ups waiting for their Imprint choice, offered between Moments. */
+    val levelsPending: Int = 0,
+    val imprints: List<String> = emptyList(),
+    /** The act boss has fallen: the next step is the next act. */
+    val actDone: Boolean = false,
+    /** Anchorite has kept your Anchor through a Rewind this act. */
+    val anchorKept: Boolean = false,
 ) {
     fun standingWith(f: Faction): Int = standing[f] ?: 0
     val over: Boolean get() = screen is Screen.Over

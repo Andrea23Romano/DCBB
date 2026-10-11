@@ -1,9 +1,11 @@
 package dcbb.core.content
 
+import dcbb.core.model.AiPhase
 import dcbb.core.model.Amount
 import dcbb.core.model.Bonus
 import dcbb.core.model.CardDef
 import dcbb.core.model.CardType
+import dcbb.core.model.ComboAi
 import dcbb.core.model.Cond
 import dcbb.core.model.ConstantKind
 import dcbb.core.model.ConstantSpec
@@ -23,14 +25,17 @@ import dcbb.core.model.LatticeAi
 import dcbb.core.model.LatticeSub
 import dcbb.core.model.MultiSlotAi
 import dcbb.core.model.OperativeDef
+import dcbb.core.model.PhasedAi
 import dcbb.core.model.PredictiveAi
 import dcbb.core.model.Rarity
+import dcbb.core.model.Rider
 import dcbb.core.model.RotationAi
 import dcbb.core.model.ShiftInRule
 import dcbb.core.model.Signature
 import dcbb.core.model.StatusType
 import dcbb.core.model.Tgt
 import dcbb.core.model.VowRule
+import dcbb.core.engine.Engine
 import dcbb.core.text.RulesText
 
 /**
@@ -406,6 +411,8 @@ object Prototype {
         IntentSpec("main", RulesText.intent(a), a, alt = b, altLabel = RulesText.intent(b))
 
     private fun attack(n: Int, times: Int = 1) = EnemyAction.Attack(n, times)
+    private fun summon(id: String, name: String, n: Int = 1) = EnemyAction.Summon(id, name, n)
+    private fun rotation(vararg specs: IntentSpec) = RotationAi(specs.toList())
     private fun guard(n: Int) = EnemyAction.Guard(n)
     private fun debuff(s: StatusType, n: Int) = EnemyAction.Debuff(s, n)
     private fun buff(s: StatusType, n: Int) = EnemyAction.Buff(s, n)
@@ -516,6 +523,97 @@ object Prototype {
             ),
             elite = true,
         ),
+        // Milan, 1495 (Act II)
+        EnemyDef(
+            "milan.swiss_pikeman", "Swiss Pikeman", Faction.ERA, 30,
+            rotation(intent(guard(8), attack(5)), intent(attack(6, 2))),
+        ),
+        EnemyDef(
+            "milan.clockwork_lion", "Leonardo's Lion", Faction.ERA, 42,
+            rotation(intent(attack(9)), intent(attack(6, 3), countdown = 2)),
+        ),
+        EnemyDef(
+            "milan.sforza_knight", "Sforza Knight", Faction.ERA, 44,
+            RotationAi(loop = listOf(intent(attack(11)), intent(guard(10), attack(6))), opening = listOf(intent(buff(StatusType.PLATE, 2), attack(4)))),
+        ),
+        EnemyDef(
+            "milan.capitano", "Capitano di Ventura", Faction.ERA, 70,
+            MultiSlotAi(
+                mapOf(
+                    "blade" to listOf(intent(attack(9)), intent(guard(10), attack(5))),
+                    "charge" to listOf(intent(attack(22), countdown = 3, name = "Charge of the Company")),
+                ),
+            ),
+            elite = true,
+        ),
+        // The Salt Waste, 1191 (Act III)
+        EnemyDef(
+            "saltwaste.crusader_knight", "Crusader Knight", Faction.ERA, 40,
+            rotation(intent(guard(10), attack(6)), intent(attack(14)), intent(attack(7, 2))),
+        ),
+        EnemyDef(
+            "saltwaste.horse_archer", "Ayyubid Horse Archer", Faction.ERA, 26,
+            rotation(intent(attack(4, 3)), intent(attack(15), countdown = 2)),
+        ),
+        EnemyDef(
+            "saltwaste.glassborn", "Glassborn", Faction.ERA, 30,
+            rotation(intent(EnemyAction.BlankFuture(1), attack(7)), intent(guard(6), attack(6))),
+        ),
+        EnemyDef(
+            "saltwaste.glass_sentinel", "Black Glass Sentinel", Faction.ERA, 92,
+            MultiSlotAi(
+                mapOf(
+                    "main" to listOf(
+                        intent(buff(StatusType.PLATE, 3), attack(8)),
+                        intent(EnemyAction.BlankFuture(2), attack(10)),
+                        intent(attack(12)),
+                    ),
+                    "shadow" to listOf(intent(attack(24), countdown = 3, fixed = true, name = "The Shadow Falls")),
+                ),
+            ),
+            elite = true,
+        ),
+        // Faction squads met from Act II on
+        EnemyDef(
+            "order.penitent", "Penitent", Faction.ORDER, 26,
+            rotation(intent(attack(5, 2)), intent(buff(StatusType.MIGHT, 2), attack(4))),
+        ),
+        EnemyDef(
+            "errata.seam_runner", "Seam-runner", Faction.ERRATA, 48,
+            MultiSlotAi(
+                mapOf(
+                    "cut" to listOf(forked(listOf(attack(14)), listOf(attack(5), EnemyAction.EraseFuture(1)))),
+                    "fold" to listOf(intent(guard(12), countdown = 2, name = "Into the Margins")),
+                ),
+            ),
+            elite = true,
+        ),
+        // Act II boss: the Automa Cavaliere, and the heart the Divergence gave it (docs/03 "Bosses")
+        EnemyDef("milan.automa_hollow", "The Automa Cavaliere", Faction.ERA, 120, cavaliere(rotation(intent(guard(10), attack(5)), intent(attack(10)), intent(attack(5, 2))))),
+        EnemyDef(
+            "milan.automa_meridian", "The Automa Cavaliere", Faction.CONVERGENCE, 120,
+            cavaliere(PredictiveAi(ifAttackHeavy = intent(guard(10), attack(4), debuff(StatusType.GLITCH, 1)), otherwise = intent(attack(10)))),
+        ),
+        EnemyDef(
+            "milan.automa_order", "The Automa Cavaliere", Faction.ORDER, 120,
+            cavaliere(
+                rotation(intent(attack(10), fixed = true), intent(guard(10), attack(5)), intent(attack(5, 2), fixed = true)),
+                Rider("Vow broken: Might 1", listOf(buff(StatusType.MIGHT, 1)), minAttacks = 3),
+            ),
+        ),
+        EnemyDef(
+            "milan.automa_errata", "The Automa Cavaliere", Faction.ERRATA, 120,
+            cavaliere(
+                rotation(
+                    forked(listOf(attack(13)), listOf(guard(10), debuff(StatusType.WEAK, 2))),
+                    forked(listOf(attack(6, 2)), listOf(attack(4), debuff(StatusType.EXPOSED, 2))),
+                ),
+            ),
+        ),
+        // The Nexus champions (Act III)
+        EnemyDef("order.aurelian", "Grand Master Aurelian", Faction.ORDER, 160, aurelian()),
+        EnemyDef("conv.meridian_ascendant", "MERIDIAN Ascendant", Faction.CONVERGENCE, 150, meridian()),
+        EnemyDef("errata.thousandfold", "The Thousandfold", Faction.ERRATA, 130, thousandfold()),
         // Your abandoned self after a Rewind. Its HP and intents come from the run (CombatSetup.echo); these are fallbacks.
         EnemyDef("echo.you", "Echo of You", Faction.NEUTRAL, 40, RotationAi(listOf(intent(attack(6)))), elite = true),
         // Act boss, London 1843
@@ -538,6 +636,129 @@ object Prototype {
             elite = true,
         ),
     )
+
+    /** The Automa Cavaliere: its heart's main intent, beside the Fixed Joust it charges every three rounds. */
+    private fun cavaliere(main: dcbb.core.model.EnemyAi, vararg riders: Rider) = ComboAi(
+        mapOf("main" to main, "joust" to rotation(intent(attack(22), countdown = 3, fixed = true, name = "Joust"))),
+        riders = riders.toList(),
+    )
+
+    /**
+     * Grand Master Aurelian: a liturgy of Fixed hits and Canon Unbroken; a flurry of 3+ Attacks feeds his Might.
+     * At half HP, the Last Hour: a Loose End crawls through the Tear, every intent is Fixed, and he Disrupts.
+     */
+    private fun aurelian(): PhasedAi {
+        val litany = Rider("Litany: Might 1", listOf(buff(StatusType.MIGHT, 1)), minAttacks = 3)
+        val canon = { cd: Int -> rotation(intent(attack(30), countdown = cd, fixed = true, name = "Canon Unbroken")) }
+        return PhasedAi(
+            listOf(
+                AiPhase(
+                    100,
+                    ComboAi(
+                        mapOf(
+                            "main" to rotation(intent(attack(9), fixed = true), intent(guard(12), attack(5)), intent(attack(6, 2), fixed = true)),
+                            "canon" to canon(4),
+                        ),
+                        riders = listOf(litany),
+                    ),
+                ),
+                AiPhase(
+                    50,
+                    ComboAi(
+                        mapOf(
+                            "main" to rotation(
+                                intent(attack(10), EnemyAction.Disrupt(1), fixed = true),
+                                intent(attack(6, 2), fixed = true),
+                                intent(guard(14), attack(7), fixed = true),
+                            ),
+                            "canon" to canon(3),
+                        ),
+                        riders = listOf(litany),
+                    ),
+                    opening = intent(summon(Engine.LOOSE_END, "Loose End"), EnemyAction.Disrupt(1), attack(8), fixed = true, name = "The Last Hour"),
+                ),
+            ),
+        )
+    }
+
+    /**
+     * MERIDIAN Ascendant: two Predictive reads a round and the Fixed Convergence. At half HP, the Optimal Line: it
+     * answers with the last card you played. At a quarter, it Recomputes once: Heal 30, and a new Convergence.
+     */
+    private fun meridian(): PhasedAi {
+        val second = PredictiveAi(ifAttackHeavy = intent(debuff(StatusType.GLITCH, 1), attack(4)), otherwise = intent(EnemyAction.Disrupt(1), attack(6)))
+        val convergence = rotation(intent(EnemyAction.EraseFuture(1), attack(16), countdown = 3, fixed = true, name = "Convergence"))
+        return PhasedAi(
+            listOf(
+                AiPhase(
+                    100,
+                    ComboAi(
+                        mapOf(
+                            "main" to PredictiveAi(ifAttackHeavy = intent(guard(10), attack(6)), otherwise = intent(attack(12))),
+                            "second" to second,
+                            "sig" to convergence,
+                        ),
+                    ),
+                ),
+                AiPhase(
+                    50,
+                    ComboAi(mapOf("main" to DoubleAi(fallbackDamage = 12), "second" to second, "sig" to convergence)),
+                    opening = intent(guard(15), name = "Optimal Line"),
+                ),
+                AiPhase(
+                    25,
+                    ComboAi(
+                        mapOf(
+                            "main" to DoubleAi(fallbackDamage = 12),
+                            "second" to second,
+                            "sig" to rotation(intent(attack(9, 2), countdown = 2, fixed = true, name = "Convergence, recomputed")),
+                        ),
+                    ),
+                    opening = intent(EnemyAction.Heal(25), name = "Recompute"),
+                ),
+            ),
+        )
+    }
+
+    /**
+     * The Thousandfold: two Forked intents a round and Doubles of herself; her Fixed Chorus hits harder for every
+     * Double still standing. At half HP, Thousand Selves: two more Doubles at once.
+     */
+    private fun thousandfold(): PhasedAi {
+        val double = "errata.double"
+        val chorus = { per: Int -> rotation(intent(EnemyAction.AttackPerAlly(per, double, "Double"), debuff(StatusType.WEAK, 1), countdown = 3, fixed = true, name = "Chorus")) }
+        return PhasedAi(
+            listOf(
+                AiPhase(
+                    100,
+                    ComboAi(
+                        mapOf(
+                            "a" to RotationAi(
+                                loop = listOf(forked(listOf(attack(10)), listOf(guard(10)))),
+                                opening = listOf(intent(summon(double, "Double"), guard(8))),
+                            ),
+                            "b" to rotation(
+                                forked(listOf(attack(5, 2)), listOf(attack(8))),
+                                forked(listOf(summon(double, "Double")), listOf(guard(8))),
+                            ),
+                            "sig" to chorus(4),
+                        ),
+                    ),
+                ),
+                AiPhase(
+                    50,
+                    ComboAi(
+                        mapOf(
+                            "a" to rotation(forked(listOf(attack(12)), listOf(guard(10), attack(4)))),
+                            "b" to rotation(forked(listOf(attack(6, 2)), listOf(summon(double, "Double")))),
+                            "sig" to chorus(5),
+                        ),
+                    ),
+                    opening = intent(summon(double, "Double", 2), name = "Thousand Selves"),
+                ),
+            ),
+        )
+    }
 
     private fun encounters(): List<Encounter> = listOf(
         Encounter("fleet_street", "Fog on Fleet Street", listOf("london.gaslight_footpad", "london.gaslight_footpad")),
@@ -569,6 +790,45 @@ object Prototype {
         Encounter("unravelling", "The Unravelling", listOf("tear.ravel", "tear.loose_end", "tear.loose_end")),
         Encounter("lattice_engine", "The Lattice Engine", listOf("london.lattice_engine"), elite = true),
         Encounter("echo_of_you", "An Echo of You", listOf("echo.you"), elite = true, runOnly = true),
+        // Milan, 1495 (Act II). Faction squads cross every era; the act's scaling makes them tougher here.
+        Encounter("lone_condottiero", "A Condottiero off the Leash", listOf("milan.condottiero")),
+        Encounter("pikemen_at_the_gate", "Pikemen at the Porta Romana", listOf("milan.swiss_pikeman")),
+        Encounter("lone_penitent", "A Penitent in the Duomo", listOf("order.penitent")),
+        Encounter("engine_on_the_navigli", "An Engine on the Navigli", listOf("conv.calculating_engine")),
+        Encounter("double_in_the_crowd", "A Double in the Crowd", listOf("errata.double")),
+        Encounter("ravel_in_the_cloister", "A Ravel in the Cloister", listOf("tear.ravel")),
+        Encounter("pike_square", "A Pike Square", listOf("milan.swiss_pikeman", "milan.crossbowman")),
+        Encounter("the_lion_wakes", "The Lion Wakes", listOf("milan.clockwork_lion")),
+        Encounter("penitents_procession", "A Penitents' Procession", listOf("order.penitent", "order.squire")),
+        Encounter("sforza_guard", "The Sforza Guard", listOf("milan.sforza_knight", "milan.crossbowman")),
+        Encounter("free_company", "The Free Company", listOf("milan.condottiero", "milan.condottiero", "milan.crossbowman")),
+        Encounter("lion_and_pikes", "The Lion and the Pikes", listOf("milan.clockwork_lion", "milan.swiss_pikeman")),
+        Encounter("line_in_milan", "The Line in Milan", listOf("order.sergeant", "order.penitent", "order.squire")),
+        Encounter("brass_court", "The Brass Court", listOf("conv.brass_proxy", "conv.brass_proxy", "conv.calculating_engine")),
+        Encounter("margins_of_milan", "The Margins of Milan", listOf("errata.misprint", "errata.misprint", "errata.double")),
+        Encounter("fraying_cloister", "The Fraying Cloister", listOf("tear.ravel", "tear.ravel", "tear.loose_end")),
+        Encounter("capitano", "Capitano di Ventura", listOf("milan.capitano", "milan.crossbowman"), elite = true),
+        Encounter("seam_runner", "The Seam-runner", listOf("errata.seam_runner"), elite = true),
+        Encounter("automa_hollow", "The Automa Cavaliere", listOf("milan.automa_hollow"), elite = true),
+        Encounter("automa_meridian", "The Automa Cavaliere", listOf("milan.automa_meridian"), elite = true),
+        Encounter("automa_order", "The Automa Cavaliere", listOf("milan.automa_order"), elite = true),
+        Encounter("automa_errata", "The Automa Cavaliere", listOf("milan.automa_errata"), elite = true),
+        // The Salt Waste, 1191 (Act III)
+        Encounter("lone_crusader", "A Knight Strayed from the Column", listOf("saltwaste.crusader_knight")),
+        Encounter("horse_archer", "A Horse Archer", listOf("saltwaste.horse_archer")),
+        Encounter("horse_archers", "Horse Archers on the Ridge", listOf("saltwaste.horse_archer", "saltwaste.horse_archer")),
+        Encounter("lone_golem", "A Sandglass Golem", listOf("saltwaste.sandglass_golem")),
+        Encounter("glassborn", "Glassborn", listOf("saltwaste.glassborn")),
+        Encounter("salt_wraiths", "Salt Wraiths", listOf("saltwaste.salt_wraith", "saltwaste.salt_wraith")),
+        Encounter("crusader_and_archer", "The Column's Rearguard", listOf("saltwaste.crusader_knight", "saltwaste.horse_archer")),
+        Encounter("glass_and_salt", "Glass and Salt", listOf("saltwaste.glassborn", "saltwaste.salt_wraith", "saltwaste.salt_wraith")),
+        Encounter("two_crusaders", "Two Knights of the Column", listOf("saltwaste.crusader_knight", "saltwaste.crusader_knight")),
+        Encounter("the_shattered_dunes", "The Shattered Dunes", listOf("saltwaste.sandglass_golem", "saltwaste.glassborn", "saltwaste.mirage")),
+        Encounter("archers_and_mirage", "Archers in the Mirage", listOf("saltwaste.horse_archer", "saltwaste.horse_archer", "saltwaste.mirage")),
+        Encounter("glass_sentinel", "The Black Glass Sentinel", listOf("saltwaste.glass_sentinel"), elite = true),
+        Encounter("aurelian", "Grand Master Aurelian", listOf("order.aurelian"), elite = true),
+        Encounter("meridian_ascendant", "MERIDIAN Ascendant", listOf("conv.meridian_ascendant"), elite = true),
+        Encounter("thousandfold", "The Thousandfold", listOf("errata.thousandfold"), elite = true),
     )
 
     // ---- operatives and decks ---------------------------------------------------------------------------------

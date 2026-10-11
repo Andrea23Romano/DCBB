@@ -90,10 +90,14 @@ class Engine(val content: Content) {
         const val UNRAVEL_AT = 10
         const val UNRAVEL_RESET = 5
         const val STRIKE_DAMAGE = 4
+        const val FORECAST = 2
         const val CONSTANT_SLOTS = 3
         const val PRIMARY_INCOME = 2
         const val NEUTRAL_INCOME = 1
         const val LOOSE_END = "tear.loose_end"
+
+        /** Summons stop once this many enemies stand. */
+        const val MAX_ENEMIES = 5
 
         /** The enemy an Echo of You uses: its HP and intents come from [CombatSetup.echo]. */
         const val ECHO = "echo.you"
@@ -226,10 +230,31 @@ class Engine(val content: Content) {
      */
     fun effectiveCost(state: CombatState, inst: CardInst): Cost {
         val glitch = if (state.player.status(StatusType.GLITCH) > 0) 1 else 0
-        val printed = content.card(inst.defId).cost
+        val def = content.card(inst.defId)
+        val printed = def.cost
         val base = if (inst.bleed) Cost(generic = printed.total) else printed
-        return base.adjusted(inst.costDelta + glitch)
+        val cacheHit = if (state.mods.firstSubroutineDiscount > 0 && !state.player.subroutineDiscountUsed &&
+            def.constant?.kind == ConstantKind.SUBROUTINE
+        ) {
+            state.mods.firstSubroutineDiscount
+        } else {
+            0
+        }
+        return base.adjusted(inst.costDelta + glitch - cacheHit)
     }
+
+    /** Your Borrow limit per turn: the rules' 2, unless an Imprint or Artifact changes it. */
+    fun borrowLimit(state: CombatState): Int = state.mods.borrowLimit ?: BORROW_LIMIT
+
+    /** How many cards your Other Hand holds: the operative's, plus Margin Notes or the Thousandfold's Ribbon. */
+    fun otherHandSize(state: CombatState): Int {
+        val base = content.operative(state.player.operativeId).otherHandSize
+        val bonus = state.mods.otherHandBonus
+        return if (base > 0) base + bonus else if (bonus > 0) 1 + bonus else 0
+    }
+
+    /** The Paradox at which you Unravel (10, or more with Unstable Equilibrium). */
+    fun unravelAt(state: CombatState): Int = state.mods.unravelAt
 
     fun trackCandidates(state: CombatState, need: TrackNeed): List<TrackItem> = when (need) {
         TrackNeed.NONE -> emptyList()
@@ -243,7 +268,7 @@ class Engine(val content: Content) {
 
     fun payment(state: CombatState, inst: CardInst, style: PayStyle, allowBorrow: Boolean): Payment? {
         val p = state.player
-        val borrowLeft = if (allowBorrow) BORROW_LIMIT - p.borrowedThisTurn else 0
+        val borrowLeft = if (allowBorrow) borrowLimit(state) - p.borrowedThisTurn else 0
         return Payments.plan(
             effectiveCost(state, inst),
             p.energy,
@@ -266,6 +291,7 @@ class Engine(val content: Content) {
                     val base = a.per * enemy.status(a.status)
                     if (base > 0) perHitToPlayer(state, enemy, base, mult, item.fixed) else 0
                 }
+                is EnemyAction.AttackPerAlly -> perHitToPlayer(state, enemy, a.per * chorus(state, enemy, a.allyId), mult, item.fixed)
                 else -> 0
             }
         }
@@ -281,6 +307,10 @@ class Engine(val content: Content) {
                 intentDamage(state, item).toDouble()
             }
         }
+
+    /** The Chorus count: living [allyId] allies of [enemy], plus itself. */
+    private fun chorus(state: CombatState, enemy: EnemyState, allyId: String): Int =
+        state.livingEnemies.count { it.defId == allyId && it.uid != enemy.uid } + 1
 
     private fun perHitToPlayer(state: CombatState, enemy: EnemyState, base: Int, mult: Double, fixed: Boolean): Int {
         val pressured = ceil((base + enemy.status(StatusType.MIGHT)) * mult - 1e-9)
@@ -483,13 +513,17 @@ class Engine(val content: Content) {
             if (containsDelay(face.effects)) breakVows(VowRule.NO_BORROW_OR_DELAY)
 
             val prevType = p.lastPlayedType
+            val bayes = inst.known && s.mods.knownDraw > 0 && !p.knownDrawUsed
             player {
                 it.copy(
                     cardsPlayedThisTurn = it.cardsPlayedThisTurn + 1,
                     skillsPlayedThisTurn = it.skillsPlayedThisTurn + if (face.type == CardType.SKILL) 1 else 0,
+                    attacksThisTurn = it.attacksThisTurn + if (face.type == CardType.ATTACK) 1 else 0,
                     lastPlayedType = face.type,
                     lastCardDamage = summaryDamage(face.effects),
                     lastCardBlock = summaryBlock(face.effects),
+                    knownDrawUsed = it.knownDrawUsed || bayes,
+                    subroutineDiscountUsed = it.subroutineDiscountUsed || def.constant?.kind == ConstantKind.SUBROUTINE,
                 )
             }
             emit(GameEvent.CardPlayed(def.id, def.name, pay.attuned, pay.borrowed))
@@ -510,8 +544,11 @@ class Engine(val content: Content) {
                 attack = face.type == CardType.ATTACK,
             )
             pushFront(
-                Work.Fx(face.effects, ctx),
-                Work.FinishPlay(inst.uid, def.eraseAfterPlay || inst.bleed, face.type == CardType.CONSTANT, a.replaceConstantUid),
+                listOfNotNull(
+                    Work.Fx(face.effects, ctx),
+                    if (bayes) Work.Fx(listOf(Effect.Draw(s.mods.knownDraw)), FxCtx(faction = def.faction)) else null,
+                    Work.FinishPlay(inst.uid, def.eraseAfterPlay || inst.bleed, face.type == CardType.CONSTANT, a.replaceConstantUid),
+                ),
             )
             return null
         }
@@ -527,13 +564,13 @@ class Engine(val content: Content) {
                     val bonus = p.constants.sumOf { constantSpec(it)?.strikeDamage ?: 0 }
                     val block = p.constants.sumOf { constantSpec(it)?.strikeBlock ?: 0 }
                     val effects = buildList {
-                        add(Effect.Damage(Amount(STRIKE_DAMAGE + bonus)))
+                        add(Effect.Damage(Amount(STRIKE_DAMAGE + bonus + s.mods.signatureBonus)))
                         if (block > 0) add(Effect.Block(Amount(block)))
                     }
                     pushFront(Work.Fx(effects, FxCtx(faction = op.faction, targetEnemy = t.uid)))
                 }
 
-                Signature.FORECAST -> pushFront(Work.Fx(listOf(Effect.Foresee(2)), FxCtx(faction = op.faction)))
+                Signature.FORECAST -> pushFront(Work.Fx(listOf(Effect.Foresee(FORECAST + s.mods.signatureBonus)), FxCtx(faction = op.faction)))
                 Signature.SHIFT -> {
                     val pair = a.shiftPair ?: return "Choose a card in your Present and one in your Other Hand to Shift"
                     validateShift(pair)?.let { return it }
@@ -547,8 +584,7 @@ class Engine(val content: Content) {
 
         private fun validateShift(pair: ShiftPair): String? {
             if (p.present.none { it.uid == pair.presentUid }) return "That card isn't in your Present"
-            val op = content.operative(p.operativeId)
-            if (op.otherHandSize > 0) {
+            if (otherHandSize(s) > 0) {
                 if (p.otherHand.none { it.uid == pair.otherUid }) return "That card isn't in your Other Hand"
             } else if (p.future.isEmpty() && p.past.isEmpty()) {
                 return "There is nothing to Shift with"
@@ -624,7 +660,12 @@ class Engine(val content: Content) {
             for (v in broken) {
                 player { it.copy(constants = it.constants - v, erased = it.erased + v) }
                 emit(GameEvent.VowBroken(name(v)))
-                loseHp(PENANCE, "Penance")
+                if (s.mods.firstPenanceFree && !p.penanceSpared) {
+                    player { it.copy(penanceSpared = true) }
+                    emit(GameEvent.Info("Keeper of Vows: no Penance this time"))
+                } else {
+                    loseHp(PENANCE, "Penance")
+                }
             }
         }
 
@@ -647,7 +688,7 @@ class Engine(val content: Content) {
                     }
                 }
 
-                is Effect.Foresee -> foresee(e.n, e.tutor)
+                is Effect.Foresee -> foresee(e.n + s.mods.foreseeBonus, e.tutor)
                 is Effect.Recall -> recall(e.n, ctx)
                 is Effect.Delay -> delay(e.n, ctx)
                 Effect.RemoveIntent -> removeIntent(ctx)
@@ -704,7 +745,7 @@ class Engine(val content: Content) {
 
         fun cond(c: Cond, ctx: FxCtx, target: EnemyState?): Boolean = when (c) {
             Cond.Attuned -> ctx.attuned
-            is Cond.Remember -> p.past.count { c.kind.matches(typeOf(it)) } >= c.n
+            is Cond.Remember -> (p.past + if (s.mods.rememberErased) p.erased else emptyList()).count { c.kind.matches(typeOf(it)) } >= c.n
             is Cond.Litany -> ctx.prevType?.let { c.kind.matches(it) } ?: false
             Cond.Calculated -> ctx.known
             Cond.VowKept -> p.constants.any { constantSpec(it)?.kind == ConstantKind.VOW }
@@ -906,13 +947,13 @@ class Engine(val content: Content) {
         }
 
         private fun shift(n: Int, ctx: FxCtx) {
-            val op = content.operative(p.operativeId)
+            val withOtherHand = otherHandSize(s) > 0
             var done = 0
             for (pair in ctx.shiftPairs) {
                 if (done >= n) break
                 val out = p.present.firstOrNull { it.uid == pair.presentUid } ?: continue
                 val incoming: CardInst
-                if (op.otherHandSize > 0) {
+                if (withOtherHand) {
                     val other = p.otherHand.firstOrNull { it.uid == pair.otherUid } ?: continue
                     incoming = other
                     player { pl ->
@@ -982,7 +1023,7 @@ class Engine(val content: Content) {
         /** Paradox is a 0..10 meter; reaching 10 Unravels immediately (docs/05). */
         private fun changeParadox(delta: Int) {
             val from = p.paradox
-            val to = (from + delta).coerceIn(0, UNRAVEL_AT)
+            val to = (from + delta).coerceIn(0, unravelAt(s))
             if (from == to) return
             player { it.copy(paradox = to) }
             emit(GameEvent.ParadoxChanged(from, to))
@@ -995,7 +1036,7 @@ class Engine(val content: Content) {
         }
 
         private fun checkUnravel() {
-            if (p.paradox < UNRAVEL_AT || s.phase.over) return
+            if (p.paradox < unravelAt(s) || s.phase.over) return
             emit(GameEvent.Unravel)
             val misprinted = p.present.map { c ->
                 val def = content.card(c.defId)
@@ -1137,6 +1178,28 @@ class Engine(val content: Content) {
                         player { it.copy(silenceNextTurn = true) }
                         emit(GameEvent.Info("Snip: your Constants won't trigger next turn"))
                     }
+
+                    is EnemyAction.Summon -> repeat(act.n) {
+                        if (s.livingEnemies.size >= MAX_ENEMIES) return@repeat
+                        val sdef = content.enemy(act.enemyId)
+                        val spawned = newEnemy(sdef, newUid(), s.mods)
+                        s = s.copy(enemies = s.enemies + spawned)
+                        emit(GameEvent.Info("${sdef.name} joins the fight"))
+                        rearm(predictive = sdef.ai.predictive, onlyUid = spawned.uid)
+                    }
+
+                    is EnemyAction.Heal -> {
+                        val amount = min(scaled(act.n, mult), cur.maxHp - cur.hp)
+                        if (amount > 0) {
+                            enemyUpdate(cur.uid) { it.copy(hp = it.hp + amount) }
+                            emit(GameEvent.Info("${def.name} restores $amount HP"))
+                        }
+                    }
+
+                    is EnemyAction.AttackPerAlly -> {
+                        hitPlayer(cur, act.per * chorus(s, cur, act.allyId), mult, def.name, item.fixed)
+                        if (p.hp <= 0) return
+                    }
                 }
             }
         }
@@ -1206,6 +1269,7 @@ class Engine(val content: Content) {
             emit(GameEvent.RoundStarted(s.round))
             val op = content.operative(p.operativeId)
             val income = mutableMapOf(op.color to PRIMARY_INCOME, EnergyColor.NEUTRAL to NEUTRAL_INCOME)
+            for ((color, n) in s.mods.extraIncome) income[color] = (income[color] ?: 0) + n
             var owed = 0
             for ((color, debt) in p.debt) {
                 val repay = min(debt, income[color] ?: 0)
@@ -1227,6 +1291,9 @@ class Engine(val content: Content) {
                     signatureUsed = false,
                     cardsPlayedThisTurn = 0,
                     skillsPlayedThisTurn = 0,
+                    attacksLastTurn = pl.attacksThisTurn,
+                    attacksThisTurn = 0,
+                    knownDrawUsed = false,
                     lastPlayedType = null,
                     shiftedThisTurn = false,
                     shiftDiscountUsed = false,
@@ -1236,7 +1303,7 @@ class Engine(val content: Content) {
                     otherHand = pl.otherHand.map { it.copy(costDelta = 0) },
                 )
             }
-            draw(DRAW_PER_TURN)
+            draw(DRAW_PER_TURN + s.mods.drawBonus)
             refillOtherHand()
             val dawnTriggers = if (p.constantsSilenced) {
                 emptyList()
@@ -1249,7 +1316,7 @@ class Engine(val content: Content) {
         }
 
         private fun refillOtherHand() {
-            val size = content.operative(p.operativeId).otherHandSize
+            val size = otherHandSize(s)
             while (p.otherHand.size < size) {
                 if (p.future.isEmpty() && !reshuffle()) return
                 val card = rollMisprint(p.future.first())
@@ -1272,6 +1339,11 @@ class Engine(val content: Content) {
                         lastCardDamage = p.lastCardDamage,
                         lastCardBlock = p.lastCardBlock,
                         selfStatuses = cur.statuses,
+                        hp = cur.hp,
+                        maxHp = cur.maxHp,
+                        // Predictive enemies choose at Dawn, after the turn counters roll over.
+                        attacksLastTurn = if (predictive) p.attacksLastTurn else p.attacksThisTurn,
+                        allies = s.livingEnemies.groupingBy { it.defId }.eachCount(),
                     )
                     val script = cur.script
                     val (spec, aiState) = if (script != null) {

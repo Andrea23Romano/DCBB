@@ -21,6 +21,15 @@ sealed interface EnemyAction {
 
     /** Snip: your Constants don't trigger next turn. */
     data object SilenceConstants : EnemyAction
+
+    /** Brings [n] more [enemyId] into the fight, while fewer than five enemies stand ([name] is for the Track). */
+    data class Summon(val enemyId: String, val name: String, val n: Int = 1) : EnemyAction
+
+    /** Restores [n] HP (MERIDIAN's Recompute). */
+    data class Heal(val n: Int) : EnemyAction
+
+    /** One hit of [per] × (its living [allyId] allies + 1), counted when it lands (the Thousandfold's Chorus). */
+    data class AttackPerAlly(val per: Int, val allyId: String, val allyName: String) : EnemyAction
 }
 
 /** An intent an enemy puts on the Track. [alt] makes it a Forked intent (A = actions, B = alt). */
@@ -42,6 +51,13 @@ data class AiView(
     val lastCardBlock: Int,
     /** The enemy's own statuses (the Lattice Engine counts its installed Subroutines). */
     val selfStatuses: Map<StatusType, Int> = emptyMap(),
+    /** Its own HP, for bosses that change as they bleed. */
+    val hp: Int = 0,
+    val maxHp: Int = 0,
+    /** Attacks you played in your last turn. */
+    val attacksLastTurn: Int = 0,
+    /** The living enemies in the fight by definition id, itself included. */
+    val allies: Map<String, Int> = emptyMap(),
 )
 
 /** Enemy behavior. Implementations must be deterministic: no randomness outside the engine's RNG. */
@@ -157,6 +173,76 @@ class LatticeAi(
         return IntentSpec(slot, label, actions + riders) to (aiState + ("i" to i + 1))
     }
 }
+
+/** An extra a main intent picks up when you played [minAttacks]+ Attacks in your last turn (a Vow, a Litany). */
+data class Rider(val label: String, val actions: List<EnemyAction>, val minAttacks: Int)
+
+/**
+ * One AI per slot, each with its own state: a boss's main intent beside its Fixed signature move. [riders] join the
+ * first slot's intents when your play calls for them.
+ */
+class ComboAi(
+    private val parts: Map<String, EnemyAi>,
+    private val riders: List<Rider> = emptyList(),
+    override val predictive: Boolean = parts.values.any { it.predictive },
+) : EnemyAi {
+    override val slots: List<String> = parts.keys.toList()
+
+    override fun next(slot: String, aiState: Map<String, Int>, view: AiView): Pair<IntentSpec, Map<String, Int>> {
+        val prefix = "$slot."
+        val (spec, mine) = parts.getValue(slot).next(slot, aiState.sub(prefix), view)
+        val riding = if (slot == slots.first()) riders.filter { view.attacksLastTurn >= it.minAttacks } else emptyList()
+        val out = riding.fold(spec) { acc, r ->
+            acc.copy(
+                label = "${acc.label} · ${r.label}",
+                actions = acc.actions + r.actions,
+                alt = acc.alt?.plus(r.actions),
+                altLabel = acc.altLabel?.let { "$it · ${r.label}" },
+            )
+        }
+        return out.copy(slot = slot) to aiState.merge(prefix, mine)
+    }
+}
+
+/** A phase of a [PhasedAi]: it starts once HP falls to [atPct]% or below, opening with [opening] on the first slot. */
+data class AiPhase(val atPct: Int, val ai: EnemyAi, val opening: IntentSpec? = null)
+
+/**
+ * A boss that changes as it bleeds. Phases are listed from the first ([AiPhase.atPct] 100) down, never go back (a
+ * heal doesn't undo one), and share their slots. A new phase announces itself on the first slot.
+ */
+class PhasedAi(private val phases: List<AiPhase>) : EnemyAi {
+    init {
+        require(phases.isNotEmpty())
+        require(phases.all { it.ai.slots == phases[0].ai.slots && it.ai.predictive == phases[0].ai.predictive }) {
+            "Every phase needs the same slots and timing"
+        }
+    }
+
+    override val slots: List<String> = phases[0].ai.slots
+    override val predictive: Boolean = phases[0].ai.predictive
+
+    override fun next(slot: String, aiState: Map<String, Int>, view: AiView): Pair<IntentSpec, Map<String, Int>> {
+        val pct = if (view.maxHp > 0) 100 * view.hp / view.maxHp else 100
+        val reached = phases.indices.last { it == 0 || pct <= phases[it].atPct }
+        val now = maxOf(aiState["phase"] ?: 0, reached)
+        val announced = aiState["announced"] ?: 0
+        val opening = phases[now].opening
+        if (slot == slots.first() && now > announced && opening != null) {
+            return opening.copy(slot = slot) to (aiState + ("phase" to now) + ("announced" to now))
+        }
+        val prefix = "p$now."
+        val (spec, mine) = phases[now].ai.next(slot, aiState.sub(prefix), view)
+        val marks = if (slot == slots.first()) mapOf("phase" to now, "announced" to now) else mapOf("phase" to now)
+        return spec.copy(slot = slot) to aiState.merge(prefix, mine) + marks
+    }
+}
+
+private fun Map<String, Int>.sub(prefix: String): Map<String, Int> =
+    filterKeys { it.startsWith(prefix) }.mapKeys { it.key.removePrefix(prefix) }
+
+private fun Map<String, Int>.merge(prefix: String, sub: Map<String, Int>): Map<String, Int> =
+    filterKeys { !it.startsWith(prefix) } + sub.mapKeys { prefix + it.key }
 
 data class EnemyDef(
     val id: String,

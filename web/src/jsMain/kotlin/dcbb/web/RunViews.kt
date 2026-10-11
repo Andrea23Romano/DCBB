@@ -24,17 +24,17 @@ class RunViews(private val app: App, private val views: Views) {
     fun screen(r: RunSession): String {
         val s = r.state
         val era = re.era(s)
-        val stepLine = if (s.step > era.steps) "the boss" else "step ${s.step} of ${era.steps}"
+        val stepLine = if (s.step > era.steps) (if (era.nexus.isNotEmpty()) "the Nexus" else "the boss") else "step ${s.step} of ${era.steps}"
         return buildString {
-            append(views.masthead("Act ${s.act} · ${era.name} · $stepLine · seed ${s.seed}", run = true))
+            append(views.topbar("Act ${views.roman(s.act)} · ${era.name} · $stepLine · seed ${s.seed}", runTools(r)))
             append(runBar(s))
-            append(runTools(r))
             append(rewindConfirm(s))
             append(views.noticeBox())
             append("""<main class="run">""")
             append(
                 when (val sc = s.screen) {
                     is Screen.Weft -> weft(s, sc)
+                    is Screen.LevelUp -> levelUp(s, sc)
                     is Screen.Reward -> reward(s, sc)
                     is Screen.Shop -> shop(s, sc)
                     is Screen.Rest -> rest(s, sc)
@@ -54,45 +54,73 @@ class RunViews(private val app: App, private val views: Views) {
 
     // ---- the run bar ------------------------------------------------------------------------------------------
 
+    /** Pinned to the top between fights: HP, Hours, Foresight, Paradox, then the run's Artifacts, Anchor and deck. */
     fun runBar(s: RunState): String = buildString {
         val op = content.operative(s.operativeId)
         append("""<section class="runbar" aria-label="Run" style="--fc: var(--${fv(op.faction)})">""")
         append("""<div class="rb-row"><b class="rb-op">${esc(op.name)}</b>""")
-        append("""<span class="rb-hp">${views.meter(s.hp, s.maxHp, "Your HP")}<span class="nums">HP ${s.hp}/${s.maxHp}</span></span>""")
-        append("""<span class="nums">Hours ${s.hours}</span><span class="nums">Foresight ${s.foresight}</span>""")
-        val seg = (1..10).joinToString("") { i -> """<i class="${if (i <= s.paradox) "on" else ""}${if (i == 10) " last" else ""}"></i>""" }
-        append("""<span class="rb-pdx"><span class="pdx" role="img" aria-label="Paradox ${s.paradox} of 10">$seg</span><span class="nums">Paradox ${s.paradox}${paradoxState(s.paradox)}</span></span>""")
-        if (s.debt.values.sum() > 0 && !s.over) append("""<span class="debt">Debt ${s.debt.values.sum()}: repaid at your next fight's first Dawn</span>""")
+        append("""<span class="rb-hp">${views.meter(s.hp, s.maxHp, "Your HP")}<span class="nums"><span><b>${s.hp}</b>/${s.maxHp} HP</span></span></span>""")
+        append("""<span class="nums"><span>Hours <b>${s.hours}</b></span></span><span class="nums"><span>Foresight <b>${s.foresight}</b></span></span>""")
+        val toNext = re.xpToNext(s)
+        append("""<span class="nums" title="${esc(LEVEL_TIP)}"><span>Level <b>${s.level}</b>${if (toNext != null) " · $toNext XP to next" else ""}</span></span>""")
+        val cap = re.unravelAt(s)
+        append(
+            """<span class="rb-pdx" title="${esc(Glossary.PARADOX.text)}">${views.pdxBar(s.paradox, cap)}""" +
+                """<span class="nums"><span>Paradox <b>${s.paradox}</b>${if (cap != 10) "/$cap" else ""}${paradoxState(s.paradox, cap)}</span></span></span>""",
+        )
+        if (s.debt.values.sum() > 0 && !s.over) append("""<span class="debt" title="Repaid at your next fight's first Dawn">Debt ${s.debt.values.sum()}</span>""")
         append("</div>")
-        val standing = listOf(Faction.ORDER, Faction.CONVERGENCE, Faction.ERRATA).joinToString(" · ") { f ->
-            val v = s.standingWith(f)
-            "${f.label} ${if (v > 0) "+$v" else if (v < 0) "−${-v}" else "0"}"
-        }
-        append("""<div class="rb-row rb-sub"><span class="muted">Standing: ${esc(standing)}</span>""")
+        append("""<div class="rb-row rb-sub">${runChips(s)}</div>""")
+        append("</section>")
+    }
+
+    /** The run in a line, for the fight screen: what you carry, without repeating what the fight shows. */
+    fun fightLine(s: RunState): String =
+        """<div class="fightline"><span class="nums">Level ${s.level}</span><span class="nums">Hours ${s.hours}</span><span class="nums">Foresight ${s.foresight}</span>""" +
+            carrying(s) + links(s) + "</div>"
+
+    /** One button for everything you carry, which opens the list (the fight screen, and run screens on a phone). */
+    private fun carrying(s: RunState): String {
+        val n = s.artifacts.size + s.ripples.size + s.imprints.size
+        val anchor = s.anchor?.let { "Anchor: step ${it.step}" } ?: "Anchor spent"
+        val label = if (n > 0) "Carrying $n · $anchor" else anchor
+        return """<button type="button" class="linkish rb-carry${if (app.drawer == Drawer.RUN_INFO) " is-on" else ""}" data-act="drawer" data-id="RUN_INFO">${esc(label)}</button>"""
+    }
+
+    private fun links(s: RunState): String =
+        """<button type="button" class="linkish${if (app.drawer == Drawer.RUN_DECK) " is-on" else ""}" data-act="drawer" data-id="RUN_DECK">Deck ${s.deck.size}</button>""" +
+            """<button type="button" class="linkish${if (app.drawer == Drawer.RUN_LOG) " is-on" else ""}" data-act="drawer" data-id="RUN_LOG">Run log</button>"""
+
+    /** Artifacts, Ripples and Imprints by name (tap one for the details), the Anchor, the Branch Pool, the deck and the run log. */
+    private fun runChips(s: RunState): String = """<span class="rb-chips">${chips(s)}</span>""" + carrying(s) + links(s)
+
+    private fun chips(s: RunState): String = buildString {
+        val info = app.drawer == Drawer.RUN_INFO
         for (a in s.artifacts) {
             val def = re.rc.artifact(a)
-            append("""<span class="chiplet" title="${esc(def.text)}"><b>${esc(def.name)}</b> <small>${esc(def.text)}</small></span>""")
+            append("""<button type="button" class="chiplet" data-act="drawer" data-id="RUN_INFO" title="${esc(def.text)}" aria-expanded="$info">${esc(def.name)}</button>""")
         }
         for (rp in s.ripples) {
             val def = re.rc.ripple(rp)
-            append("""<span class="chiplet is-ripple" title="${esc(def.text)}"><b>Ripple: ${esc(def.name)}</b> <small>${esc(def.text)}</small></span>""")
+            append("""<button type="button" class="chiplet is-ripple" data-act="drawer" data-id="RUN_INFO" title="${esc(def.text)}" aria-expanded="$info">Ripple: ${esc(def.name)}</button>""")
+        }
+        for (im in s.imprints) {
+            val def = re.rc.imprint(im)
+            append("""<button type="button" class="chiplet is-imprint" data-act="drawer" data-id="RUN_INFO" title="${esc(def.text)}" aria-expanded="$info">${esc(def.name)}</button>""")
         }
         val anchor = s.anchor
         val anchorText = if (anchor != null) "Anchor: step ${anchor.step}" else "Anchor spent"
-        append("""<span class="chiplet is-anchor" title="${esc(ANCHOR_TIP)}"><b>${esc(anchorText)}</b></span>""")
+        append("""<button type="button" class="chiplet is-anchor" data-act="drawer" data-id="RUN_INFO" title="${esc(ANCHOR_TIP)}">${esc(anchorText)}</button>""")
         if (s.branchPool.isNotEmpty()) {
-            append("""<span class="chiplet" title="${esc(POOL_TIP)}"><b>Branch Pool ${s.branchPool.size}</b></span>""")
+            append("""<button type="button" class="chiplet" data-act="drawer" data-id="RUN_INFO" title="${esc(POOL_TIP)}">Branch Pool ${s.branchPool.size}</button>""")
         }
-        for (e in s.echoesWaiting) append("""<span class="chiplet is-ripple"><b>An Echo waits in the next act</b></span>""")
-        append("""<button type="button" class="linkish${if (app.drawer == Drawer.RUN_DECK) " is-on" else ""}" data-act="drawer" data-id="RUN_DECK">Deck ${s.deck.size}</button>""")
-        append("""<button type="button" class="linkish${if (app.drawer == Drawer.RUN_LOG) " is-on" else ""}" data-act="drawer" data-id="RUN_LOG">Run log</button>""")
-        append("</div></section>")
+        if (s.echoesWaiting.isNotEmpty()) append("""<span class="chiplet is-ripple">An Echo waits in the next act</span>""")
     }
 
-    private fun paradoxState(p: Int) = when {
-        p >= 10 -> " · Unravel"
-        p >= RunEngine.UNSTABLE -> " · Unstable: an Anomaly each step, Elites +1 Might"
-        p >= RunEngine.FRAYED -> " · Frayed: Tear Moments join the act"
+    private fun paradoxState(p: Int, cap: Int) = when {
+        p >= cap -> " · Unravel"
+        p >= RunEngine.UNSTABLE -> " · Unstable"
+        p >= RunEngine.FRAYED -> " · Frayed"
         else -> ""
     }
 
@@ -100,22 +128,26 @@ class RunViews(private val app: App, private val views: Views) {
         append("""<nav class="tools" aria-label="Run tools">""")
         append("""<button type="button" data-act="undo"${if (r.undo.isEmpty()) " disabled" else ""}>Undo</button>""")
         if (!r.state.over) {
-            append("""<button type="button" data-act="run-bot">Bot decides</button>""")
-            append(autoButtons(fight = false))
-            val canRewind = re.canRewind(r.state)
-            append("""<button type="button" data-act="run-rewind"${if (canRewind) "" else " disabled"} title="${esc(ANCHOR_TIP)}">Rewind to Anchor</button>""")
+            if (app.auto != Auto.NONE) {
+                append("""<button type="button" class="primary" data-act="auto-stop">Stop the bot</button>""")
+            } else {
+                append(
+                    views.menu(
+                        "Bot",
+                        """<button type="button" data-act="run-bot">Bot makes this choice</button><button type="button" data-act="auto-run">Bot plays on through the run</button>""",
+                    ),
+                )
+            }
+            if (re.canRewind(r.state)) append("""<button type="button" data-act="run-rewind" title="${esc(ANCHOR_TIP)}">Rewind</button>""")
         }
-        append("""<button type="button" data-act="copy">Copy run code</button>""")
-        append("""<button type="button" data-act="to-setup">Leave run</button>""")
+        append(
+            views.menu(
+                "More",
+                """<button type="button" data-act="copy">Copy run code</button><button type="button" data-act="to-setup">Leave run</button>""",
+                end = true,
+            ),
+        )
         append("</nav>")
-    }
-
-    /** Autoplay controls: let the bot finish this fight, or play on through the run; a running bot shows Stop. */
-    fun autoButtons(fight: Boolean): String = when {
-        app.auto != Auto.NONE -> """<button type="button" class="primary" data-act="auto-stop">Stop the bot</button>"""
-        fight -> """<button type="button" data-act="auto-fight">Bot plays this fight</button>""" +
-            """<button type="button" data-act="auto-run">Bot plays on</button>"""
-        else -> """<button type="button" data-act="auto-run">Bot plays on</button>"""
     }
 
     fun runDrawer(s: RunState): String {
@@ -132,8 +164,48 @@ class RunViews(private val app: App, private val views: Views) {
             }
             Drawer.RUN_LOG -> """<section class="drawer" aria-label="Run log"><h2 class="label">Run log</h2><ol class="log-lines">""" +
                 r.log.joinToString("") { "<li>${esc(it)}</li>" } + "</ol></section>"
+            Drawer.RUN_INFO -> runInfo(s)
             else -> ""
         }
+    }
+
+    /** Everything the run carries, spelled out: Artifacts, Ripples, standing, the Anchor and the Branch Pool. */
+    private fun runInfo(s: RunState): String = buildString {
+        append("""<section class="drawer" aria-label="What you carry"><h2 class="label">What you carry</h2><ul class="decklist">""")
+        for (a in s.artifacts) {
+            val def = re.rc.artifact(a)
+            append("""<li><span class="dl-count">Artifact</span><span class="dl-name">${esc(def.name)}</span><span class="dl-text">${esc(def.text)}</span></li>""")
+        }
+        for (rp in s.ripples) {
+            val def = re.rc.ripple(rp)
+            append("""<li><span class="dl-count">Ripple</span><span class="dl-name">${esc(def.name)}</span><span class="dl-text">${esc(def.text)}</span></li>""")
+        }
+        for (im in s.imprints) {
+            val def = re.rc.imprint(im)
+            append("""<li><span class="dl-count">Imprint</span><span class="dl-name">${esc(def.name)}</span><span class="dl-text">${esc(def.text)}</span></li>""")
+        }
+        val toNext = re.xpToNext(s)
+        append(
+            """<li><span class="dl-count">Level</span><span class="dl-name">Level ${s.level} · ${s.xp} XP</span>""" +
+                """<span class="dl-text">${esc(LEVEL_TIP)}${if (toNext != null) " $toNext XP to the next level." else ""}</span></li>""",
+        )
+        val standing = listOf(Faction.ORDER, Faction.CONVERGENCE, Faction.ERRATA).joinToString(" · ") { f ->
+            val v = s.standingWith(f)
+            "${f.label} ${if (v > 0) "+$v" else if (v < 0) "−${-v}" else "0"}"
+        }
+        append("""<li><span class="dl-count">Standing</span><span class="dl-name">${esc(standing)}</span><span class="dl-text">How the factions regard you. Shrines and some events ask for it.</span></li>""")
+        val anchor = s.anchor
+        append(
+            """<li><span class="dl-count">Anchor</span><span class="dl-name">${if (anchor != null) "Act ${views.roman(anchor.act)}, step ${anchor.step}" else "Spent"}</span>""" +
+                """<span class="dl-text">${esc(ANCHOR_TIP)}</span></li>""",
+        )
+        if (s.branchPool.isNotEmpty()) {
+            append(
+                """<li><span class="dl-count">Branch Pool</span><span class="dl-name">${esc(s.branchPool.joinToString(", ") { it.title })}</span>""" +
+                    """<span class="dl-text">${esc(POOL_TIP)}</span></li>""",
+            )
+        }
+        append("</ul></section>")
     }
 
     // ---- the Weft ---------------------------------------------------------------------------------------------
@@ -141,7 +213,7 @@ class RunViews(private val app: App, private val views: Views) {
     private fun weft(s: RunState, w: Screen.Weft): String = buildString {
         val single = w.options.size == 1
         val title = when {
-            w.options.singleOrNull()?.type == MomentType.BOSS -> "The act's last knot"
+            w.options.singleOrNull()?.type == MomentType.BOSS -> if (re.era(s).nexus.isNotEmpty()) "The Nexus" else "The act's last knot"
             w.options.singleOrNull()?.ambush == true -> "The Tear finds you"
             else -> "Step ${s.step}: choose one Moment"
         }
@@ -207,7 +279,11 @@ class RunViews(private val app: App, private val views: Views) {
         MomentType.STILL_POINT -> "Heal, Inscribe or Steady"
         MomentType.SHRINE -> if (m.faction == content.operative(app.run!!.state.operativeId).faction) "Your faction's altar: a boon" else "Another faction's altar"
         MomentType.CACHE -> "A free reward"
-        MomentType.BOSS -> "Win to clear the act"
+        MomentType.BOSS -> if (re.era(app.run!!.state).nexus.isNotEmpty()) {
+            "The champion of the faction you stand lowest with, come for the Gnomon. Win the run."
+        } else {
+            "Win to clear the act: a boss Artifact, a rare card, a full heal"
+        }
     }
 
     private fun details(m: Moment): String = when {
@@ -226,13 +302,34 @@ class RunViews(private val app: App, private val views: Views) {
         else -> ""
     }
 
+    // ---- level-ups ------------------------------------------------------------------------------------------
+
+    private fun levelUp(s: RunState, l: Screen.LevelUp): String = buildString {
+        append("""<section class="block"><h2 class="run-title">Level ${l.level}</h2>""")
+        append("""<p class="muted">+${RunEngine.LEVEL_HP} max HP. Choose an Imprint: it lasts for the rest of the run.</p><div class="shoplist">""")
+        for ((i, id) in l.options.withIndex()) {
+            val def = re.rc.imprint(id)
+            val who = def.operative?.let { content.operative(it).name } ?: "Universal"
+            val req = def.requires?.let { " · needs ${re.describe(it)}" } ?: ""
+            append(
+                """<button type="button" class="ware imprint" data-act="run-choose" data-id="$i"><span class="ware-name">${esc(def.name)}</span>""" +
+                    """<span class="ware-text">${esc(def.text)}</span><span class="m-return">${esc(who + req)}</span></button>""",
+            )
+        }
+        append("</div></section>")
+    }
+
     // ---- rewards ----------------------------------------------------------------------------------------------
 
     private fun reward(s: RunState, r: Screen.Reward): String = buildString {
         append("""<section class="block"><h2 class="run-title">${esc(r.title)}</h2>""")
         append(lines(r.lines))
         if (r.artifacts.isNotEmpty()) {
-            val head = if (r.lostWeight) "Or reclaim an Artifact" else "Choose an Artifact first"
+            val head = when {
+                r.lostWeight -> "Or reclaim an Artifact"
+                r.boss -> "Choose a boss Artifact first: each has a drawback"
+                else -> "Choose an Artifact first"
+            }
             append("""<h3 class="label">${esc(head)}</h3><div class="shoplist">""")
             for ((i, a) in r.artifacts.withIndex()) {
                 val def = re.rc.artifact(a)
@@ -243,14 +340,18 @@ class RunViews(private val app: App, private val views: Views) {
             }
             append("</div>")
         }
-        val choose = if (r.lostWeight) "Reclaim a card from your Echo's deck" else "Choose a card"
+        val choose = when {
+            r.lostWeight -> "Reclaim a card from your Echo's deck"
+            r.boss -> "Choose a rare card"
+            else -> "Choose a card"
+        }
         append("""<h3 class="label">${esc(choose)} <span>or skip it for ${RunEngine.SKIP_HOURS} Hours</span></h3><div class="cards">""")
         val locked = r.artifacts.isNotEmpty() && !r.lostWeight
         for ((i, id) in r.cards.withIndex()) append(defTile(content.card(id), "run-choose", i, disabled = locked))
         append("</div>")
         append(legend(r.cards))
         append("""<div class="btns">""")
-        if (!r.glimpsed && !r.lostWeight) append("""<button type="button" data-act="run-glimpse"${if (locked) " disabled" else ""}>Glimpse: see the other branch's 3 cards (+${RunEngine.GLIMPSE_PARADOX} Paradox)</button>""")
+        if (!r.glimpsed && !r.lostWeight && !r.boss) append("""<button type="button" data-act="run-glimpse"${if (locked) " disabled" else ""}>Glimpse: see the other branch's 3 cards (+${RunEngine.GLIMPSE_PARADOX} Paradox)</button>""")
         append("""<button type="button" data-act="run-skip"${if (locked) " disabled" else ""}>Skip (+${RunEngine.SKIP_HOURS} Hours)</button></div></section>""")
     }
 
@@ -410,8 +511,9 @@ class RunViews(private val app: App, private val views: Views) {
 
     private companion object {
         const val ANCHOR_TIP = "Your Anchor holds the run as it was at the start of the act, or where you last Steadied or accepted a Shrine's offer. " +
-            "Rewind back to it outside combat (+3 Paradox) or when you fall (+5). It is spent once used."
+            "Rewind back to it outside combat (+3 Paradox) or when you fall (+5). It is spent once used, and each act brings a new one."
         const val POOL_TIP = "The Moments you don't choose wait in the Branch Pool. Each may return later, changed: fights as Ambushes, " +
             "Elites Empowered, events as their Consequences, shops Looted, Shrines Desecrated."
+        const val LEVEL_TIP = "Fights give XP: 10, an Elite 25, a boss 50. Each level brings +3 max HP and a choice of Imprints."
     }
 }

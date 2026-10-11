@@ -77,7 +77,7 @@ class ForeseeDraft(val order: MutableList<Int>, val tutor: Boolean) {
     )
 }
 
-enum class Drawer { NONE, PAST, FUTURE, ERASED, DECK, LOG, RUN_DECK, RUN_LOG }
+enum class Drawer { NONE, PAST, FUTURE, ERASED, DECK, LOG, RUN_DECK, RUN_LOG, RUN_INFO }
 
 /**
  * A run in progress: its state, every action (for run codes and Undo), the run log, and the combat events of the
@@ -149,6 +149,33 @@ class App(private val root: Element) {
             else -> views.setup()
         }
         if (copyText != null) (root.querySelector("#copy-text") as? HTMLTextAreaElement)?.select()
+        // A new screen starts at the top; the same screen keeps its scroll position.
+        val key = screenKey()
+        if (key != shownKey) {
+            shownKey = key
+            window.scrollTo(0.0, 0.0)
+        }
+    }
+
+    private var shownKey: String? = null
+
+    private fun screenKey(): String {
+        val r = run ?: return if (session != null) "lab" else "setup"
+        val sc = r.state.screen
+        val kind = when (sc) {
+            is Screen.Fight -> "fight:" + sc.moment.id
+            is Screen.Weft -> "weft"
+            is Screen.LevelUp -> "level:" + sc.level
+            is Screen.Reward -> "reward"
+            is Screen.Shop -> "shop"
+            is Screen.Rest -> "rest"
+            is Screen.Event -> "event:" + sc.eventId
+            is Screen.PickCard -> "pick:" + sc.purpose
+            is Screen.Note -> "note:" + sc.title
+            is Screen.Over -> "over"
+            is Screen.Fallen -> "fallen"
+        }
+        return "run:${r.state.act}:${r.state.step}:$kind"
     }
 
     // ---- boot and hot reload --------------------------------------------------------------------------------

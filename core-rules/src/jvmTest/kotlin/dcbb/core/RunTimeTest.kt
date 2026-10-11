@@ -105,7 +105,10 @@ class RunTimeTest {
         assertNotNull(re.apply(r, RunAction.Choose(0)).error, "choose an Artifact first")
         val took = r.ok(RunAction.TakeArtifact(1))
         assertEquals(listOf(reward.artifacts[1]), took.artifacts)
-        assertTrue(took.ok(RunAction.Choose(0)).screen is Screen.Weft)
+        // An Elite's 25 XP reaches level 2: the Imprint comes before the next step.
+        val next = took.ok(RunAction.Choose(0))
+        assertTrue(next.screen is Screen.LevelUp)
+        assertTrue(next.ok(RunAction.Choose(0)).screen is Screen.Weft)
     }
 
     @Test
@@ -222,7 +225,7 @@ class RunTimeTest {
         assertTrue(reward.cards.all { it in deck } && reward.cards.size == 3)
         assertEquals(1, reward.artifacts.size)
         val took = r.ok(RunAction.TakeArtifact(0))
-        assertTrue(took.screen is Screen.Weft && took.artifacts.size == 1 && took.deck == r.deck, "one or the other")
+        assertTrue(took.screen is Screen.LevelUp && took.artifacts.size == 1 && took.deck == r.deck, "one or the other, then a level")
     }
 
     @Test
@@ -242,7 +245,7 @@ class RunTimeTest {
             val (replayed, rejected) = RunReplay("splinter", seed, era.id, actions).play(re)
             assertNull(rejected)
             assertEquals(s, replayed)
-            assertTrue(s.stats.rewinds == 1)
+            assertTrue(s.stats.rewinds in 1..FirstHour.run.eras.size, "one Anchor per act")
         }
         assertTrue(rewound > 0, "some Splinter runs fall and Rewind")
     }

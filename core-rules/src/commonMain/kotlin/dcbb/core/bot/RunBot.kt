@@ -39,6 +39,7 @@ class RunBot(private val seed: Long = 0, private val fightBot: (Long) -> Bot = {
             RunAction.Fight(bot!!.act(re.engine, sc.combat))
         }
         is Screen.Reward -> reward(re, s, sc)
+        is Screen.LevelUp -> RunAction.Choose(sc.options.indices.maxBy { imprintScore(s, sc.options[it]) })
         is Screen.Shop -> shop(re, s, sc)
         is Screen.Rest -> rest(re, s, sc)
         is Screen.Event -> event(re, s, sc)
@@ -99,8 +100,25 @@ class RunBot(private val seed: Long = 0, private val fightBot: (Long) -> Bot = {
         return v
     }
 
+    /** A rough taste in Imprints: what helps any deck most, then what this operative's engine wants. */
+    private fun imprintScore(s: RunState, id: String): Double = IMPRINT_TASTE[id] ?: 1.0
+
+    /** Boss Artifacts by how well their upside fits the operative and how little their drawback bites. */
+    private fun bossArtifactScore(s: RunState, id: String): Double = when (id) {
+        "aurelians_seal" -> 3.0
+        "babbages_governor" -> 2.8
+        "cavaliere_heart" -> 2.4
+        "meridian_shard" -> if (s.operativeId == "oracle") 3.2 else 1.6
+        "thousandfold_ribbon" -> if (s.operativeId == "splinter") 3.1 else 0.8
+        "joachims_prophecy" -> if (s.operativeId == "splinter") 2.0 else 1.2
+        else -> 1.0
+    }
+
     private fun reward(re: RunEngine, s: RunState, r: Screen.Reward): RunAction {
-        if (r.artifacts.isNotEmpty()) return RunAction.TakeArtifact(0)
+        if (r.artifacts.isNotEmpty()) {
+            if (!r.boss) return RunAction.TakeArtifact(0)
+            return RunAction.TakeArtifact(r.artifacts.indices.maxBy { bossArtifactScore(s, r.artifacts[it]) })
+        }
         val best = r.cards.withIndex().maxByOrNull { cardScore(re, s, re.content.card(it.value)) }
         return if (best != null && cardScore(re, s, re.content.card(best.value)) >= 1.0) RunAction.Choose(best.index) else RunAction.Skip
     }
@@ -183,6 +201,28 @@ class RunBot(private val seed: Long = 0, private val fightBot: (Long) -> Bot = {
     }
 }
 
+private val IMPRINT_TASTE = mapOf(
+    "thick_skin" to 2.0,
+    "tempered" to 2.3,
+    "second_wind" to 2.1,
+    "quick_study" to 1.6,
+    "pathfinder" to 1.1,
+    "anchorite" to 1.4,
+    "long_credit" to 1.2,
+    "paradox_sink" to 1.0,
+    "steadfast" to 2.6,
+    "oathbound" to 2.5,
+    "keeper_of_vows" to 1.7,
+    "long_memory" to 1.3,
+    "precomputed" to 2.2,
+    "deep_forecast" to 2.4,
+    "bayesian_prior" to 2.6,
+    "cache_hit" to 1.6,
+    "margin_notes" to 2.6,
+    "unstable_equilibrium" to 2.2,
+    "doubled_breath" to 1.9,
+)
+
 /** Plays whole runs with a [RunBot]; used by the simulator and the tests. */
 object RunRunner {
     fun play(re: RunEngine, operative: String, seed: Long, bot: RunBot = RunBot(seed), maxActions: Int = 20_000): Pair<RunState, List<RunAction>> {
@@ -197,8 +237,8 @@ object RunRunner {
                 val fallback = when (val sc = s.screen) {
                     is Screen.Fight -> RunAction.Fight(dcbb.core.engine.EndTurn)
                     is Screen.Shop, is Screen.PickCard, is Screen.Rest, is Screen.Note, is Screen.Fallen -> RunAction.Done
-                    is Screen.Reward -> RunAction.Skip
                     is Screen.Event -> RunAction.Choose(sc.options.indexOfFirst { it.blocked == null }.coerceAtLeast(0))
+                    is Screen.Reward -> if (sc.artifacts.isNotEmpty()) RunAction.TakeArtifact(0) else RunAction.Skip
                     else -> RunAction.Choose(0)
                 }
                 val again = re.apply(s, fallback)

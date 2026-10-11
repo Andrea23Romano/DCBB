@@ -224,7 +224,7 @@ Elites use 40% / 45% / 15%.
 
 ## Imprints
 
-Imprints are DC's talents, kept and sharpened. XP comes from fights. Each level-up grants **+3 max HP** and a choice of **1 of 3 Imprints**. Some Imprints have **deck requirements**, so builds stay intentional.
+Imprints are DC's talents, kept and sharpened. XP comes from fights: **10** for a Combat, **25** for an Elite, **50** for a boss. Each level-up grants **+3 max HP** and a choice of **1 of 3 Imprints**, offered at the next step. Some Imprints have **deck requirements**, so builds stay intentional. A full run reaches about level 6–7.
 
 | Level | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 |---|---|---|---|---|---|---|---|
@@ -237,12 +237,14 @@ Imprints are DC's talents, kept and sharpened. XP comes from fights. Each level-
 
 | Imprint | Effect |
 |---|---|
-| Thick Skin | +8 max HP |
+| Thick Skin | +8 max HP. Can be taken more than once. |
 | Quick Study | Card rewards offer 4 cards instead of 3 |
-| Pathfinder | +1 Foresight per act |
-| Anchorite | You may move your Anchor twice per act |
+| Pathfinder | +1 Foresight now and at the start of each act |
+| Anchorite | Your first Rewind each act leaves your Anchor in place |
 | Long Credit | Borrow limit 3 |
 | Paradox Sink | At each act start, −2 Paradox (instead of −1) |
+| Tempered | Start each combat with 5 Block |
+| Second Wind | Heal 4 HP after each fight you win |
 
 Operative Imprint examples are in [03](03-factions-and-operatives.md).
 
@@ -276,16 +278,22 @@ Artifacts are **out-of-place artifacts**: objects found in the wrong century. Th
 | **Bell of the Still Hour** | At Still Points you may both heal *and* Inscribe. |
 | **Byzantine Fire Jar** | Start of combat: apply Burn 3 to all enemies. |
 | **Nebra Disc** | Your Scheduled effects get +1 to their numbers. |
+| **Vitruvian Compass** | Start of each combat: gain Plate 2. |
+| **Desert Water-skin** | Heal 4 HP after each fight you win. |
+| **Crusader's Reliquary** | Start of each combat: gain 6 Block. |
 
 ### Boss Artifacts
 
-Boss Artifacts are strong, and each one has a drawback.
+Boss Artifacts are strong, and each one has a drawback. They come only from act bosses, never from Elites, Caches or the Antiquarian.
 
 | Artifact | Effect |
 |---|---|
 | **Aurelian's Seal** | +1 Faith income. You can't Borrow. |
 | **MERIDIAN Shard** | Your Foresee effects +1. Predictive enemies gain +1 Might. |
 | **The Thousandfold's Ribbon** | Your Other Hand holds +1 card (no Other Hand? you gain one with 2 cards). +1 Paradox at the start of each combat. |
+| **Babbage's Governor** | Draw 1 more card each turn. −6 max HP. |
+| **The Cavaliere's Heart** | Start each combat with 8 Block and Plate 1. Enemies have 10% more HP. |
+| **Joachim's Prophecy** | +1 Foresight now and at the start of each act, and Foresight reveals a second Moment of the next step. +1 Paradox at the start of each combat. |
 
 ---
 
@@ -356,8 +364,9 @@ Each faction has a **Standing** with you, from −3 (hostile) to +3 (allied). It
 
 | Standing | Effect |
 |---|---|
+| < 0, your own faction | You are an apostate: your own faction's squads can be dealt to you. |
 | ≤ −2 | Their squads appear more often (+1 combat per act), and their Returning combats always Ambush. |
-| ≥ +2 | Their shrines offer an extra boon option, and their Antiquarians give a 20% discount. |
+| ≥ +2 | Their shrines offer you their boons as if they were yours, and their cards cost 20% less at the Antiquarian. |
 | End of Act III | Decides the **Nexus champion** you face ([03](03-factions-and-operatives.md#bosses)). The champion comes from a faction you don't belong to. If you never Defected, two factions qualify, and you face the one where your Standing is lowest. |
 
 ---
@@ -473,11 +482,13 @@ The rosters and mechanics are in [03](03-factions-and-operatives.md#bosses).
 
 ---
 
-## Act I in the Prototype
+## The First Hour in the Prototype
 
-The first playable slice ([10](10-roadmap.md#phase-1-status)) builds Act I of *The First Hour*, London 1843, on the rules above. A run starts at step 1 and ends when the Lattice Engine falls or you do.
+The first playable slice ([10](10-roadmap.md#phase-1-status)) builds all three acts of *The First Hour* on the rules above: London 1843, Milan 1495 and the Salt Waste in 1191. A run starts at step 1 of Act I and ends when the Nexus champion falls or you do.
 
-**Fights by threat.** Your own faction's squads are left out.
+### Act I: London, 1843
+
+**Fights by threat.** Your own faction's squads are left out (unless you are an apostate, see [Standing](#standing)).
 
 | Threat | Encounters |
 |---|---|
@@ -498,19 +509,73 @@ The first playable slice ([10](10-roadmap.md#phase-1-status)) builds Act I of *T
 | The Night Ward | Work the night shift: lose 6 HP, Inscribe a card, Order +1 · Take laudanum: heal 20%, +1 Paradox · Keep walking |
 
 - **Anomalies:** Fading Street and The Loop, as described in [Services](#anomaly).
+- **Ripples of *The Notes*:** all except *Ash in the Margins* (it needs the Rift), *Holy Calculation* and *A Debt Owed*.
+
+### Act II: Milan, 1495
+
+| Threat | Encounters |
+|---|---|
+| 1 | A Condottiero off the Leash · Pikemen at the Porta Romana · A Penitent in the Duomo · An Engine on the Navigli · A Double in the Crowd · A Ravel in the Cloister (Tear) |
+| 2 | Condottieri · Plague Season · A Pike Square · The Lion Wakes · A Penitents' Procession · Proxy Patrol · Misprinted Alley · Loose Threads (Tear) |
+| 3 | The Sforza Guard · The Free Company · The Lion and the Pikes · The Line in Milan · The Brass Court · The Margins of Milan · The Fraying Cloister (Tear) |
+| Elite | Capitano di Ventura · The Seam-runner · The Inquisitor · The Pruner · The Rent |
+| Boss | **The Automa Cavaliere**, with the heart the Divergence gave it |
+
+**The Divergence, *The Automaton's Heart*.** Leonardo's knight stands open-chested in the Corte Vecchia. What you put in it decides the boss you meet at the end of the act:
+
+| Choice | The Cavaliere | Legal Ripples |
+|---|---|---|
+| Fit MERIDIAN's escapement | Predictive: Attack-heavy hands meet Guard and Glitch | **Clockwork Lineage**: Convergence cards twice as often in rewards, Convergence enemies Might 1 · **Perpetual Motion**: Reservoir cap 8 |
+| Seal the Order's relic inside | Fixed hits, and a Vow: 3+ Attacks in your turn give it Might | **The Relic Knight**: Order enemies Plate 1, Relic cards −25% · **Canonized**: Order Standing +1, +1 Foresight |
+| Fold the misprint into its chest | Forked intents | **Margins in the Machine**: +1 Paradox, a rare card · **The Unwritten Knight**: Errata enemies −10% HP |
+| Leave the chest empty | Its plain rotation | **The Hollow Knight**: era natives −10% HP · **History Holds**: −1 Paradox, heal 15% |
+
+If you walk past it, the Divergence returns as *The Knight, Finished by Others*, with a price on each heart.
+
+**Events:** Leonardo's Notebook, The Plague Cart, The Duke's Banquet, The Refectory Scaffold, A Letter of Credit. The Notebook and the Banquet have Consequences. **Anomalies:** The Loop and The Painted Window.
+
+### Act III: The Salt Waste, 1191
+
+Seven steps: 9 Combats, 2 Elites, 4 Events, an Anomaly, 2 Antiquarians, 2 Still Points and a Shrine. The Divergence comes in steps 3–5.
+
+| Threat | Encounters |
+|---|---|
+| 1 | A Knight Strayed from the Column · A Horse Archer · A Sandglass Golem · Glassborn · Salt Wraiths (Tear-touched) |
+| 2 | Salt Mirage · Glass Desert · The Column's Rearguard · Horse Archers on the Ridge · Glass and Salt · Order Patrol · Proxy Patrol · Misprinted Alley · Loose Threads (Tear) |
+| 3 | Two Knights of the Column · The Shattered Dunes · Archers in the Mirage · The Line in Milan · The Brass Court · The Margins of Milan · The Fraying Cloister (Tear) |
+| Elite | The Black Glass Sentinel · The Seam-runner · The Inquisitor · The Pruner · The Rent |
+| Boss | **The Nexus champion**: Grand Master Aurelian, MERIDIAN Ascendant or the Thousandfold ([Standing](#standing)) |
+
+**The Divergence, *The Shadow of the Gnomon*:**
+
+| Choice | Outcome | Legal Ripples |
+|---|---|---|
+| Let Aurel find it, as written | Order +1 | **The Canon Begins**: Order +1, heal 20% · **The Long Shadow**: Fixed intents deal 15% less to you |
+| Touch it yourself | +2 Paradox | **Two Shadows**: +2 Foresight, Foresee +1 · **The Needle Knows You**: start each fight with 6 Block |
+| Let it shatter | Errata +1, Order −1 | **A Thousand Shards**: −2 Paradox, a rare card · **Everyone's Time**: +1 Neutral energy each turn |
+| Crate it for the Convergence | Convergence +1, Order −1 | **Matter Moves**: Convergence cards twice as often, Convergence enemies −10% HP · **Calculated Shadow**: start each fight with Foresee 2 |
+
+The Standing changes matter: they decide which champion comes for the Gnomon. **Events:** Brother Aurel's Vigil (with a Consequence), The Salt Caravan, A Well in the Waste, The Glass Field, A Parley under Truce. **Anomalies:** The Sundial Runs Backward (a Loop) and The Salt Mirror.
+
+### Between acts, and across them
+
+- **Era scaling.** Later acts reuse the faction squads, so each act makes its fights tougher: Act II enemies have **125% HP and Might 1**, Act III enemies **150% HP and Might 1**. Bosses and your Echo are authored at full strength and don't scale.
+- **Boss rewards.** An act boss gives **90 Hours**, a choice of **1 of 3 boss Artifacts** (taken first), then **1 of 3 rare cards** (each with a 15% chance to be a legendary; thin pools fill up with uncommons). Boss rewards can't be Glimpsed.
+- **A new act** begins with a full heal, −1 Paradox (−2 with Paradox Sink), +1 Foresight for each source that grants it per act, a new Anchor at its first step, and an empty Branch Pool.
+- **XP and Imprints** work as in [Imprints](#imprints). The operative Imprints built so far are in [03](03-factions-and-operatives.md); *Plural* waits for Forks.
+- **Standing** works as in [Standing](#standing): apostates meet their own faction's squads, a faction at −2 or worse hunts you with one more fight per act, a friendly faction (+2) opens its altar and discounts its cards, and the lowest Standing among your rivals picks the Nexus champion (ties go to the seed).
 - **Shrines:** your own faction's altar offers its boons ([Shrines](#shrines-and-defection)); Fork, transform and swap boons wait for later systems, so the Errata Seam offers *Stitch yourself tighter* (−2 Paradox) instead. Another faction's altar can be Desecrated.
-- **Artifacts:** Antikythera Gear, Baghdad Cell, Clockwork Sparrow, Piri Reis Fragment, Gnomon Splinter, Lovelace's Notes, Bell of the Still Hour, Byzantine Fire Jar and Misprinted Psalter.
-- **Ripples of *The Notes*:** all except *Ash in the Margins* (it needs the Rift), *Holy Calculation* (Act II) and *A Debt Owed* (the Nexus).
+- **Artifacts:** Antikythera Gear, Baghdad Cell, Clockwork Sparrow, Piri Reis Fragment, Gnomon Splinter, Lovelace's Notes, Bell of the Still Hour, Byzantine Fire Jar, Misprinted Psalter, Vitruvian Compass, Desert Water-skin and Crusader's Reliquary, plus the six boss Artifacts.
 
 **Time travel on the map.** [Returning Moments](#returning-moments) and [Anchors and Rewind](#anchors-and-rewind) work as described above. The prototype settles these details:
 
-- **Consequences.** Every Act I event has one, written as a follow-up event: the Copyist in a cell, the Notes at auction, the serial's last number, a cold workshop, the mudlark robbed, the ward overflowing. Anomalies don't return.
+- **Consequences.** Every Act I event has one, written as a follow-up event: the Copyist in a cell, the Notes at auction, the serial's last number, a cold workshop, the mudlark robbed, the ward overflowing. Later acts have a few. Anomalies don't return.
 - **Which Moment a return replaces.** One the dealing rules didn't place and Foresight hasn't revealed. The Moment it displaces is not dealt. A Moment returns once at most.
-- **Your Anchor.** Steady moves it automatically. A Shrine offers the move, which you can accept on the next step's Weft. A spent Anchor can't be moved, so you Rewind once per act.
+- **Your Anchor.** Steady moves it automatically. A Shrine offers the move, which you can accept on the next step's Weft. A spent Anchor can't be moved, so you Rewind once per act (twice with Anchorite).
 - **Rewind** restores the run as it was at your Anchor, with the same Era Deck and the same random draws. It doesn't restore Paradox or Foresight charges, and Moments you revealed stay revealed. Rewind outside combat asks for confirmation first. When you fall with your Anchor unspent, you choose between Rewinding (+5 Paradox) and ending the run.
-- **The Echo of You** takes the place of an undealt Moment in a later step of this act, since later acts don't exist yet. Its HP is 60% of your max HP. It plays two of your old cards per round in a seeded order ([03](03-factions-and-operatives.md#enemy-rosters)). Beating it gives Elite Hours and **Lost Weight**: one card from its deck or an Artifact. With no later step left, the Echo waits for the next act.
+- **The Echo of You** takes the place of an undealt Moment in a later step of the act. With no later step left, it waits for the next act; in Act III it unravels instead. Its HP is 60% of your max HP. It plays two of your old cards per round in a seeded order ([03](03-factions-and-operatives.md#enemy-rosters)). Beating it gives Elite Hours and **Lost Weight**: one card from its deck or an Artifact.
 
-- **Not yet built:** Imprints and XP, Defection and Standing effects, Forks, and Acts II and III.
+- **Not yet built:** Defection, Forks, the Quick Mission, and the Chronicler's prose (events use their authored text).
 
 ---
 

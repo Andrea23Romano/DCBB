@@ -196,6 +196,9 @@ object RulesText {
                 if (a.n == 1) "Unpick: Erase the top card of your Future" else "Unpick: Erase the top ${a.n} cards of your Future"
             is EnemyAction.Disrupt -> "Disrupt ${a.n}"
             EnemyAction.SilenceConstants -> "Snip: your Constants don't trigger next turn"
+            is EnemyAction.Summon -> if (a.n == 1) "Summon a ${a.name}" else "Summon ${a.n} ${a.name}s"
+            is EnemyAction.Heal -> "Heal ${a.n}"
+            is EnemyAction.AttackPerAlly -> "Attack ${a.per} × (${a.allyName}s + 1)"
         }
     }
 

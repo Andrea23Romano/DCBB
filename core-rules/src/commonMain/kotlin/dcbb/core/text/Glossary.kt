@@ -106,6 +106,9 @@ object Glossary {
                 is EnemyAction.Buff -> out += status(a.status)
                 is EnemyAction.Debuff -> out += status(a.status)
                 is EnemyAction.AttackPer -> out += status(a.status)
+                is EnemyAction.Summon -> out += e("Summon", "More enemies join the fight (never more than five standing).")
+                is EnemyAction.Heal -> out += e("Heal", "The enemy restores HP, up to its max.")
+                is EnemyAction.AttackPerAlly -> out += e("Chorus", "One hit that grows with every ${a.allyName} still standing when it lands.")
                 else -> Unit
             }
         }

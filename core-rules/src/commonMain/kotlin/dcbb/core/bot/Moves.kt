@@ -119,7 +119,7 @@ object Moves {
         val p = state.player
         val present = p.present.filter { it.uid != playedUid }.sortedBy { CardValues.value(engine, state, it) }
         if (present.isEmpty()) return listOf(emptyList())
-        if (engine.content.operative(p.operativeId).otherHandSize == 0) {
+        if (engine.otherHandSize(state) == 0) {
             return listOf(emptyList(), listOf(ShiftPair(present.first().uid, null)))
         }
         val other = p.otherHand.sortedByDescending { CardValues.value(engine, state, it) }

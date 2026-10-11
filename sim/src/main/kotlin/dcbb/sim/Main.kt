@@ -8,6 +8,7 @@ import dcbb.core.bot.RandomBot
 import dcbb.core.bot.Runner
 import dcbb.core.budget.Budget
 import dcbb.core.content.Content
+import dcbb.core.content.FirstHour
 import dcbb.core.content.Prototype
 import dcbb.core.engine.CombatSetup
 import dcbb.core.engine.Engine
@@ -27,8 +28,11 @@ import kotlin.math.roundToInt
  * with a heuristic bot and a random bot. Results are deterministic for a given configuration, so the report can be
  * committed and diffed when numbers change.
  *
+ * The matrix leaves out the bosses of Acts II and III: they are built for a run's deck, level and Artifacts, so the
+ * run report covers them.
+ *
  * Usage: sim [--seeds N] [--threads N] [--bots planner,greedy,random] [--out FILE] [--title TEXT]
- *        sim --runs N [--threads N] [--out FILE]   (whole runs of Act I, see RunSim.kt)
+ *        sim --runs N [--threads N] [--out FILE]   (whole runs of The First Hour, see RunSim.kt)
  *        sim --trace operative/deck/encounter/index [--bot planner|greedy|random]
  *        sim --replay "a1 oracle mid proxy_patrol 4242 P/12//// ..."   (a fight or run code copied from the web client)
  */
@@ -54,7 +58,7 @@ fun main(args: Array<String>) {
     }
     val decks = listOf("starter", "mid")
     val cells = buildList {
-        for (bot in bots) for (op in content.operatives.keys.sorted()) for (deck in decks) for (enc in content.encounters.filter { !it.runOnly }) {
+        for (bot in bots) for (op in content.operatives.keys.sorted()) for (deck in decks) for (enc in matrix(content)) {
             add(CellSpec(bot, op, deck, enc))
         }
     }
@@ -128,6 +132,12 @@ private fun parseArgs(args: Array<String>): Map<String, String> {
 
 data class CellSpec(val bot: String, val op: String, val deck: String, val encounter: Encounter)
 
+/** The encounters single-fight tables cover: all but run-only ones and the later acts' bosses. */
+fun matrix(content: Content): List<Encounter> {
+    val laterBosses = FirstHour.run.eras.drop(1).flatMap { listOf(it.boss) + it.bossByFlag.values + it.nexus.values }.toSet()
+    return content.encounters.filter { !it.runOnly && it.id !in laterBosses }
+}
+
 class Cell(val spec: CellSpec, val fights: List<FightResult>) {
     val n get() = fights.size
     val winRate get() = fights.count { it.won }.toDouble() / n
@@ -181,7 +191,8 @@ private class Report(val content: Content, val cells: List<Cell>, val seeds: Int
         line("  never peek at hidden cards or rolls. `planner` searches the whole turn and plays out the enemy phase to score")
         line("  each plan; `greedy` looks one action ahead; `random` picks uniformly among legal actions. Tables below the")
         line("  summary use the strongest bot in the run: `$primary`.")
-        line("- **Fights:** single combats at full HP, Paradox 0, no relics or Imprints. Round cap 60 (counted as a draw).")
+        line("- **Fights:** single combats at full HP, Paradox 0, no relics or Imprints, with the Act I stats every enemy has before")
+        line("  later acts scale it. Round cap 60 (counted as a draw). The bosses of Acts II and III are in the run report instead.")
         line("- **Read with care:** the greedy bot is a floor for skilled play, not a ceiling. Large gaps between operatives or")
         line("  encounters are the signal; small ones are noise. See [docs/09](../docs/09-tech-architecture.md#testing-and-qa).")
         line()
@@ -233,7 +244,7 @@ private class Report(val content: Content, val cells: List<Cell>, val seeds: Int
         val header = ops.flatMap { op -> decks.map { "${content.operative(op).name} ($it)" } }
         line("| Encounter | Enemies | " + header.joinToString(" | ") + " |")
         line("|---|---|" + header.joinToString("") { "---|" })
-        for (enc in content.encounters.filter { !it.runOnly }) {
+        for (enc in matrix(content)) {
             val enemies = enc.enemies.groupingBy { content.enemy(it).name }.eachCount()
                 .entries.joinToString(", ") { (n, c) -> if (c > 1) "$n ×$c" else n }
             val cols = ops.flatMap { op ->
@@ -319,7 +330,7 @@ private class Report(val content: Content, val cells: List<Cell>, val seeds: Int
         val flags = mutableListOf<String>()
         val greedy = cells.filter { it.spec.bot == primary }
         fun who(c: Cell) = "${content.operative(c.spec.op).name} (${c.spec.deck})"
-        for (enc in content.encounters.filter { !it.runOnly }) {
+        for (enc in matrix(content)) {
             val cs = greedy.filter { it.spec.encounter.id == enc.id }
             if (cs.isEmpty()) continue
             val hard = cs.filter { it.winRate < 0.5 }

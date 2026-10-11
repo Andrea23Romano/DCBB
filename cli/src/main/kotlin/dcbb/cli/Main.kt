@@ -250,23 +250,23 @@ private class Cli(val engine: Engine, val content: Content) {
         println("TRACK")
         if (s.track.isEmpty()) println("  (empty)")
         trackOrder().forEachIndexed { i, item -> println("  t${i + 1}  ${trackLine(item)}") }
-        println("YOU  ${op.name}  HP ${p.hp}/${p.maxHp}  Block ${p.block}${statuses(p.statuses)}  Paradox ${p.paradox}/10")
+        println("YOU  ${op.name}  HP ${p.hp}/${p.maxHp}  Block ${p.block}${statuses(p.statuses)}  Paradox ${p.paradox}/${engine.unravelAt(s)}")
         val energy = EnergyColor.entries.filter { p.energyOf(it) > 0 }.joinToString(" ") { it.symbol.repeat(p.energyOf(it)) }
         val debt = if (p.debtTotal > 0) "  Debt ${p.debtTotal} (repaid next Dawn)" else ""
-        println("  Energy ${energy.ifEmpty { "none" }}$debt  Borrow left ${Engine.BORROW_LIMIT - p.borrowedThisTurn}")
+        println("  Energy ${energy.ifEmpty { "none" }}$debt  Borrow left ${engine.borrowLimit(s) - p.borrowedThisTurn}")
         val constants = p.constants.joinToString(" · ") { "${content.card(it.defId).name}${if (p.constantsSilenced) " (snipped)" else ""}" }
         println("  Constants ${p.constants.size}/${Engine.CONSTANT_SLOTS}: ${constants.ifEmpty { "none" }}")
         println("  Future ${p.future.size} (${p.future.count { it.known }} Known) · Past ${p.past.size} · Erased ${p.erased.size}")
         println("PRESENT")
         if (p.present.isEmpty()) println("  (empty)")
         p.present.forEachIndexed { i, c -> println("  ${i + 1}. ${cardLine(c)}") }
-        if (op.otherHandSize > 0) {
+        if (engine.otherHandSize(s) > 0) {
             println("OTHER HAND")
             p.otherHand.forEachIndexed { i, c -> println("  o${i + 1}. ${cardLine(c)}") }
         }
         val sig = when (op.signature) {
-            Signature.STRIKE -> "Strike: deal ${Engine.STRIKE_DAMAGE + p.constants.sumOf { engine.constantSpec(it)?.strikeDamage ?: 0 }}"
-            Signature.FORECAST -> "Forecast: Foresee 2"
+            Signature.STRIKE -> "Strike: deal ${Engine.STRIKE_DAMAGE + s.mods.signatureBonus + p.constants.sumOf { engine.constantSpec(it)?.strikeDamage ?: 0 }}"
+            Signature.FORECAST -> "Forecast: Foresee ${Engine.FORECAST + s.mods.signatureBonus + s.mods.foreseeBonus}"
             Signature.SHIFT -> "Shift: swap a Present card with an Other Hand card"
         }
         println("Signature ${if (p.signatureUsed) "(used)" else "ready"} · $sig")

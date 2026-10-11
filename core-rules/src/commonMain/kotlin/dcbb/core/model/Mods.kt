@@ -7,9 +7,12 @@ data class EnemyBoost(
     val faction: Faction? = null,
     val enemyId: String? = null,
     val eliteOnly: Boolean = false,
+    /** Only enemies that read your Present (MERIDIAN Shard). */
+    val predictiveOnly: Boolean = false,
 ) {
     fun matches(def: EnemyDef): Boolean =
-        (faction == null || def.faction == faction) && (enemyId == null || def.id == enemyId) && (!eliteOnly || def.elite)
+        (faction == null || def.faction == faction) && (enemyId == null || def.id == enemyId) && (!eliteOnly || def.elite) &&
+            (!predictiveOnly || def.ai.predictive)
 }
 
 /**
@@ -35,6 +38,28 @@ data class CombatMods(
     val enemyBoosts: List<EnemyBoost> = emptyList(),
     /** Ambush: the enemies act once before your first turn. */
     val ambush: Boolean = false,
+    /** Your Borrow limit per turn; null keeps the rules' 2 (Long Credit: 3, Aurelian's Seal: 0). The lowest wins. */
+    val borrowLimit: Int? = null,
+    /** Energy you gain at every Dawn on top of your income, by color (Aurelian's Seal: +1 Faith). */
+    val extraIncome: Map<EnergyColor, Int> = emptyMap(),
+    /** Added to every Foresee you resolve (MERIDIAN Shard). */
+    val foreseeBonus: Int = 0,
+    /** Added to your Signature Action: Strike's damage, Forecast's Foresee (Precomputed). */
+    val signatureBonus: Int = 0,
+    /** More cards in your Other Hand. Operatives without one gain one that holds 1 + this (Margin Notes, Thousandfold's Ribbon). */
+    val otherHandBonus: Int = 0,
+    /** Cards drawn at every Dawn beyond the usual 5. */
+    val drawBonus: Int = 0,
+    /** The Paradox at which you Unravel (Unstable Equilibrium: 12). The highest wins. */
+    val unravelAt: Int = DEFAULT_UNRAVEL,
+    /** The first Vow you break each combat costs no Penance (Keeper of Vows). */
+    val firstPenanceFree: Boolean = false,
+    /** Remember also counts the cards in your Erased (Long Memory). */
+    val rememberErased: Boolean = false,
+    /** Your first Subroutine each combat costs this much less (Cache Hit). */
+    val firstSubroutineDiscount: Int = 0,
+    /** The first Known card you play each turn draws this many cards (Bayesian Prior). */
+    val knownDraw: Int = 0,
 ) {
     operator fun plus(o: CombatMods) = CombatMods(
         startEffects = startEffects + o.startEffects,
@@ -49,9 +74,21 @@ data class CombatMods(
         hpPct = hpPct * o.hpPct / 100,
         enemyBoosts = enemyBoosts + o.enemyBoosts,
         ambush = ambush || o.ambush,
+        borrowLimit = listOfNotNull(borrowLimit, o.borrowLimit).minOrNull(),
+        extraIncome = (extraIncome.keys + o.extraIncome.keys).associateWith { (extraIncome[it] ?: 0) + (o.extraIncome[it] ?: 0) },
+        foreseeBonus = foreseeBonus + o.foreseeBonus,
+        signatureBonus = signatureBonus + o.signatureBonus,
+        otherHandBonus = otherHandBonus + o.otherHandBonus,
+        drawBonus = drawBonus + o.drawBonus,
+        unravelAt = maxOf(unravelAt, o.unravelAt),
+        firstPenanceFree = firstPenanceFree || o.firstPenanceFree,
+        rememberErased = rememberErased || o.rememberErased,
+        firstSubroutineDiscount = firstSubroutineDiscount + o.firstSubroutineDiscount,
+        knownDraw = knownDraw + o.knownDraw,
     )
 
     companion object {
+        const val DEFAULT_UNRAVEL = 10
         const val DEFAULT_RESERVOIR_CAP = 6
         val NONE = CombatMods()
     }

@@ -196,7 +196,8 @@ Elites and bosses may hold two intents on the Track at once, for example a jab e
 | Guard N | shield | Gain N Block (lasts until the next enemy phase starts, so it protects them during your turn) |
 | Buff | arrow-up | Gain Might, Plate, etc. |
 | Debuff | broken pip | Apply Weak, Exposed, Glitch, etc. |
-| Summon | portal | Reinforcement arrives through the Weave |
+| Summon | portal | Reinforcement arrives through the Weave (never more than five enemies standing) |
+| Heal | mended thread | The enemy restores HP (MERIDIAN's Recompute) |
 | Charge | hourglass | A multi-round windup (countdown ②+) |
 | Disrupt | crossed clock | Delay your Scheduled effects |
 | Unpick | torn edge | Tear effects on what you are about to draw: Blank or Erase the top card of your Future |
@@ -382,6 +383,7 @@ The layout is portrait, and everything can be played one-handed with the thumb.
 └───────────────────────────────────┘
 ```
 
+- **Always on screen.** The enemies, with their intents and the damage each will deal, stay pinned to the top; your HP, Block, energy, Paradox, Signature Action and End Turn stay pinned to the bottom, with the damage the coming enemy phase will deal after your Block. The browser test client already works this way.
 - **Play.** Drag a card onto its target, or tap the card and then the target. Track-targeting cards (Delay, Accelerate) are dragged onto a Track item or an intent clock.
 - **Explain everything.** Long-press any card, keyword, intent or Track item for its rules text.
   - Long-press an intent to see its exact computed damage, after Weak, Exposed, Pressure and your Block.

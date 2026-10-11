@@ -72,6 +72,15 @@ data class PlayerState(
     val lastCardBlock: Int = 0,
     /** Clockwork Sparrow's free Delay has been used this combat. */
     val freeDelayUsed: Boolean = false,
+    /** Attacks played this turn, and in your last turn (some bosses punish a flurry). */
+    val attacksThisTurn: Int = 0,
+    val attacksLastTurn: Int = 0,
+    /** Keeper of Vows has spared you a Penance this combat. */
+    val penanceSpared: Boolean = false,
+    /** Cache Hit's discount has been used this combat. */
+    val subroutineDiscountUsed: Boolean = false,
+    /** Bayesian Prior has drawn for a Known card this turn. */
+    val knownDrawUsed: Boolean = false,
 ) {
     fun status(type: StatusType): Int = statuses[type] ?: 0
     fun energyOf(color: EnergyColor): Int = energy[color] ?: 0
