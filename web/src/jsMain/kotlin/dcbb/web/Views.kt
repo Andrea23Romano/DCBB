@@ -541,7 +541,7 @@ class Views(private val app: App) {
                     val waiting = pick.shiftOut
                     if (waiting == null) {
                         append("""<span class="muted">Swap out:</span>""")
-                        outs.forEach { append(choice("shift-out", it.uid, false, content.card(it.defId).name)) }
+                        outs.forEach { append(choice("shift-out", it.uid, false, shiftOutLabel(it))) }
                     } else {
                         append("""<span class="muted">Swap ${esc(cardName(st, waiting))} for:</span>""")
                         p.otherHand.filter { o -> pick.shifts.none { it.otherUid == o.uid } }
@@ -549,12 +549,19 @@ class Views(private val app: App) {
                     }
                 } else {
                     append("""<span class="muted">Swap with the top of your Future:</span>""")
-                    outs.forEach { append(choice("shift-top", it.uid, false, content.card(it.defId).name)) }
+                    outs.forEach { append(choice("shift-top", it.uid, false, shiftOutLabel(it))) }
                 }
             }
             if (pick.shifts.isNotEmpty() || pick.shiftOut != null) append(choice("shift-clear", 0, false, "Clear"))
         }
         append(choiceRow(label, body))
+    }
+
+    /** A card you could send away, with what it does as it goes if it has Elsewhere. */
+    private fun shiftOutLabel(c: CardInst): String {
+        val def = content.card(c.defId)
+        if (def.elsewhere.isEmpty() || c.blank) return def.name
+        return def.name + " · " + RulesText.clauses(def.elsewhere)
     }
 
     private fun payRow(st: CombatState, inst: CardInst, pick: Pick): String {
@@ -848,8 +855,8 @@ class Views(private val app: App) {
         private val NEXUS = setOf("order.aurelian", "conv.meridian_ascendant", "errata.thousandfold")
         private val BLURBS = mapOf(
             "vowknight" to "Takes Vows that power up a free Strike. The most forgiving operative: high HP and plenty of Block.",
-            "oracle" to "Foresees the Future so Calculated cards hit harder, and installs Subroutines that work every turn.",
-            "splinter" to "Keeps an Other Hand of 3 cards and Shifts between them. Forks cards and spends Paradox.",
+            "oracle" to "Foresees the Future: Known cards hit harder if Calculated, and the first each turn costs 1 less. Installs Subroutines that work every turn.",
+            "splinter" to "Keeps an Other Hand of 3 cards and Shifts between them: a card sent away with Elsewhere acts as it goes. Forks cards and spends Paradox.",
         )
 
         fun fv(f: Faction) = when (f) {

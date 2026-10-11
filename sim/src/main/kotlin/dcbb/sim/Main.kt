@@ -31,8 +31,8 @@ import kotlin.math.roundToInt
  * The matrix leaves out the bosses of Acts II and III: they are built for a run's deck, level and Artifacts, so the
  * run report covers them.
  *
- * Usage: sim [--seeds N] [--threads N] [--bots planner,greedy,random] [--out FILE] [--title TEXT]
- *        sim --runs N [--threads N] [--out FILE]   (whole runs of The First Hour, see RunSim.kt)
+ * Usage: sim [--seeds N] [--threads N] [--bots planner,greedy,random] [--ops oracle,splinter] [--out FILE] [--title TEXT]
+ *        sim --runs N [--threads N] [--ops oracle,splinter] [--out FILE]   (whole runs of The First Hour, see RunSim.kt)
  *        sim --trace operative/deck/encounter/index [--bot planner|greedy|random]
  *        sim --replay "a1 oracle mid proxy_patrol 4242 P/12//// ..."   (a fight or run code copied from the web client)
  */
@@ -58,7 +58,7 @@ fun main(args: Array<String>) {
     }
     val decks = listOf("starter", "mid")
     val cells = buildList {
-        for (bot in bots) for (op in content.operatives.keys.sorted()) for (deck in decks) for (enc in matrix(content)) {
+        for (bot in bots) for (op in operatives(opts, content.operatives.keys)) for (deck in decks) for (enc in matrix(content)) {
             add(CellSpec(bot, op, deck, enc))
         }
     }
@@ -132,6 +132,13 @@ private fun parseArgs(args: Array<String>): Map<String, String> {
 
 data class CellSpec(val bot: String, val op: String, val deck: String, val encounter: Encounter)
 
+/** The operatives to simulate: `--ops` (comma-separated ids) or all of them. */
+fun operatives(opts: Map<String, String>, all: Set<String>): List<String> {
+    val picked = opts["ops"]?.split(",")?.map { it.trim() } ?: return all.sorted()
+    require(picked.all { it in all }) { "Unknown operative in --ops; known: ${all.sorted().joinToString()}" }
+    return picked
+}
+
 /** The encounters single-fight tables cover: all but run-only ones and the later acts' bosses. */
 fun matrix(content: Content): List<Encounter> {
     val laterBosses = FirstHour.run.eras.drop(1).flatMap { listOf(it.boss) + it.bossByFlag.values + it.nexus.values }.toSet()
@@ -175,7 +182,7 @@ private class Report(val content: Content, val cells: List<Cell>, val seeds: Int
     private fun line(s: String = "") = sb.append(s).append('\n')
     private fun pct(x: Double) = if (x.isNaN()) "–" else "${(x * 100).roundToInt()}%"
     private fun num(x: Double, digits: Int = 1) = if (x.isNaN()) "–" else "%.${digits}f".format(x)
-    private val ops = content.operatives.keys.sorted()
+    private val ops = cells.map { it.spec.op }.distinct().sorted()
 
     /** The strongest bot in this run: per-encounter tables and flags use it. */
     private val primary = listOf("planner", "greedy", "random").firstOrNull { it in bots } ?: bots.first()

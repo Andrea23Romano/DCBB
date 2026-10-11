@@ -94,6 +94,7 @@ object Prototype {
     private fun hits(n: Int, times: Int) = Effect.Damage(Amount(n), Tgt.CHOSEN_ENEMY, times)
     private fun block(n: Int, vararg bonuses: Bonus) = Effect.Block(Amount(n, *bonuses))
     private fun attuned(plus: Int) = Bonus.If(Cond.Attuned, plus)
+    private fun calculated(plus: Int) = Bonus.If(Cond.Calculated, plus)
     private fun whenever(cond: Cond, vararg then: Effect) = Effect.When(cond, then.toList())
     private fun face(type: CardType, vararg effects: Effect) = Face(type, effects.toList())
 
@@ -112,6 +113,7 @@ object Prototype {
         erase: Boolean = false,
         requiresParadox: Int = 0,
         exception: String? = null,
+        elsewhere: List<Effect> = emptyList(),
     ) = CardDef(
         id = id,
         name = name,
@@ -127,6 +129,7 @@ object Prototype {
         eraseAfterPlay = erase,
         requiresParadox = requiresParadox,
         budgetException = exception,
+        elsewhere = elsewhere,
     )
 
     // ---- cards ------------------------------------------------------------------------------------------------
@@ -198,11 +201,12 @@ object Prototype {
     private fun convergence(): List<CardDef> {
         val c = Faction.CONVERGENCE
         return listOf(
-            card("conv.pulse", "Pulse", c, CardType.ATTACK, Rarity.STARTER, "1", listOf(dmg(5, attuned(2)))),
-            card("conv.firewall", "Firewall", c, CardType.SKILL, Rarity.STARTER, "1", listOf(block(4, attuned(2)))),
+            // The Convergence's starters reward seeing ahead: Calculated instead of Attuned.
+            card("conv.pulse", "Pulse", c, CardType.ATTACK, Rarity.STARTER, "1", listOf(dmg(5, calculated(3)))),
+            card("conv.firewall", "Firewall", c, CardType.SKILL, Rarity.STARTER, "1", listOf(block(4, calculated(3)))),
             card(
                 "conv.probability_lance", "Probability Lance", c, CardType.ATTACK, Rarity.STARTER, "1C",
-                listOf(dmg(4, Bonus.If(Cond.Calculated, 4))),
+                listOf(dmg(3, calculated(7))),
             ),
             card(
                 "conv.watchdog", "Watchdog.exe", c, CardType.CONSTANT, Rarity.STARTER, "1C",
@@ -217,6 +221,14 @@ object Prototype {
                 listOf(block(4), Effect.Foresee(1)),
             ),
             card(
+                "conv.expected_value", "Expected Value", c, CardType.ATTACK, Rarity.COMMON, "1C",
+                listOf(dmg(3, Bonus.Per(Counter.KNOWN_IN_PRESENT, 2, 6))),
+            ),
+            card(
+                "conv.confidence_interval", "Confidence Interval", c, CardType.SKILL, Rarity.COMMON, "1C",
+                listOf(block(3, Bonus.Per(Counter.KNOWN_IN_PRESENT, 1, 4))),
+            ),
+            card(
                 "conv.scatter_protocol", "Scatter Protocol", c, CardType.ATTACK, Rarity.COMMON, "1C",
                 listOf(dmgTo(3, Tgt.ALL_ENEMIES), whenever(Cond.Calculated, Effect.Foresee(2))),
             ),
@@ -225,7 +237,7 @@ object Prototype {
                 listOf(
                     Effect.Foresee(3),
                     Effect.Draw(2),
-                    whenever(Cond.Calculated, Effect.GainEnergy(EnergyColor.COMPUTE, Amount(1))),
+                    whenever(Cond.Calculated, Effect.GainEnergy(EnergyColor.COMPUTE, Amount(2))),
                 ),
             ),
             card(
@@ -269,8 +281,16 @@ object Prototype {
     private fun errata(): List<CardDef> {
         val x = Faction.ERRATA
         return listOf(
-            card("errata.splinter_cut", "Splinter Cut", x, CardType.ATTACK, Rarity.STARTER, "1", listOf(dmg(5, attuned(2)))),
-            card("errata.double_guard", "Double Guard", x, CardType.SKILL, Rarity.STARTER, "1", listOf(block(4, attuned(2)))),
+            // Elsewhere: a card you Shift away still acts as it goes. The starters add a little to every Shift;
+            // Stet and Dele do as much sent away as played, or more.
+            card(
+                "errata.splinter_cut", "Splinter Cut", x, CardType.ATTACK, Rarity.STARTER, "1", listOf(dmg(6)),
+                elsewhere = listOf(dmgTo(3, Tgt.RANDOM_ENEMY)),
+            ),
+            card(
+                "errata.double_guard", "Double Guard", x, CardType.SKILL, Rarity.STARTER, "1", listOf(block(5)),
+                elsewhere = listOf(block(3)),
+            ),
             card(
                 "errata.split_the_moment", "Split the Moment", x, CardType.SKILL, Rarity.STARTER, "1X",
                 listOf(Effect.ForkCard, Effect.Draw(1)),
@@ -290,6 +310,15 @@ object Prototype {
             card(
                 "errata.caret_strike", "Caret Strike", x, CardType.ATTACK, Rarity.COMMON, "1",
                 listOf(dmg(4, Bonus.If(Cond.ShiftedThisTurn, 3))),
+            ),
+            // Proofreaders' marks: stet (let it stand), dele (take it out).
+            card(
+                "errata.stet", "Stet", x, CardType.SKILL, Rarity.COMMON, "1X", listOf(block(3)),
+                elsewhere = listOf(block(5)),
+            ),
+            card(
+                "errata.dele", "Dele", x, CardType.ATTACK, Rarity.COMMON, "1X", listOf(dmg(5)),
+                elsewhere = listOf(dmgTo(5, Tgt.WEAKEST_ENEMY)),
             ),
             card(
                 "errata.crosstalk", "Crosstalk", x, CardType.SKILL, Rarity.UNCOMMON, "1X",
@@ -835,7 +864,7 @@ object Prototype {
 
     private fun operatives(): List<OperativeDef> = listOf(
         OperativeDef("vowknight", "Vowknight", Faction.ORDER, 75, Signature.STRIKE, starter("vowknight")),
-        OperativeDef("oracle", "Oracle", Faction.CONVERGENCE, 65, Signature.FORECAST, starter("oracle")),
+        OperativeDef("oracle", "Oracle", Faction.CONVERGENCE, 65, Signature.FORECAST, starter("oracle"), knownDiscount = 1),
         OperativeDef("splinter", "Splinter", Faction.ERRATA, 62, Signature.SHIFT, starter("splinter"), otherHandSize = 3),
     )
 
@@ -861,14 +890,14 @@ object Prototype {
                 "starter" to oracle,
                 "mid" to oracle + listOf(
                     "conv.recursive_strike", "conv.predictive_shield", "conv.scatter_protocol", "conv.deterministic_model",
-                    "conv.lance_exe", "conv.hold_pattern", "neutral.hold_the_hour", "neutral.stitch_in_time",
+                    "conv.lance_exe", "conv.hold_pattern", "conv.expected_value", "neutral.hold_the_hour",
                 ),
             ),
             "splinter" to mapOf(
                 "starter" to splinter,
                 "mid" to splinter + listOf(
                     "errata.borrowed_self", "errata.fray_lash", "errata.caret_strike", "errata.crosstalk",
-                    "errata.elsewhen_guard", "errata.misprinted_edict", "neutral.hold_the_hour", "saltwaste.mirage_step",
+                    "errata.elsewhen_guard", "errata.misprinted_edict", "errata.stet", "errata.dele",
                 ),
             ),
         )

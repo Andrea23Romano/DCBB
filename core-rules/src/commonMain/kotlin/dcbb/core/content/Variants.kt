@@ -52,6 +52,7 @@ object Variants {
             effects = emptyList(),
             forkFaces = null,
             misprintFaces = faces,
+            elsewhere = emptyList(),
             flavor = "The Weave rewrote this one.",
         )
     }
@@ -120,6 +121,7 @@ object Variants {
             forkFaces = def.forkFaces?.map { Face(it.type, effects(it.effects)) },
             misprintFaces = def.misprintFaces?.map { Face(it.type, effects(it.effects)) },
             constant = def.constant?.let { constant(it) },
+            elsewhere = effects(def.elsewhere),
         )
 
         private fun constant(c: ConstantSpec): ConstantSpec {

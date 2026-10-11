@@ -9,11 +9,13 @@ import dcbb.core.engine.ResolveForesee
 import dcbb.core.engine.TrackNeed
 import dcbb.core.engine.UseSignature
 import dcbb.core.model.CardType
+import dcbb.core.model.EnemyAction
 import dcbb.core.model.Signature
 import dcbb.core.state.CardInst
 import dcbb.core.state.CombatState
 import dcbb.core.state.PendingForesee
 import dcbb.core.state.ShiftPair
+import dcbb.core.state.TrackKind
 
 /**
  * Candidate actions for bots. Not every combination of choices is listed: identical cards are deduplicated, and
@@ -114,10 +116,14 @@ object Moves {
         return out.ifEmpty { null }
     }
 
-    /** Shift choices: the greedy upgrade (worst Present card for best Other Hand card), or one forced swap. */
+    /**
+     * Shift choices: the greedy upgrade, or one forced swap. The cards to send away come first: the least worth
+     * playing, counting the Elsewhere effect they resolve as they go.
+     */
     private fun shiftOptions(engine: Engine, state: CombatState, playedUid: Int, n: Int): List<List<ShiftPair>> {
         val p = state.player
-        val present = p.present.filter { it.uid != playedUid }.sortedBy { CardValues.value(engine, state, it) }
+        fun keep(c: CardInst) = CardValues.value(engine, state, c) - CardValues.elsewhereValue(engine, c)
+        val present = p.present.filter { it.uid != playedUid }.sortedBy { keep(it) }
         if (present.isEmpty()) return listOf(emptyList())
         if (engine.otherHandSize(state) == 0) {
             return listOf(emptyList(), listOf(ShiftPair(present.first().uid, null)))
@@ -125,13 +131,17 @@ object Moves {
         val other = p.otherHand.sortedByDescending { CardValues.value(engine, state, it) }
         if (other.isEmpty()) return listOf(emptyList())
         val greedy = present.zip(other).take(n)
-            .filter { (a, b) -> CardValues.value(engine, state, b) > CardValues.value(engine, state, a) }
+            .filter { (a, b) -> CardValues.value(engine, state, b) > keep(a) }
             .map { (a, b) -> ShiftPair(a.uid, b.uid) }
         val forced = listOf(ShiftPair(present.first().uid, other.first().uid))
         return listOf(greedy, forced).distinct()
     }
 
-    /** Foresee answers: the heuristic order first (best on top, Blank cards to the bottom), then "leave as is". */
+    /**
+     * Foresee answers: the heuristic order first (best on top, Blank cards to the bottom), then "leave as is". When an
+     * enemy is about to Erase or Blank the top of your Future, also the cards you can spare on top, and all of them
+     * to the bottom.
+     */
     fun foreseeAnswers(engine: Engine, state: CombatState, pending: PendingForesee): List<Action> {
         val revealed = state.player.future.filter { it.uid in pending.uids }
         val take = if (pending.tutor) revealed.maxByOrNull { CardValues.value(engine, state, it) }?.uid else null
@@ -140,6 +150,15 @@ object Moves {
         val top = (rest - bottom.toSet()).sortedByDescending { CardValues.value(engine, state, it) }
         val smart = ResolveForesee(top.map { it.uid }, bottom.map { it.uid }, take)
         val asIs = ResolveForesee(rest.map { it.uid }, emptyList(), take)
-        return listOf(smart, asIs).distinct()
+        if (!futureThreatened(state)) return listOf(smart, asIs).distinct()
+        val spare = ResolveForesee(top.reversed().map { it.uid }, bottom.map { it.uid }, take)
+        val allDown = ResolveForesee(emptyList(), rest.map { it.uid }, take)
+        return listOf(smart, asIs, spare, allDown).distinct()
+    }
+
+    /** An intent resolving in the coming enemy phase Erases or Blanks the top of your Future. */
+    fun futureThreatened(state: CombatState): Boolean = state.track.any { item ->
+        item.kind == TrackKind.INTENT && item.countdown <= 1 &&
+            (item.actions + item.alt.orEmpty()).any { it is EnemyAction.EraseFuture || it is EnemyAction.BlankFuture }
     }
 }

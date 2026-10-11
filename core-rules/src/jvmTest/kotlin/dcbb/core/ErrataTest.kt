@@ -42,6 +42,41 @@ class ErrataTest {
     }
 
     @Test
+    fun `a card Shifted away acts Elsewhere as it goes`() {
+        var s = start("splinter", "saltwaste.sandglass_golem")
+            .withPresent("errata.double_guard", "errata.splinter_cut")
+            .withOtherHand("errata.stet")
+        val guard = s.present("errata.double_guard").uid
+        s = s.ok(UseSignature(shiftPair = ShiftPair(guard, s.player.otherHand[0].uid))).state
+        assertEquals(3, s.player.block, "Double Guard gains 3 Block as it goes")
+        assertEquals(GOLEM, s.enemies[0].hp, "the card that stays doesn't act")
+        assertTrue(s.player.otherHand.any { it.uid == guard })
+    }
+
+    @Test
+    fun `Shift cards trigger Elsewhere too, with or without an Other Hand`() {
+        // The Oracle has no Other Hand: Elsewhen Guard swaps Dele with the top card of the Future.
+        var s = start("oracle", "saltwaste.sandglass_golem")
+            .withPresent("errata.elsewhen_guard", "errata.dele")
+            .withEnergy(FLUX to 1)
+        val dele = s.present("errata.dele").uid
+        s = s.ok(PlayCard(s.present("errata.elsewhen_guard").uid, shiftPairs = listOf(ShiftPair(dele, null)))).state
+        assertEquals(GOLEM - 5, s.enemies[0].hp, "Dele deals 5 to the weakest enemy as it goes")
+        assertEquals(4, s.player.block)
+        assertEquals(dele, s.player.future.first().uid)
+    }
+
+    @Test
+    fun `Blank cards don't act Elsewhere`() {
+        var s = start("splinter", "saltwaste.sandglass_golem")
+            .withPresent("errata.double_guard")
+            .withOtherHand("errata.splinter_cut")
+        s = s.copy(player = s.player.copy(present = s.player.present.map { it.copy(blank = true) }))
+        val out = s.ok(UseSignature(shiftPair = ShiftPair(s.player.present[0].uid, s.player.otherHand[0].uid))).state
+        assertEquals(0, out.player.block)
+    }
+
+    @Test
     fun `Fork gives a card a Misprint face for its type and cost`() {
         var s = start("splinter", "saltwaste.sandglass_golem")
             .withPresent("errata.split_the_moment", "errata.splinter_cut")

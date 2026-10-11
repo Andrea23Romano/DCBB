@@ -11,6 +11,8 @@ import dcbb.core.model.Face
 import dcbb.core.model.Kind
 import dcbb.core.model.StatusType
 import dcbb.core.model.Tgt
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.pow
 
 /**
@@ -42,6 +44,13 @@ object Budget {
     }
 
     private const val SHIFTS_PER_TURN = 1.5
+
+    /**
+     * Elsewhere: each time you hold the card you either play it or Shift it away, so the better use counts in full
+     * and the other adds this share for the flexibility. Shifts are what limit it: about one a turn for the
+     * Splinter, rarely any for the others.
+     */
+    const val ELSEWHERE_FLEX = 0.15
     private const val HP_LOST_LAST_PHASE = 8.0
     private const val CONSTANT_FACTOR = 2.4
 
@@ -59,6 +68,14 @@ object Budget {
     val STANDARD = CondOdds { factor(it) }
 
     fun points(def: CardDef, odds: CondOdds = STANDARD): Double {
+        val played = played(def, odds)
+        if (def.elsewhere.isEmpty()) return played
+        val away = effects(def.elsewhere, odds)
+        return max(played, away) + ELSEWHERE_FLEX * min(played, away)
+    }
+
+    /** What the card is worth when you play it: everything but its Elsewhere effect. */
+    fun played(def: CardDef, odds: CondOdds = STANDARD): Double {
         var p = when {
             def.forkFaces != null -> def.forkFaces.maxOf { face(it, odds) } + 2.0
             def.misprintFaces != null -> def.misprintFaces.map { face(it, odds) }.average()
@@ -156,7 +173,9 @@ object Budget {
         }
 
         is Cond.Litany -> MEDIUM
-        Cond.Calculated -> MEDIUM
+        // A card is Known only if a Foresee showed it before it was drawn: Forecast reveals 2 of the 5 you draw,
+        // a Foresee-heavy deck more. As likely as Attuned.
+        Cond.Calculated -> 0.5
         Cond.VowKept -> MEDIUM
         is Cond.ParadoxAtLeast -> if (c.n >= 7) HARD else MEDIUM
         is Cond.TargetFaction -> HARD

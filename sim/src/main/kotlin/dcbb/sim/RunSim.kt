@@ -16,14 +16,14 @@ import java.util.concurrent.Executors
  * Run-level simulation (docs/09 "Testing and QA"): whole runs of The First Hour, all three acts, played by [RunBot]
  * (the planner in fights, heuristics between them), many seeds per operative. Deterministic for a given seed count.
  *
- * Usage: sim --runs N [--threads N] [--out FILE]
+ * Usage: sim --runs N [--threads N] [--ops oracle,splinter] [--out FILE]
  *        sim --replay "r2 vowknight 1234 london_1843 c0 P/12//// ..."   (a run code copied from the web client)
  */
 fun runSim(opts: Map<String, String>) {
     val runs = opts["runs"]!!.toInt()
     val threads = opts["threads"]?.toInt() ?: Runtime.getRuntime().availableProcessors()
     val re = RunEngine(FirstHour.run)
-    val ops = re.content.operatives.keys.sorted()
+    val ops = operatives(opts, re.content.operatives.keys)
     val started = System.nanoTime()
     val pool = Executors.newFixedThreadPool(threads)
     val results = try {

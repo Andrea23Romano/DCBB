@@ -69,6 +69,17 @@ sealed interface Effect {
     data class Schedule(val countdown: Int, val effects: List<Effect>) : Effect
 }
 
+/** Whether an effect needs something chosen when it is played: a target, a Track item, a card, a Recall or a Shift. */
+fun Effect.needsChoice(): Boolean = when (this) {
+    is Effect.Damage -> target == Tgt.CHOSEN_ENEMY
+    is Effect.ApplyStatus -> target == Tgt.CHOSEN_ENEMY
+    is Effect.Delay, Effect.RemoveIntent, Effect.Observe, Effect.ForkCard, is Effect.Recall, is Effect.Shift -> true
+    is Effect.Foresee -> tutor
+    is Effect.When -> then.any { it.needsChoice() } || otherwise.any { it.needsChoice() }
+    is Effect.Schedule -> effects.any { it.needsChoice() }
+    else -> false
+}
+
 /** Small builders so content reads close to the card text. */
 object Fx {
     fun dmg(n: Int, vararg bonuses: Bonus) = Effect.Damage(Amount(n, *bonuses))

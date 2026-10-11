@@ -240,7 +240,13 @@ class Engine(val content: Content) {
         } else {
             0
         }
-        return base.adjusted(inst.costDelta + glitch - cacheHit)
+        return base.adjusted(inst.costDelta + glitch - cacheHit - knownDiscount(state, inst))
+    }
+
+    /** The Oracle's first Known card each turn costs less: seeing ahead pays in energy. */
+    fun knownDiscount(state: CombatState, inst: CardInst): Int {
+        val n = content.operative(state.player.operativeId).knownDiscount
+        return if (n > 0 && inst.known && !state.player.knownDiscountUsed) n else 0
     }
 
     /** Your Borrow limit per turn: the rules' 2, unless an Imprint or Artifact changes it. */
@@ -514,6 +520,7 @@ class Engine(val content: Content) {
 
             val prevType = p.lastPlayedType
             val bayes = inst.known && s.mods.knownDraw > 0 && !p.knownDrawUsed
+            val discounted = knownDiscount(s, inst) > 0
             player {
                 it.copy(
                     cardsPlayedThisTurn = it.cardsPlayedThisTurn + 1,
@@ -523,6 +530,7 @@ class Engine(val content: Content) {
                     lastCardDamage = summaryDamage(face.effects),
                     lastCardBlock = summaryBlock(face.effects),
                     knownDrawUsed = it.knownDrawUsed || bayes,
+                    knownDiscountUsed = it.knownDiscountUsed || discounted,
                     subroutineDiscountUsed = it.subroutineDiscountUsed || def.constant?.kind == ConstantKind.SUBROUTINE,
                 )
             }
@@ -949,6 +957,7 @@ class Engine(val content: Content) {
         private fun shift(n: Int, ctx: FxCtx) {
             val withOtherHand = otherHandSize(s) > 0
             var done = 0
+            val elsewhere = mutableListOf<Work>()
             for (pair in ctx.shiftPairs) {
                 if (done >= n) break
                 val out = p.present.firstOrNull { it.uid == pair.presentUid } ?: continue
@@ -977,7 +986,14 @@ class Engine(val content: Content) {
                 player { it.copy(shiftedThisTurn = true) }
                 emit(GameEvent.Info("Shift: ${name(out)} ⇄ ${name(incoming)}"))
                 onShiftIn(incoming.uid)
+                // Elsewhere: the card you send away acts as it goes, right after the Shift.
+                val def = content.card(out.defId)
+                if (def.elsewhere.isNotEmpty() && !out.blank) {
+                    emit(GameEvent.Info("Elsewhere: ${def.name} acts as it goes"))
+                    elsewhere += Work.Fx(def.elsewhere, FxCtx(sourceUid = out.uid, sourceDefId = def.id, faction = def.faction))
+                }
             }
+            pushFront(elsewhere)
         }
 
         private fun onShiftIn(uid: Int) {
@@ -1294,6 +1310,7 @@ class Engine(val content: Content) {
                     attacksLastTurn = pl.attacksThisTurn,
                     attacksThisTurn = 0,
                     knownDrawUsed = false,
+                    knownDiscountUsed = false,
                     lastPlayedType = null,
                     shiftedThisTurn = false,
                     shiftDiscountUsed = false,

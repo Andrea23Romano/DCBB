@@ -81,6 +81,8 @@ data class PlayerState(
     val subroutineDiscountUsed: Boolean = false,
     /** Bayesian Prior has drawn for a Known card this turn. */
     val knownDrawUsed: Boolean = false,
+    /** The Oracle's first Known card this turn has had its discount. */
+    val knownDiscountUsed: Boolean = false,
 ) {
     fun status(type: StatusType): Int = statuses[type] ?: 0
     fun energyOf(color: EnergyColor): Int = energy[color] ?: 0

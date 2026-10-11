@@ -100,9 +100,23 @@ class KeywordTest {
     fun `Calculated rewards Known cards`() {
         val s = start("oracle", "saltwaste.sandglass_golem").withPresent("conv.probability_lance").withEnergy(COMPUTE to 1)
         val lance = s.player.present[0]
-        assertEquals(GOLEM - 4, s.ok(PlayCard(lance.uid)).state.enemies[0].hp)
+        assertEquals(GOLEM - 3, s.ok(PlayCard(lance.uid)).state.enemies[0].hp)
         val known = s.copy(player = s.player.copy(present = listOf(lance.copy(known = true))))
-        assertEquals(GOLEM - 8, known.ok(PlayCard(lance.uid)).state.enemies[0].hp)
+        assertEquals(GOLEM - 10, known.ok(PlayCard(lance.uid)).state.enemies[0].hp)
+    }
+
+    @Test
+    fun `the Oracle's first Known card each turn costs 1 less`() {
+        val s = start("oracle", "saltwaste.sandglass_golem").withPresent("conv.pulse", "conv.pulse").withEnergy(COMPUTE to 1)
+        val known = s.copy(player = s.player.copy(present = s.player.present.map { it.copy(known = true) }))
+        val (a, b) = known.player.present
+        assertEquals(0, engine.effectiveCost(known, a).total)
+        assertEquals(1, engine.effectiveCost(s, s.player.present[0]).total, "unknown cards pay full price")
+        val after = known.ok(PlayCard(a.uid)).state
+        assertEquals(GOLEM - 8, after.enemies[0].hp, "Pulse: 5, Calculated +3")
+        assertEquals(1, engine.effectiveCost(after, after.player.present.single { it.uid == b.uid }).total, "only the first each turn")
+        val vowknight = start("vowknight", "saltwaste.sandglass_golem").withPresent("conv.pulse")
+        assertEquals(1, engine.effectiveCost(vowknight, vowknight.player.present[0].copy(known = true)).total, "the Oracle's rule only")
     }
 
     @Test

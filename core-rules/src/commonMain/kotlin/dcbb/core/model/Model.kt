@@ -168,6 +168,8 @@ data class CardDef(
     val eraseAfterPlay: Boolean = false,
     val requiresParadox: Int = 0,
     val unplayable: Boolean = false,
+    /** Elsewhere (the Errata): when you Shift this card out of your Present, these effects resolve. */
+    val elsewhere: List<Effect> = emptyList(),
     val flavor: String = "",
     /** Why this card may sit outside the ±10% budget window (docs/08 "Budget Targets"). Reviewed in playtests. */
     val budgetException: String? = null,
@@ -178,6 +180,7 @@ data class CardDef(
     init {
         require(forkFaces == null || forkFaces.size == 2) { "$id: Fork cards need exactly two faces" }
         require(type != CardType.CONSTANT || constant != null) { "$id: Constants need a ConstantSpec" }
+        require(elsewhere.none { it.needsChoice() }) { "$id: Elsewhere effects resolve on their own, so they can't need a target or a choice" }
     }
 }
 
@@ -189,6 +192,8 @@ data class OperativeDef(
     val signature: Signature,
     val starterDeck: List<String>,
     val otherHandSize: Int = 0,
+    /** The Oracle: the first Known card you play each turn costs this much less. */
+    val knownDiscount: Int = 0,
 ) {
     val color: EnergyColor get() = faction.color ?: error("$id: operative faction needs an energy color")
 }

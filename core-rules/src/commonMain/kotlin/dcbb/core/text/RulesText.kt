@@ -31,6 +31,7 @@ object RulesText {
         }
         return buildString {
             append(body)
+            if (def.elsewhere.isNotEmpty()) append(" Elsewhere: ").append(effects(def.elsewhere).replaceFirstChar { it.lowercase() })
             if (def.retain) append(" Retain.")
             if (def.eraseAfterPlay) append(" Erase.")
             if (def.unplayable) append(" Unplayable.")

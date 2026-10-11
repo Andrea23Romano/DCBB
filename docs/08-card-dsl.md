@@ -78,6 +78,16 @@ misprint:                      # one is rolled when drawn
   - { type: skill,  effects: [ { op: block, amount: 10 }, { op: draw, n: 1 } ] }
 ```
 
+### Elsewhere cards act when Shifted away
+
+```yaml
+id: errata.stet
+cost: { flux: 1 }
+effects: [ { op: block, amount: 3 } ]
+elsewhere:                     # resolves when you Shift this card out of your Present
+  - { op: block, amount: 5 }   # no targets or choices: weakest_enemy, random_enemy, all_enemies or self only
+```
+
 ### Effect node grammar
 
 | Field | Meaning |
@@ -100,7 +110,7 @@ Each condition has a **difficulty category**, which sets its budget multiplier.
 | `attuned` | paid fully in faction color | special: ×0.5 |
 | `remember: {kind, n}` | 3+ Attacks in your Past | any kind: n ≤ 4 easy, 5–8 medium · specific kind: n ≤ 3 medium, n ≥ 4 hard |
 | `litany: {kind}` | previous card was a Skill | medium |
-| `calculated` | this card is Known | medium |
+| `calculated` | this card is Known | special: ×0.5 (Forecast reveals 2 of the 5 cards you draw; Foresee cards add more) |
 | `vow_kept` | you have an unbroken Vow | medium |
 | `paradox_at_least: n` | Paradox ≥ n | n ≤ 4 medium · n ≥ 7 hard |
 | `enemy_faction: [..]` | target is Errata or Tear | hard |
@@ -157,6 +167,7 @@ Each condition has a **difficulty category**, which sets its budget multiplier.
 |---|---|
 | **Condition** | Effect value × **0.8** (easy) / **0.6** (medium) / **0.4** (hard) |
 | **Attuned rider** | Rider value × **0.5** |
+| **Elsewhere** | max(played value, Elsewhere value) **+ 0.15 ×** the smaller. Each time you hold the card you either play it or Shift it away, and Shifts limit it: about one a turn for the Splinter, rarely any for the others. |
 | **Schedule N** | Effect value × **0.8^(N−1)**. Schedule 1 resolves at this Dusk's enemy phase, so it is undiscounted. |
 | **Constant** | Per-trigger value × **2.4**. This assumes about 4 triggers, discounted for setup tempo and slot cost. |
 | **Iterate +N** | Increment value × **1.5** (expected extra plays) |
@@ -340,8 +351,8 @@ Name: *Legion's Cadence*. Flavor: *"Step, shield, step. In this branch the legio
 
 | | Effects | Points | vs target (12) |
 |---|---|---|---|
-| Source | Gain 4 Block. Attuned: +2 Block. | 9.6 + 2.4 = 12 | 1.00 |
-| **After ops and tune** | **Gain 2 Block. Gain Plate 1. Attuned: +2 Block.** | 4.8 + 5 + 2.4 = **12.2** | **1.02** ✓ |
+| Source | Gain 4 Block. Calculated: +3 Block. | 9.6 + 3.6 = 13.2 | 1.10 |
+| **After ops and tune** | **Gain 2 Block. Gain Plate 1. Calculated: +2 Block.** | 4.8 + 5 + 2.4 = **12.2** | **1.02** ✓ |
 
 Name: *Boilerplate*. Flavor: *"Riveted, not printed. The 1843 Proxies were built to last."*
 

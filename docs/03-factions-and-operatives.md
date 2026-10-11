@@ -20,7 +20,7 @@ Lore for each faction is in [02](02-world-and-lore.md#the-factions). Rules for e
 | Energy | Faith ☀ (gold) | Compute ⬡ (cyan) | Flux ◎ (violet) |
 | Temporal zone | **The Past** (discard pile) | **The Future** (draw pile) | **The Present** (hand) |
 | Fantasy | Unbreakable conviction; the past as a weapon | Perfect information; engines that scale | Being two places at once; fortune as a tool |
-| Keyword family | Vow, Relic, Remember, Litany, Martyr | Calculated, Iterate, Subroutine, Compile | Fork, Shift, Paradox, Misprint, Bleed-through |
+| Keyword family | Vow, Relic, Remember, Litany, Martyr | Calculated, Iterate, Subroutine, Compile | Fork, Shift, Elsewhere, Paradox, Misprint, Bleed-through |
 | Strengths | Sustain, Block, big payoffs for setup | Consistency, card quality, late-combat scaling | Flexibility, burst, adapting mid-turn |
 | Weaknesses | Inflexible (Vows); reshuffles reset Remember | Slow starts; Glitch and Disrupt hurt | Variance; Paradox can Unravel the run |
 | As enemies | Fixed charging hits, Plate | Predictive intents, Disrupt | Forked intents, Doubles |
@@ -101,21 +101,24 @@ Imprints are level-up passives ([05](05-run-structure.md#imprints)).
 |---|---|---|---|
 | 65 | 2C + 1N | **Forecast**: Foresee 2 | Subroutines |
 
+**Special rule: seeing ahead pays.** The first **Known** card you play each turn costs 1 less.
+
 **How they play.**
 
-- **Forecast** every turn to make your next draws **Known**. Known cards fuel **Calculated** bonuses.
+- **Forecast** every turn to make your next draws **Known**. The first one you play is cheaper, and every starter card has a **Calculated** bonus that only a Known card gets.
+- **Expected Value** and **Confidence Interval** grow with each Known card in your Present, so Foresee more and play the Known cards together.
 - Install **Subroutines** that work every turn without you.
 - **Iterate** cards grow stronger each time you play them.
 - The Oracle is the precision operative: it rarely gets surprised and gets stronger as a fight goes on.
-- **How they lose:** a slow first turn against a fast elite, or enemies that Glitch and Disrupt.
+- **How they lose:** a slow first turn against a fast elite, enemies that Glitch and Disrupt, and the Tear, which Erases the top of your Future, where the Known cards wait.
 
 ### Starter deck (10)
 
 | Card | × | Type | Cost | Rarity | Text | Pts |
 |---|---|---|---|---|---|---|
-| Pulse | 4 | Attack | 1 | St | Deal 5. Attuned: +2. | 12 / 12 |
-| Firewall | 4 | Skill | 1 | St | Gain 4 Block. Attuned: +2 Block. | 12 / 12 |
-| Probability Lance | 1 | Attack | 1C | St | Deal 4. Calculated: +4. | 12.8 / 12 |
+| Pulse | 4 | Attack | 1 | St | Deal 5. Calculated: +3. | 13 / 12 |
+| Firewall | 4 | Skill | 1 | St | Gain 4 Block. Calculated: +3 Block. | 13.2 / 12 |
+| Probability Lance | 1 | Attack | 1C | St | Deal 3. Calculated: +7. | 13 / 12 |
 | Watchdog.exe | 1 | Constant (Subroutine) | 1C | St | Dusk: gain 2 Block. | 11.5 / 12 |
 
 ### Sample card pool
@@ -124,13 +127,15 @@ Imprints are level-up passives ([05](05-run-structure.md#imprints)).
 |---|---|---|---|---|---|
 | Recursive Strike | Attack | 1 | C | Deal 3. Iterate +2. | 12 / 12 |
 | Predictive Shield | Skill | 1C | C | Gain 4 Block. Foresee 1. | 11.6 / 12 |
-| Scatter Protocol | Attack | 1C | C | Deal 3 to all enemies. Calculated: Foresee 2. | 11.4 / 12 |
-| Deterministic Model | Skill | 1C+1 | U | Foresee 3. Draw 2. Calculated: gain 1 Compute. | 24 / 26.4 |
+| Expected Value | Attack | 1C | C | Deal 3, +2 per Known card in your Present (max +6). | 13.2 / 12 |
+| Confidence Interval | Skill | 1C | C | Gain 3 Block, +1 per Known card in your Present (max +4). | 11.5 / 12 |
+| Scatter Protocol | Attack | 1C | C | Deal 3 to all enemies. Calculated: Foresee 2. | 11 / 12 |
+| Deterministic Model | Skill | 1C+1 | U | Foresee 3. Draw 2. Calculated: gain 2 Compute. | 28 / 26.4 |
 | Lance.exe | Constant (Subroutine) | 2C | U | Dusk: deal 6 to the weakest enemy. | 27.4 / 26.4 |
 | Rollback | Skill | 1C | U | Restore the HP you lost during the last enemy phase (max 12). Erase. | 13 / 13.2 |
-| Hold Pattern | Skill | 1C | U | Delay 1. Calculated: draw 1. | 13.6 / 13.2 |
+| Hold Pattern | Skill | 1C | U | Delay 1. Calculated: draw 1. | 13 / 13.2 |
 | Optimal Path | Skill | 1C | R | Foresee 3. Put one of them into your Present. | 14 / 15 |
-| Monte Carlo | Attack | 1C+1 | R | Deal 3 to a random enemy 5 times. Calculated: target the weakest enemy instead. | 27.3 / 30 |
+| Monte Carlo | Attack | 1C+1 | R | Deal 3 to a random enemy 5 times. Calculated: target the weakest enemy instead. | 27 / 30 |
 | Proof of MERIDIAN | Constant (Subroutine) | 2C+1 | L | Dawn: gain 1 Compute per Known card in your Present (max 3). Dusk: Foresee 1. | 48 / 50.4 |
 
 ### Sample Imprints
@@ -160,8 +165,14 @@ Imprints are level-up passives ([05](05-run-structure.md#imprints)).
 - **Shift** moves cards between the two hands.
 - So the Other Hand is a stash that keeps cards between turns, and a menu of options.
 
+**Elsewhere.** A card with **Elsewhere** acts when you Shift it out of your Present, as it goes. Your Other Self is fighting too.
+
+- The starters add a little to every Shift: Splinter Cut deals 3 to a random enemy, Double Guard gains 3 Block.
+- **Stet** and **Dele** do as much sent away as played, or more, so they are made for Shifting. Shift cards such as **Borrowed Self** send several at once.
+
 **How they play.**
 
+- **Shift every turn.** Each Shift is two decisions: the card you need now comes in, and the card you send away acts.
 - Stash key cards in the Other Hand until the right moment.
 - **Fork** cards to choose between faces.
 - **Misprint** and **Bleed-through** bring in power from other branches.
@@ -173,8 +184,8 @@ Imprints are level-up passives ([05](05-run-structure.md#imprints)).
 
 | Card | × | Type | Cost | Rarity | Text | Pts |
 |---|---|---|---|---|---|---|
-| Splinter Cut | 4 | Attack | 1 | St | Deal 5. Attuned: +2. | 12 / 12 |
-| Double Guard | 4 | Skill | 1 | St | Gain 4 Block. Attuned: +2 Block. | 12 / 12 |
+| Splinter Cut | 4 | Attack | 1 | St | Deal 6. Elsewhere: deal 3 to a random enemy. | 12.8 / 12 |
+| Double Guard | 4 | Skill | 1 | St | Gain 5 Block. Elsewhere: gain 3 Block. | 13.1 / 12 |
 | Split the Moment | 1 | Skill | 1X | St | Fork a card in your Present. Draw 1. | 12 / 12 |
 | Two Places at Once | 1 | Fork (Attack / Skill) | 1 | St | A: Deal 5. B: Gain 4 Block. | 12 / 12 |
 
@@ -185,6 +196,8 @@ Imprints are level-up passives ([05](05-run-structure.md#imprints)).
 | Borrowed Self | Skill | 0 | C | Shift 2. Gain 1 Paradox. | 6 / 6 |
 | Fray Lash | Attack | 1X | C | Deal 3, +1 per Paradox (max +6). | 12 / 12 |
 | Caret Strike | Attack | 1 | C | Deal 4. If you Shifted this turn: +3. | 11.6 / 12 |
+| Stet | Skill | 1X | C | Gain 3 Block. Elsewhere: gain 5 Block. | 13.1 / 12 |
+| Dele | Attack | 1X | C | Deal 5. Elsewhere: deal 5 to the weakest enemy. | 11.4 / 12 |
 | Crosstalk | Skill | 1X | U | Bleed-through 2. Gain 1 Paradox. | 14 / 13.2 |
 | Misprinted Edict | Attack | 1X+1 | U | Misprint. A: Deal 14. B: Deal 7 to all enemies. C: Gain 10 Block, draw 1. | 26.3 / 26.4 |
 | Paradox Engine | Constant | 1X | U | Dawn: gain 1 Flux and 2 Paradox. | 14.4 / 13.2 |

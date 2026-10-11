@@ -26,7 +26,7 @@ object Glossary {
     val REMEMBER = e("Remember", "A bonus when your Past holds at least that many cards of the kind named.")
     val LITANY = e("Litany", "A bonus when the card you played just before this one, this turn, was of the kind named.")
     val CALCULATED = e("Calculated", "A bonus when the card is Known: you saw it with Foresee before you drew it.")
-    val KNOWN = e("Known", "You saw this card with Foresee before you drew it. Calculated cards are stronger while Known.")
+    val KNOWN = e("Known", "You saw this card with Foresee before you drew it. Calculated cards are stronger while Known, and the Oracle's first Known card each turn costs 1 less.")
     val FORESEE = e("Foresee", "Look at the top cards of your Future. They become Known. Keep, reorder, or send them to the bottom.")
     val RECALL = e("Recall", "Return cards from your Past to your Present.")
     val DELAY = e("Delay", "Push a Track item later. An enemy intent gains Pressure: +25% potency per Delay. Fixed intents can't be Delayed.")
@@ -50,8 +50,9 @@ object Glossary {
     val BLOCK = e("Block", "Absorbs damage. Yours lasts until your next Dawn.")
     val BLANK = e("Blank", "Its thread was cut: it can't be played until your Past is reshuffled.")
     val STRIKE = e("Strike", "The Vowknight's Signature Action, once per turn: deal 4 to an enemy. Vows and Relics make it stronger.")
-    val FORECAST = e("Forecast", "The Oracle's Signature Action, once per turn: Foresee 2.")
-    val SHIFT_SIG = e("Shift (Signature)", "The Splinter's Signature Action, once per turn: swap a card in your Present with one in your Other Hand.")
+    val FORECAST = e("Forecast", "The Oracle's Signature Action, once per turn: Foresee 2. The Oracle's first Known card each turn costs 1 less.")
+    val SHIFT_SIG = e("Shift (Signature)", "The Splinter's Signature Action, once per turn: swap a card in your Present with one in your Other Hand. If the card you send away has Elsewhere, it acts as it goes.")
+    val ELSEWHERE = e("Elsewhere", "When you Shift this card out of your Present, it does this as it goes.")
 
     fun status(s: StatusType): Entry = when (s) {
         StatusType.MIGHT -> e("Might", "+1 damage on every hit, per point.")
@@ -67,7 +68,7 @@ object Glossary {
     fun signature(sig: Signature): List<Entry> = when (sig) {
         Signature.STRIKE -> listOf(STRIKE)
         Signature.FORECAST -> listOf(FORECAST, FORESEE, KNOWN)
-        Signature.SHIFT -> listOf(SHIFT_SIG)
+        Signature.SHIFT -> listOf(SHIFT_SIG, ELSEWHERE)
     }
 
     /** Everything a card's definition uses, in reading order, without repeats. */
@@ -82,6 +83,10 @@ object Glossary {
             faces.forEach { effects(it.effects, out) }
         }
         if (def.forkFaces == null && def.misprintFaces == null) effects(def.effects, out)
+        if (def.elsewhere.isNotEmpty()) {
+            out += ELSEWHERE
+            effects(def.elsewhere, out)
+        }
         def.constant?.let { constant(it, out) }
         if (def.retain) out += RETAIN
         if (def.eraseAfterPlay) out += ERASE

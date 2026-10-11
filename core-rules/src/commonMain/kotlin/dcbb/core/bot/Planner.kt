@@ -6,6 +6,7 @@ import dcbb.core.engine.Engine
 import dcbb.core.engine.Rng
 import dcbb.core.state.CardInst
 import dcbb.core.state.CombatState
+import dcbb.core.state.PendingForesee
 
 /**
  * Plans the rest of the turn instead of one action at a time.
@@ -37,7 +38,7 @@ class PlannerBot(
 
     override fun act(engine: Engine, state: CombatState): Action {
         val pending = state.pending
-        if (pending != null) return Moves.foreseeAnswers(engine, state, pending).first()
+        if (pending != null) return answerForesee(engine, state, pending)
         // Keep following the plan while the last action led exactly where we expected.
         if (plan.isNotEmpty() && plan[0].expect == visible(state)) {
             plan = plan.drop(1)
@@ -47,8 +48,28 @@ class PlannerBot(
         return plan.firstOrNull()?.action ?: EndTurn
     }
 
+    /**
+     * Foresee answers come from the heuristic, unless an enemy is about to Erase or Blank the top of the Future: then
+     * which card it takes matters, so plan the rest of the turn after each candidate, on a determinized copy, and
+     * keep the best.
+     */
+    private fun answerForesee(engine: Engine, state: CombatState, pending: PendingForesee): Action {
+        val answers = Moves.foreseeAnswers(engine, state, pending)
+        if (answers.size == 1 || !Moves.futureThreatened(state)) return answers[0]
+        val root = Eval.determinize(state, mix(seed, state))
+        val best = answers.maxBy { a ->
+            val out = engine.apply(root, a)
+            if (out.error != null) Double.NEGATIVE_INFINITY else bestLine(engine, settle(engine, out.state)).second
+        }
+        if (best != answers[0]) plan = emptyList()
+        return best
+    }
+
     /** The best sequence of actions for the rest of the turn. An empty list means "end the turn now". */
-    private fun search(engine: Engine, state: CombatState): List<Step> {
+    private fun search(engine: Engine, state: CombatState): List<Step> = bestLine(engine, state).first
+
+    /** The best line for the rest of the turn, and what ending the turn after it is worth. */
+    private fun bestLine(engine: Engine, state: CombatState): Pair<List<Step>, Double> {
         val root = Eval.determinize(state, mix(seed, state))
         var beam = listOf(Node(root, emptyList(), Eval.score(engine, root)))
         val leaves = mutableListOf<Node>()
@@ -73,7 +94,9 @@ class PlannerBot(
             beam = children.sortedByDescending { it.score }.filter { seen.add(visible(it.state)) }.take(beamWidth)
         }
         leaves += beam
-        return leaves.maxBy { leafValue(engine, it.state) }.steps
+        val values = leaves.map { it to leafValue(engine, it.state) }
+        val (best, value) = values.maxBy { it.second }
+        return best.steps to value
     }
 
     /** Expected value of ending the turn in [s]: play out the enemy phase and the next Dawn on a few copies. */

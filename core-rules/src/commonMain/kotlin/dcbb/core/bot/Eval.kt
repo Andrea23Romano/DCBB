@@ -30,9 +30,12 @@ object CardValues {
 
     private class Table(val content: Content) {
         val standard: Map<String, Double> = content.cards.mapValues { Budget.points(it.value) }
-        val known: Map<String, Double> = content.cards.mapValues { Budget.points(it.value, KNOWN) }
-        val unknown: Map<String, Double> = content.cards.mapValues { Budget.points(it.value, UNKNOWN) }
+        val known: Map<String, Double> = content.cards.mapValues { Budget.played(it.value, KNOWN) }
+        val unknown: Map<String, Double> = content.cards.mapValues { Budget.played(it.value, UNKNOWN) }
         val calculated: Set<String> = content.cards.values.filter { mentionsCalculated(it) }.map { it.id }.toSet()
+
+        /** One Elsewhere trigger, in points. */
+        val trigger: Map<String, Double> = content.cards.mapValues { Budget.effects(it.value.elsewhere) }
         val faces: Map<Face, Double> = buildMap {
             for (faces in content.misprintTables.values) for (f in faces) put(f, Budget.face(f))
             for (def in content.cards.values) for (f in def.misprintFaces.orEmpty() + def.forkFaces.orEmpty()) put(f, Budget.face(f))
@@ -92,6 +95,10 @@ object CardValues {
         state.player.past.sortedByDescending { value(engine, state, it) }.take(n).map { it.uid }
 
     fun usesCalculated(content: Content, def: CardDef): Boolean = def.id in table(content).calculated
+
+    /** What one Elsewhere trigger of [inst] is worth, in damage-equivalents (0 for cards without one, or Blank). */
+    fun elsewhereValue(engine: Engine, inst: CardInst): Double =
+        if (inst.blank) 0.0 else table(engine.content).trigger.getValue(inst.defId) / 2.0
 
     private fun mentionsCalculated(def: CardDef): Boolean =
         mentionsCalculated(def.effects) || def.forkFaces.orEmpty().any { mentionsCalculated(it.effects) }

@@ -12,17 +12,17 @@ and winning a rematch counts).
 
 | Operative | Won the run | Reached Act 2 | Reached Act 3 | Act 1 boss | Act 2 boss | Act 3 boss |
 |---|---|---|---|---|---|---|
-| Oracle | 42% | 83% | 57% | 83% of 199 | 72% of 159 | 75% of 112 |
-| Splinter | 39% | 77% | 57% | 77% of 199 | 77% of 150 | 68% of 114 |
-| Vowknight | 96% | 100% | 100% | 100% of 200 | 100% of 200 | 96% of 199 |
+| Oracle | 78% | 97% | 87% | 97% of 200 | 90% of 192 | 90% of 173 |
+| Splinter | 77% | 99% | 91% | 99% of 200 | 93% of 196 | 85% of 181 |
+| Vowknight | 96% | 100% | 100% | 100% of 200 | 100% of 200 | 96% of 200 |
 
 Where runs ended:
 
 | Operative | Act 1, before the boss | Act 1 boss | Act 2, before the boss | Act 2 boss | Act 3, before the boss | Act 3 boss | Won |
 |---|---|---|---|---|---|---|---|
-| Oracle | 2% | 16% | 6% | 20% | 2% | 13% | 42% |
-| Splinter | 1% | 23% | 3% | 16% | 3% | 16% | 39% |
-| Vowknight | 0% | 0% | 1% | 0% | 0% | 4% | 96% |
+| Oracle | 0% | 3% | 3% | 8% | 1% | 9% | 78% |
+| Splinter | 1% | 1% | 2% | 6% | 2% | 12% | 77% |
+| Vowknight | 0% | 0% | 0% | 0% | 0% | 5% | 96% |
 
 ## Trajectory
 
@@ -30,23 +30,23 @@ The run as each act began (averages over the runs that got there), and how its b
 
 | Operative | Act | Runs | HP | Max HP | Deck | Level | Artifacts | Paradox | Hours | HP entering the boss | Boss HP lost (wins) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Oracle | 1 | 200 | 100% | 65.0 | 10.0 | 1.0 | 0.0 | 0.0 | 100.0 | 68% | 36% |
-| Oracle | 2 | 165 | 100% | 72.9 | 14.7 | 3.9 | 1.8 | 1.0 | 156.3 | 67% | 49% |
-| Oracle | 3 | 114 | 100% | 77.4 | 19.1 | 5.3 | 3.5 | 1.9 | 177.0 | 69% | 44% |
-| Splinter | 1 | 200 | 100% | 62.0 | 10.0 | 1.0 | 0.0 | 0.0 | 100.0 | 67% | 30% |
-| Splinter | 2 | 153 | 100% | 71.6 | 14.9 | 3.9 | 1.8 | 3.1 | 160.0 | 70% | 51% |
-| Splinter | 3 | 115 | 100% | 76.8 | 20.1 | 5.5 | 3.7 | 4.5 | 179.6 | 72% | 55% |
+| Oracle | 1 | 200 | 100% | 65.0 | 10.0 | 1.0 | 0.0 | 0.0 | 100.0 | 68% | 24% |
+| Oracle | 2 | 194 | 100% | 72.9 | 16.5 | 3.9 | 1.7 | 0.5 | 163.9 | 70% | 45% |
+| Oracle | 3 | 173 | 100% | 77.8 | 22.9 | 5.4 | 3.6 | 1.1 | 191.1 | 72% | 40% |
+| Splinter | 1 | 200 | 100% | 62.0 | 10.0 | 1.0 | 0.0 | 0.0 | 100.0 | 70% | 26% |
+| Splinter | 2 | 197 | 100% | 71.9 | 16.9 | 3.9 | 1.8 | 3.4 | 163.3 | 74% | 47% |
+| Splinter | 3 | 182 | 100% | 78.0 | 23.5 | 5.5 | 3.9 | 5.1 | 194.4 | 79% | 51% |
 | Vowknight | 1 | 200 | 100% | 75.0 | 10.0 | 1.0 | 0.0 | 0.0 | 100.0 | 71% | 18% |
-| Vowknight | 2 | 200 | 100% | 82.9 | 15.1 | 3.9 | 1.9 | 0.3 | 168.0 | 73% | 34% |
-| Vowknight | 3 | 199 | 100% | 89.1 | 20.6 | 5.7 | 4.2 | 0.7 | 201.0 | 74% | 38% |
+| Vowknight | 2 | 200 | 100% | 82.9 | 15.1 | 3.9 | 1.9 | 0.3 | 168.0 | 73% | 33% |
+| Vowknight | 3 | 200 | 100% | 89.1 | 20.6 | 5.7 | 4.2 | 0.8 | 199.8 | 74% | 38% |
 
 At the end of the run (wins and losses together):
 
 | Operative | Level | Deck | Artifacts | Fights | Elites | Cards taken | Erased | Inscribed | Hours earned | Foresight spent | Paradox peak |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Oracle | 5.2 | 19.3 | 3.0 | 16.4 | 0.9 | 13.2 | 3.0 | 4.2 | 487.2 | 3.4 | 5.9 |
-| Splinter | 5.3 | 19.9 | 3.2 | 16.2 | 1.3 | 13.2 | 2.8 | 3.4 | 473.9 | 2.5 | 9.1 |
-| Vowknight | 7.1 | 22.7 | 5.4 | 18.3 | 1.9 | 14.4 | 3.2 | 3.9 | 620.0 | 2.5 | 2.9 |
+| Oracle | 6.5 | 23.5 | 4.9 | 17.7 | 1.3 | 11.9 | 0.0 | 5.1 | 589.3 | 3.6 | 4.3 |
+| Splinter | 6.6 | 24.7 | 5.3 | 18.1 | 1.7 | 12.8 | 0.0 | 4.2 | 596.9 | 2.6 | 10.0 |
+| Vowknight | 7.1 | 22.8 | 5.3 | 18.3 | 1.9 | 14.5 | 3.1 | 3.9 | 620.9 | 2.5 | 2.9 |
 
 ## Fights by act and kind
 
@@ -54,15 +54,15 @@ Share of max HP lost per fight, and how many of those fights ended the run (afte
 
 | Operative | Act | Threat 1 | Threat 2 | Threat 3 | Elite | Boss |
 |---|---|---|---|---|---|---|
-| Oracle | 1 | 9% · 718 · 1 died | 25% · 237 · 4 died | 35% · 14 | 45% · 73 · 2 died | 47% · 261 · 96 died |
-| Oracle | 2 | 12% · 629 | 27% · 226 · 13 died | 34% · 16 · 7 died | 44% · 56 · 6 died | 55% · 219 · 105 died |
-| Oracle | 3 | 12% · 433 | 24% · 183 · 11 died | 53% · 5 · 2 died | 28% · 59 · 2 died | 54% · 157 · 73 died |
-| Splinter | 1 | 9% · 791 | 29% · 278 · 8 died | 31% · 11 · 2 died | 46% · 83 · 1 died | 46% · 278 · 125 died |
-| Splinter | 2 | 8% · 504 · 1 died | 19% · 243 · 4 died | 38% · 10 · 3 died | 45% · 94 · 5 died | 57% · 203 · 88 died |
-| Splinter | 3 | 9% · 306 | 23% · 187 · 8 died | 56% · 1 | 39% · 84 · 6 died | 61% · 159 · 81 died |
+| Oracle | 1 | 9% · 610 | 22% · 201 | 25% · 12 | 37% · 61 | 29% · 217 · 23 died |
+| Oracle | 2 | 9% · 662 | 19% · 262 · 3 died | 42% · 21 · 9 died | 31% · 84 · 1 died | 48% · 228 · 55 died |
+| Oracle | 3 | 9% · 573 | 19% · 277 · 3 died | 37% · 7 | 21% · 110 · 1 died | 47% · 220 · 65 died |
+| Splinter | 1 | 7% · 643 | 21% · 229 · 3 died | 27% · 13 · 1 died | 40% · 64 | 29% · 214 · 17 died |
+| Splinter | 2 | 6% · 605 | 16% · 307 · 3 died | 37% · 10 · 3 died | 35% · 145 · 5 died | 51% · 237 · 55 died |
+| Splinter | 3 | 7% · 518 · 1 died | 18% · 279 · 3 died | 15% · 3 | 32% · 122 · 2 died | 57% · 230 · 76 died |
 | Vowknight | 1 | 7% · 585 | 18% · 223 | 29% · 19 · 1 died | 29% · 73 | 18% · 201 · 1 died |
-| Vowknight | 2 | 4% · 631 | 12% · 236 · 2 died | 32% · 19 · 1 died | 27% · 160 | 34% · 206 · 7 died |
-| Vowknight | 3 | 6% · 630 | 16% · 269 · 1 died | 34% · 22 | 18% · 155 | 42% · 224 · 32 died |
+| Vowknight | 2 | 4% · 635 | 12% · 239 · 1 died | 34% · 20 · 1 died | 27% · 158 | 35% · 208 · 8 died |
+| Vowknight | 3 | 6% · 626 | 17% · 272 · 1 died | 34% · 20 | 18% · 154 | 42% · 224 · 33 died |
 
 ## Bosses
 
@@ -70,21 +70,21 @@ Every boss fight, by encounter: how often it was won, HP lost in wins, and round
 
 | Boss | Operative | Fights | Won | HP lost (wins) | Rounds |
 |---|---|---|---|---|---|
-| The Lattice Engine | Oracle | 261 | 63% | 36% | 7.9 |
-| The Lattice Engine | Splinter | 278 | 55% | 30% | 7.9 |
+| The Lattice Engine | Oracle | 217 | 89% | 25% | 6.2 |
+| The Lattice Engine | Splinter | 214 | 92% | 26% | 6.6 |
 | The Lattice Engine | Vowknight | 201 | 100% | 18% | 4.8 |
-| The Automa Cavaliere (automa_meridian) | Oracle | 99 | 35% | 57% | 5.8 |
-| The Automa Cavaliere (automa_meridian) | Splinter | 88 | 48% | 54% | 6.8 |
-| The Automa Cavaliere (automa_meridian) | Vowknight | 48 | 96% | 40% | 5.5 |
-| The Automa Cavaliere (automa_hollow) | Oracle | 120 | 66% | 49% | 6.3 |
-| The Automa Cavaliere (automa_hollow) | Splinter | 115 | 63% | 50% | 7.1 |
-| The Automa Cavaliere (automa_hollow) | Vowknight | 158 | 97% | 32% | 5.7 |
-| The Thousandfold | Oracle | 102 | 44% | 46% | 11.0 |
-| The Thousandfold | Vowknight | 111 | 84% | 30% | 9.2 |
-| Grand Master Aurelian | Oracle | 55 | 71% | 43% | 7.1 |
-| Grand Master Aurelian | Splinter | 53 | 30% | 58% | 7.0 |
-| MERIDIAN Ascendant | Splinter | 106 | 58% | 54% | 7.7 |
-| MERIDIAN Ascendant | Vowknight | 113 | 88% | 46% | 6.8 |
+| The Automa Cavaliere (automa_hollow) | Oracle | 151 | 79% | 42% | 5.5 |
+| The Automa Cavaliere (automa_hollow) | Splinter | 148 | 81% | 47% | 7.0 |
+| The Automa Cavaliere (automa_hollow) | Vowknight | 159 | 97% | 32% | 5.7 |
+| The Automa Cavaliere (automa_meridian) | Oracle | 77 | 69% | 53% | 5.6 |
+| The Automa Cavaliere (automa_meridian) | Splinter | 89 | 70% | 52% | 7.0 |
+| The Automa Cavaliere (automa_meridian) | Vowknight | 49 | 92% | 40% | 5.5 |
+| Grand Master Aurelian | Oracle | 79 | 90% | 42% | 5.7 |
+| Grand Master Aurelian | Splinter | 114 | 57% | 50% | 7.0 |
+| The Thousandfold | Oracle | 141 | 60% | 41% | 8.3 |
+| The Thousandfold | Vowknight | 111 | 85% | 31% | 9.3 |
+| MERIDIAN Ascendant | Splinter | 116 | 77% | 52% | 8.5 |
+| MERIDIAN Ascendant | Vowknight | 113 | 86% | 46% | 6.7 |
 
 ## Imprints and boss Artifacts
 
@@ -92,25 +92,25 @@ What the bot chose, per run.
 
 | Operative | Imprints (most taken) | Boss Artifacts |
 |---|---|---|
-| Oracle | Deep Forecast 0.99, Precomputed 0.84, Bayesian Prior 0.80, Cache Hit 0.39, Tempered 0.38, Second Wind 0.28 | MERIDIAN Shard 0.64, Aurelian's Seal 0.44, Babbage's Governor 0.26, The Cavaliere's Heart 0.06 |
-| Splinter | Margin Notes 1.00, Unstable Equilibrium 0.71, Doubled Breath 0.62, Tempered 0.54, Second Wind 0.50, Thick Skin 0.42 | The Thousandfold's Ribbon 0.61, Aurelian's Seal 0.39, Babbage's Governor 0.27, The Cavaliere's Heart 0.09 |
-| Vowknight | Steadfast 1.00, Oathbound 1.00, Keeper of Vows 0.97, Thick Skin 0.69, Tempered 0.67, Second Wind 0.63 | Aurelian's Seal 0.79, Babbage's Governor 0.70, The Cavaliere's Heart 0.38, MERIDIAN Shard 0.13 |
+| Oracle | Bayesian Prior 1.00, Deep Forecast 0.99, Precomputed 0.97, Cache Hit 0.59, Tempered 0.53, Second Wind 0.41 | MERIDIAN Shard 0.72, Aurelian's Seal 0.63, Babbage's Governor 0.37, The Cavaliere's Heart 0.12 |
+| Splinter | Margin Notes 1.00, Unstable Equilibrium 0.95, Doubled Breath 0.81, Tempered 0.79, Thick Skin 0.73, Second Wind 0.59 | The Thousandfold's Ribbon 0.79, Aurelian's Seal 0.62, Babbage's Governor 0.36, The Cavaliere's Heart 0.13 |
+| Vowknight | Steadfast 1.00, Oathbound 1.00, Keeper of Vows 0.97, Thick Skin 0.69, Tempered 0.67, Second Wind 0.62 | Aurelian's Seal 0.79, Babbage's Governor 0.70, The Cavaliere's Heart 0.39, MERIDIAN Shard 0.13 |
 
 ## Time travel
 
 | Operative | Returns dealt | Returns taken | Runs that Rewound | Rewinds per run | Won after a Rewind | Echoes fought | Anchor moves |
 |---|---|---|---|---|---|---|---|
-| Oracle | 11.4 | 2.2 | 82% | 1.0 | 48 of 164 | 0.1 | 0.5 |
-| Splinter | 10.7 | 2.1 | 81% | 1.1 | 39 of 161 | 0.1 | 1.0 |
-| Vowknight | 10.4 | 2.3 | 19% | 0.2 | 29 of 37 | 0.0 | 0.5 |
+| Oracle | 11.1 | 2.3 | 51% | 0.6 | 56 of 101 | 0.1 | 0.6 |
+| Splinter | 10.9 | 2.0 | 50% | 0.6 | 54 of 100 | 0.1 | 1.5 |
+| Vowknight | 10.4 | 2.3 | 18% | 0.2 | 26 of 35 | 0.0 | 0.5 |
 
 ## Moments chosen
 
 | Operative | Combat | Elite | Event | Anomaly | Antiquarian | Still Point | Shrine | Cache |
 |---|---|---|---|---|---|---|---|---|
-| Oracle | 12.2 | 0.9 | 3.2 | 0.4 | 3.4 | 3.9 | 0.4 | 0.9 |
-| Splinter | 11.5 | 1.3 | 2.6 | 0.6 | 3.1 | 4.1 | 0.4 | 0.8 |
-| Vowknight | 13.1 | 1.9 | 1.9 | 0.2 | 3.2 | 2.6 | 0.4 | 0.9 |
+| Oracle | 13.0 | 1.3 | 2.8 | 0.4 | 3.5 | 3.4 | 0.4 | 0.8 |
+| Splinter | 12.9 | 1.7 | 2.2 | 0.6 | 3.4 | 4.2 | 0.3 | 0.8 |
+| Vowknight | 13.1 | 1.9 | 1.9 | 0.3 | 3.2 | 2.6 | 0.3 | 0.9 |
 
 ## Encounters
 
@@ -118,86 +118,88 @@ All operatives together, by act: fights, average share of max HP lost, and death
 
 | Act | Encounter | Fights | HP lost | Deaths |
 |---|---|---|---|---|
-| 1 | The Lattice Engine | 740 | 39% | 222 |
-| 1 | A Fraying Street | 447 | 5% | 0 |
-| 1 | A Footpad in the Fog | 400 | 8% | 0 |
-| 1 | A Rookery Tough | 395 | 10% | 0 |
-| 1 | A Squire Errant | 316 | 7% | 0 |
-| 1 | A Stray Proxy | 303 | 8% | 0 |
-| 1 | A Misprint on Drury Lane | 267 | 13% | 1 |
-| 1 | Loose Threads | 145 | 26% | 7 |
-| 1 | Fog on Fleet Street | 135 | 27% | 2 |
-| 1 | The Lamplighters' Round | 94 | 24% | 1 |
-| 1 | Rookery Brawl | 90 | 24% | 2 |
-| 1 | The Rent | 85 | 37% | 0 |
-| 1 | Proxy Patrol | 77 | 27% | 0 |
-| 1 | The Pruner | 65 | 38% | 1 |
-| 1 | Misprinted Alley | 62 | 20% | 0 |
-| 1 | The Inquisitor | 58 | 59% | 2 |
-| 1 | Order Patrol | 56 | 31% | 0 |
-| 1 | Drone Swarm | 44 | 23% | 0 |
-| 1 | An Echo of You | 22 | 12% | 0 |
-| 1 | The Rookery Gang | 15 | 23% | 1 |
-| 1 | The Unravelling | 10 | 29% | 0 |
-| 1 | Brass Constables | 8 | 34% | 0 |
-| 1 | The Misprinted Quarter | 6 | 50% | 1 |
-| 1 | The Line in the Fog | 5 | 35% | 1 |
-| 2 | A Ravel in the Cloister | 413 | 13% | 2 |
-| 2 | The Automa Cavaliere (automa_hollow) | 393 | 44% | 88 |
-| 2 | Pikemen at the Porta Romana | 375 | 11% | 0 |
-| 2 | A Condottiero off the Leash | 350 | 4% | 0 |
-| 2 | A Double in the Crowd | 253 | 5% | 0 |
-| 2 | The Automa Cavaliere (automa_meridian) | 235 | 56% | 112 |
-| 2 | An Engine on the Navigli | 231 | 3% | 0 |
-| 2 | A Penitent in the Duomo | 222 | 12% | 0 |
-| 2 | Loose Threads | 147 | 25% | 4 |
-| 2 | Capitano di Ventura | 88 | 56% | 10 |
-| 2 | Plague Season | 80 | 22% | 4 |
-| 2 | The Lion Wakes | 74 | 8% | 1 |
-| 2 | Condottieri | 73 | 17% | 4 |
-| 2 | A Pike Square | 70 | 24% | 0 |
-| 2 | The Rent | 68 | 26% | 0 |
-| 2 | Misprinted Alley | 66 | 20% | 1 |
-| 2 | Proxy Patrol | 60 | 17% | 0 |
-| 2 | The Pruner | 58 | 28% | 0 |
-| 2 | A Penitents' Procession | 49 | 24% | 4 |
-| 2 | The Seam-runner | 44 | 17% | 0 |
-| 2 | The Inquisitor | 40 | 48% | 1 |
-| 2 | The Sforza Guard | 18 | 21% | 1 |
-| 2 | An Echo of You | 13 | 7% | 0 |
-| 2 | The Fraying Cloister | 7 | 48% | 4 |
-| 2 | The Free Company | 7 | 30% | 2 |
-| 2 | The Lion and the Pikes | 6 | 40% | 1 |
-| 2 | The Margins of Milan | 5 | 38% | 1 |
-| 2 | The Brass Court | 4 | 38% | 1 |
-| 2 | The Line in Milan | 3 | 47% | 1 |
-| 3 | Salt Wraiths | 368 | 17% | 1 |
-| 3 | A Horse Archer | 285 | 7% | 0 |
-| 3 | Glassborn | 282 | 5% | 0 |
-| 3 | A Knight Strayed from the Column | 268 | 12% | 0 |
-| 3 | A Sandglass Golem | 260 | 3% | 0 |
-| 3 | MERIDIAN Ascendant | 219 | 53% | 58 |
-| 3 | The Thousandfold | 213 | 46% | 75 |
-| 3 | Loose Threads | 148 | 16% | 4 |
-| 3 | Grand Master Aurelian | 108 | 55% | 53 |
-| 3 | The Rent | 78 | 20% | 0 |
-| 3 | The Black Glass Sentinel | 67 | 50% | 7 |
-| 3 | Glass and Salt | 63 | 39% | 6 |
-| 3 | Glass Desert | 58 | 15% | 0 |
-| 3 | Salt Mirage | 57 | 12% | 2 |
-| 3 | The Column's Rearguard | 57 | 35% | 4 |
-| 3 | The Pruner | 53 | 18% | 0 |
-| 3 | The Seam-runner | 52 | 11% | 0 |
-| 3 | Horse Archers on the Ridge | 50 | 26% | 0 |
-| 3 | Proxy Patrol | 48 | 13% | 0 |
-| 3 | Misprinted Alley | 39 | 17% | 3 |
-| 3 | The Inquisitor | 29 | 39% | 1 |
-| 3 | Order Patrol | 24 | 17% | 0 |
-| 3 | An Echo of You | 19 | 5% | 0 |
-| 3 | The Margins of Milan | 7 | 22% | 0 |
-| 3 | The Shattered Dunes | 6 | 32% | 0 |
-| 3 | Archers in the Mirage | 6 | 60% | 2 |
-| 3 | Two Knights of the Column | 6 | 43% | 0 |
-| 3 | The Brass Court | 2 | 48% | 0 |
-| 3 | The Line in Milan | 1 | 20% | 0 |
+| 1 | The Lattice Engine | 632 | 26% | 41 |
+| 1 | A Fraying Street | 397 | 5% | 0 |
+| 1 | A Footpad in the Fog | 351 | 8% | 0 |
+| 1 | A Rookery Tough | 344 | 9% | 0 |
+| 1 | A Stray Proxy | 266 | 7% | 0 |
+| 1 | A Squire Errant | 263 | 7% | 0 |
+| 1 | A Misprint on Drury Lane | 239 | 12% | 0 |
+| 1 | Fog on Fleet Street | 123 | 24% | 1 |
+| 1 | Loose Threads | 104 | 19% | 0 |
+| 1 | Rookery Brawl | 90 | 20% | 1 |
+| 1 | The Lamplighters' Round | 85 | 19% | 1 |
+| 1 | The Rent | 84 | 30% | 0 |
+| 1 | Proxy Patrol | 73 | 21% | 0 |
+| 1 | Misprinted Alley | 61 | 19% | 0 |
+| 1 | The Pruner | 58 | 33% | 0 |
+| 1 | The Inquisitor | 52 | 48% | 0 |
+| 1 | Order Patrol | 51 | 22% | 0 |
+| 1 | Drone Swarm | 43 | 20% | 0 |
+| 1 | The Rookery Gang | 17 | 26% | 0 |
+| 1 | The Unravelling | 9 | 25% | 0 |
+| 1 | The Line in the Fog | 7 | 23% | 1 |
+| 1 | Brass Constables | 7 | 32% | 0 |
+| 1 | An Echo of You | 5 | 11% | 0 |
+| 1 | The Misprinted Quarter | 4 | 37% | 1 |
+| 2 | A Ravel in the Cloister | 467 | 10% | 0 |
+| 2 | The Automa Cavaliere (automa_hollow) | 458 | 42% | 63 |
+| 2 | A Condottiero off the Leash | 395 | 3% | 0 |
+| 2 | Pikemen at the Porta Romana | 375 | 8% | 0 |
+| 2 | An Engine on the Navigli | 263 | 2% | 0 |
+| 2 | A Double in the Crowd | 258 | 5% | 0 |
+| 2 | A Penitent in the Duomo | 236 | 9% | 0 |
+| 2 | The Automa Cavaliere (automa_meridian) | 215 | 53% | 55 |
+| 2 | Loose Threads | 158 | 20% | 3 |
+| 2 | Capitano di Ventura | 103 | 50% | 5 |
+| 2 | The Lion Wakes | 92 | 7% | 0 |
+| 2 | Condottieri | 89 | 14% | 0 |
+| 2 | The Rent | 89 | 23% | 0 |
+| 2 | Plague Season | 89 | 17% | 3 |
+| 2 | Misprinted Alley | 78 | 17% | 0 |
+| 2 | A Pike Square | 76 | 23% | 1 |
+| 2 | The Pruner | 74 | 23% | 0 |
+| 2 | Proxy Patrol | 73 | 15% | 0 |
+| 2 | The Inquisitor | 57 | 42% | 1 |
+| 2 | A Penitents' Procession | 52 | 21% | 0 |
+| 2 | The Seam-runner | 49 | 14% | 0 |
+| 2 | An Echo of You | 17 | 6% | 0 |
+| 2 | The Sforza Guard | 14 | 23% | 0 |
+| 2 | The Fraying Cloister | 9 | 63% | 5 |
+| 2 | The Free Company | 9 | 20% | 0 |
+| 2 | The Line in Milan | 7 | 50% | 3 |
+| 2 | The Lion and the Pikes | 7 | 27% | 3 |
+| 2 | The Margins of Milan | 5 | 50% | 2 |
+| 2 | The Brass Court | 4 | 43% | 0 |
+| 2 | The Lattice Engine | 3 | 44% | 0 |
+| 3 | Salt Wraiths | 443 | 14% | 1 |
+| 3 | Glassborn | 359 | 3% | 0 |
+| 3 | A Knight Strayed from the Column | 355 | 11% | 0 |
+| 3 | A Horse Archer | 345 | 6% | 0 |
+| 3 | A Sandglass Golem | 317 | 2% | 0 |
+| 3 | The Thousandfold | 252 | 45% | 74 |
+| 3 | MERIDIAN Ascendant | 229 | 52% | 43 |
+| 3 | Grand Master Aurelian | 193 | 51% | 57 |
+| 3 | Loose Threads | 176 | 11% | 0 |
+| 3 | The Black Glass Sentinel | 104 | 42% | 2 |
+| 3 | The Rent | 93 | 15% | 0 |
+| 3 | The Column's Rearguard | 91 | 34% | 2 |
+| 3 | Glass Desert | 85 | 12% | 0 |
+| 3 | Salt Mirage | 80 | 12% | 0 |
+| 3 | Glass and Salt | 75 | 36% | 5 |
+| 3 | The Pruner | 71 | 17% | 0 |
+| 3 | Horse Archers on the Ridge | 69 | 25% | 0 |
+| 3 | Proxy Patrol | 56 | 12% | 0 |
+| 3 | The Seam-runner | 52 | 8% | 0 |
+| 3 | Misprinted Alley | 50 | 11% | 0 |
+| 3 | The Inquisitor | 49 | 32% | 1 |
+| 3 | Order Patrol | 43 | 13% | 0 |
+| 3 | An Echo of You | 17 | 7% | 0 |
+| 3 | The Margins of Milan | 8 | 24% | 0 |
+| 3 | Two Knights of the Column | 7 | 45% | 0 |
+| 3 | The Shattered Dunes | 6 | 33% | 0 |
+| 3 | The Line in Milan | 3 | 13% | 0 |
+| 3 | Archers in the Mirage | 3 | 41% | 0 |
+| 3 | The Fraying Cloister | 2 | 39% | 0 |
+| 3 | The Brass Court | 1 | 40% | 0 |
 | 3 | The Automa Cavaliere (automa_meridian) | 1 | 39% | 0 |

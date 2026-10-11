@@ -31,7 +31,7 @@ To play back a fight or a run from the web test client, copy its log there (**Co
   - The *mid* deck adds 8 of that faction's sample cards.
 - **Fights:** single combats at full HP and Paradox 0, with no relics, Imprints or rewards, and every enemy at its Act I stats (later acts scale their fights in runs). The bosses of Acts II and III are left out: they are built for a run's deck, level and Artifacts, so the run report covers them.
 - **Bots:** all of them plan on copies of the state with the unseen part of the Future reshuffled and fresh dice, so none can peek.
-  - `planner` searches the whole turn (a beam over sequences of plays), then scores each way of ending it by playing out the enemy phase and the next draw on a few copies. It is the yardstick: the per-encounter tables and flags use it.
+  - `planner` searches the whole turn (a beam over sequences of plays), then scores each way of ending it by playing out the enemy phase and the next draw on a few copies. It answers Foresee with a heuristic order, except when an enemy is about to Erase or Blank the top of the Future: then it plans the rest of the turn after each candidate answer. It is the yardstick: the per-encounter tables and flags use it.
   - `greedy` looks one action ahead with the same evaluation, and ends the turn when nothing beats ending it.
   - `random` picks uniformly among legal actions. It is the floor.
 
@@ -42,11 +42,40 @@ The first baseline raised six findings. Their status after tuning pass 2:
 | # | Finding | Status |
 |---|---|---|
 | 1 | Blank can soft-lock a fight against the Tear | **Fixed.** Blank cards are restored on reshuffle. Fights stalled at the round cap went from 75 to 0. |
-| 2 | The Vowknight is about twice as efficient as the others | **Confirmed as design, not bot.** The planner sees the same gap. Options are in [pass 2](#what-pass-2-found). |
+| 2 | The Vowknight is about twice as efficient as the others | **Narrowed.** The planner confirmed it is the design, not the bot. The [faction rework](#faction-rework-foresee-pays-elsewhere-acts) lifted the Oracle and the Splinter; the Vowknight is still ahead. |
 | 3 | Most fights are too soft | **Tuned.** Every encounter averages inside its band, now measured with the planner. |
 | 4 | Borrow is free on the last turn | **Fixed.** Debt carries into the next fight, and Borrow charges interest. Borrow use fell from 4.6–6.6 to 1.3–2.2 energy per fight. |
 | 5 | Delay, draw and setup cards look weak | **Partly.** The planner Delays and sets up more, but several cards stay rarely played. See [pass 2](#what-pass-2-found). |
 | 6 | Paradox and Unravel aren't exercised | **Partly.** Runs carry Paradox between fights, and the Splinter now Unravels in about one fight in twenty. See [the run layer](#the-run-layer-three-acts). |
+
+## Faction rework: Foresee pays, Elsewhere acts
+
+The Oracle and the Splinter were reworked so that their factions' mechanics pay off in play ([docs/03](../docs/03-factions-and-operatives.md)).
+
+- **The Oracle (Convergence): Foresee pays.**
+  - The first Known card you play each turn costs 1 less.
+  - Every starter card has a Calculated bonus instead of an Attuned one: +3 on Pulse and Firewall, +7 on Probability Lance.
+  - Two new commons grow with the Known cards in your Present: *Expected Value* and *Confidence Interval*. *Deterministic Model* gains 2 Compute when Calculated.
+  - The budget prices Calculated at ×0.5, like Attuned: Forecast shows 2 of the 5 cards you draw.
+- **The Splinter (Errata): Elsewhere.** A card you Shift out of your Present acts as it goes.
+  - The starters keep their old numbers and add a little to every Shift: *Splinter Cut* deals 3 to a random enemy, *Double Guard* gains 3 Block.
+  - Two new commons, *Stet* and *Dele*, do as much sent away as played, or more.
+  - The budget counts the better of the two uses in full and adds 0.15 of the other.
+
+### What was tried first
+
+- **Elsewhere at every Dusk.** In the first version, Elsewhere cards acted at each Dusk while they waited in the Other Hand. The Other Hand is never discarded, so three Elsewhere cards there were three free Constants, and the Splinter won 97–98% of runs (from 39%). Acting once, when Shifted away, ties Elsewhere to the Splinter's own verb and limits it to the Shifts you make.
+- **Calculated alone wasn't enough.** Calculated starters and the new commons moved the Oracle only from 42% to 48% of runs, and it lost a little more HP per fight. Paying Foresee in energy, with the Known-card discount, took it to 73%. That is what the legendary experiment had shown: Foresee pays when it is paid in energy.
+- **Weaker starters with bigger Elsewhere effects** (Deal 5 with Elsewhere 4–5; Gain 4 Block with Elsewhere 4) left the starter deck below its old level: 88–90% of fights won, 33–34% of HP lost. The bot spent every Shift on a trigger and lost the hand-fixing. Keeping the old numbers and adding a 3-point Elsewhere put the starter deck back where it was.
+
+### What the rework says
+
+1. **Both operatives now win about three runs in four**: the Oracle 78% and the Splinter 77%, up from 42% and 39%. The Vowknight wins 96%. The Act I boss now ends 1–3% of their runs (16–23% before).
+2. **Starter decks hold their level, and the decks they grow into are stronger.** In won fights, the Oracle's starter deck loses 32% of its max HP (32% before) and its mid deck 31% (35%). The Splinter's starter loses 32% (31%) and its mid deck 22% (32%), close to the Vowknight's 20%. The Splinter's sample mid deck holds the whole Shift engine: *Borrowed Self* sends two cards away for 0 energy, *Elsewhen Guard* one more, and *Stet* and *Dele* are made for it.
+3. **The bot Shifts every turn now**, often swapping two copies of the same card just to send one away (Double Guard ⇄ Double Guard). It plays *Stet* 0.03 times per fight and its four *Double Guards* 0.18 times in all: it Shifts them instead.
+4. **The Tear counters the Oracle, and there is counterplay.** Ravels Erase the top card of your Future, which is where Forecast leaves the Known cards. Against the Fraying Cloister (two Ravels and a Loose End), the Oracle's starter deck at first won 19% of fights, down from 88% (and those wins already cost 81% of its HP). The counterplay is to put a card you can spare on top, or send the Foreseen cards to the bottom. Once the planner weighed those answers, it won 63%, and the Oracle's runs went from 73% to 78%. In runs, this threat-3 fight of Acts II and III is rare and deadly for every operative.
+5. **The hard fights eased.** Before the rework, the Lattice Engine, the Brass Court, Capitano di Ventura and the Black Glass Sentinel were flagged *hard* for one or both starter decks. Now only the Black Glass Sentinel is, for the Splinter's starter deck: it wins 32% of those fights, up from 1%.
+6. **The Vowknight is still the outlier**: 96% of runs, and 20% of HP lost per won fight.
 
 ## The run layer: three acts
 
@@ -72,6 +101,8 @@ The first baseline raised six findings. Their status after tuning pass 2:
 - **Boss card rewards.** Each faction has only one or two rares, so a first version filled the third slot with the faction's legendary. That put *Proof of MERIDIAN* in almost every Oracle's hand and doubled its win rate. Legendaries now come only from the 15% roll, and thin slots fill with uncommons.
 
 ### What three acts say
+
+These findings predate the [faction rework](#faction-rework-foresee-pays-elsewhere-acts).
 
 1. **Each act's boss is the gate, and it gates evenly.** Of the runs that reach it, the Oracle and the Splinter get past the Lattice Engine 77–83% of the time, the Automa Cavaliere 72–77%, and the Nexus champion 68–75%. They win **42%** and **39%** of whole runs; the Vowknight wins **96%**.
 2. **Normal fights keep their bands in every act.** The deck grows about as fast as the scaling: threat-1 fights cost 8–12% of max HP in every act, threat 2 costs 19–29%, Elites 28–46%. Almost every death is at a boss.

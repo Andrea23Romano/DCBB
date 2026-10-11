@@ -32,7 +32,7 @@ Every zone has a temporal name. The names are flavor *and* rules text, because f
 | **The Erased** | Exhaust pile | Gone for the rest of combat. |
 | **Constants** | In play | **3 slots** for persistent cards: Vows, Relics and Subroutines. Playing a 4th replaces one of your choice, and the replaced card goes to the Past. A replaced Vow doesn't count as broken. |
 | **The Track** | (new) | The shared timeline of enemy intents and your Scheduled effects. |
-| **The Other Hand** | (Splinter only) | 3 face-up cards held by your Other Self. You can't play them, they aren't discarded at Dusk, and at Dawn the hand refills to 3 from the Future. **Shift** swaps cards between the Present and the Other Hand. |
+| **The Other Hand** | (Splinter only) | 3 face-up cards held by your Other Self. You can't play them, they aren't discarded at Dusk, and at Dawn the hand refills to 3 from the Future. **Shift** swaps cards between the Present and the Other Hand, and a card you send away with **Elsewhere** acts as it goes. |
 
 **Reshuffle.** When you need to draw and the Future is empty, shuffle the Past into the Future. All **Known** marks are cleared, and Remember counts drop to zero. Order decks care about this a lot.
 
@@ -139,7 +139,9 @@ Each operative has a free action, usable **once per turn**. Many cards, Relics, 
 |---|---|---|
 | Vowknight | **Strike** | Deal 4 damage. |
 | Oracle | **Forecast** | Foresee 2. |
-| Splinter | **Shift** | Shift 1: swap one card between your Present and your Other Hand. |
+| Splinter | **Shift** | Shift 1: swap one card between your Present and your Other Hand. If the card you send away has Elsewhere, it acts. |
+
+The Oracle also has a standing rule that makes Foresee pay: **the first Known card you play each turn costs 1 less.**
 
 ---
 
@@ -247,6 +249,7 @@ The glossary is capped at **25 keywords** at launch. Long-pressing any keyword o
 | **Compile** | Convergence | Merge this card with another card in your Present into a **Program**: one card with both effects, costing their combined cost −1, Erased after play. |
 | **Fork** | Errata | Two faces; choose one when you play it. An effect that Forks a card gives it a temporary **Misprint face** for this combat (if the card already has two faces, draw 1 instead). Branch Variants from the Forge are permanent second faces ([08](08-card-dsl.md#the-forge)). |
 | **Shift N** | Errata | Swap N cards between your Present and your Other Hand. With no Other Hand, swap with the top card of your Future. |
+| **Elsewhere** | Errata | When you Shift this card out of your Present, its Elsewhere effect resolves at once, right after the Shift. Elsewhere effects never need a target or a choice, and a Blank card doesn't act. |
 | **Paradox** | Errata | Gain or spend Paradox, the run-wide meter ([05](05-run-structure.md#paradox)). At 10 the timeline **Unravels**. |
 | **Misprint** | Errata | When drawn, this card becomes one of its printed alternate faces at random (long-press to see all of them). |
 | **Bleed-through N** | Errata | Add N random cards from another faction's pool to your Present. They cost 1 less this turn, any energy pays their colored pips, and they are Erased after play. |
@@ -271,7 +274,7 @@ The glossary is capped at **25 keywords** at launch. Long-pressing any keyword o
 
 | State | Meaning |
 |---|---|
-| **Known** | Seen via Foresee. Cleared on reshuffle. |
+| **Known** | Seen via Foresee. Cleared on reshuffle. Calculated bonuses need it, and the Oracle's first Known card each turn costs 1 less. |
 | **Blank** | Its thread cut by the Tear. Can't be played. Restored when your Past is reshuffled into your Future (the thread re-knits), and after combat. |
 | **Misprinted** | Showing a temporary alternate face for this combat. |
 
@@ -353,14 +356,14 @@ The **Oracle** fights an **Inquisitor** (Order elite, 60 HP). The Inquisitor has
 |---|---|---|---|
 | 1 | Strike 7 ① · Purge 30 ③🔒 | **Hold the Hour** on Strike: Delay 1, so it moves to ② and gains Pressure 1 (7 → **9**). Foresee 1. | Tick: Strike ①, Purge ②. Nothing resolves, and the Inquisitor loses a round. |
 | 2 | Strike 9 ① · Purge 30 ②🔒 | **Stitch in Time**: gain 3 Block now, and **Schedule 2**: gain 3 Block. That Block will land in the *same* enemy phase as Purge, just before it. Watchdog.exe adds 2 Block at Dusk. | Tick: Strike resolves for 9 against 5 Block, so you take 4. Purge ①. Your Scheduled Block ①. The Inquisitor sets a new Strike 7 ①. |
-| 3 | Scheduled +3 Block ① · Purge 30 ①🔒 · Strike 7 ① | Purge can't be moved. Two Attuned Firewalls give 12 Block, plus 2 at Dusk. | Tick: your Scheduled Block resolves **first** (+3, for 17 total). Purge 30 resolves, so you take 13. Strike 7 resolves, so you take 7. |
+| 3 | Scheduled +3 Block ① · Purge 30 ①🔒 · Strike 7 ① | Purge can't be moved. Last turn's Forecast showed both Firewalls, so they are **Known**: Calculated makes each one 7 Block (14), and the first costs 1 less. Watchdog.exe adds 2 at Dusk. | Tick: your Scheduled Block resolves **first** (+3, for 19 total). Purge 30 resolves, so you take 11. Strike 7 resolves, so you take 7. |
 
 **Lessons:**
 
 - Delay buys time, but Pressure charges interest.
 - Fixed moves must be *prepared for*.
 - Scheduled effects resolve before enemies, which makes them precise defensive tools.
-- An Oracle who Foresaw the Firewalls (making them Known) could have played *Rollback* the next turn to restore up to 12 of that HP.
+- Foresee pays twice: Known Firewalls block more, and the first one is cheaper. Next turn, *Rollback* could restore 12 of the 18 HP that enemy phase took.
 
 ---
 

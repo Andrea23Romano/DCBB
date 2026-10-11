@@ -75,6 +75,7 @@
 | **Divergence** | A change to the past that forks a branch; also an event type that creates a Ripple | [02](02-world-and-lore.md#the-laws-of-the-weave), [05](05-run-structure.md#divergence-events-and-ripples) |
 | **Echo** | A persisting past self: from a Rewind in this run, or from an Archived run | [05](05-run-structure.md#anchors-and-rewind), [06](06-meta-progression.md#echoes-from-past-runs) |
 | **Entropy** | Difficulty ladder, levels 0–20 | [06](06-meta-progression.md#entropy) |
+| **Elsewhere** | Keyword (Errata): the card acts when you Shift it out of your Present | [04](04-combat.md#keywords) |
 | **Era / Era Deck** | A historical setting; the deck of Moments dealt during its act | [02](02-world-and-lore.md#eras), [05](05-run-structure.md#era-deck-composition) |
 | **Erase / the Erased** | Keyword and zone: removed for the rest of combat | [04](04-combat.md#zones) |
 | **Errata** | The third faction: the erased and the never-born. Energy: Flux ◎. Zone: the Present. | [02](02-world-and-lore.md#the-errata) |
@@ -98,7 +99,7 @@
 | **Imprint** | A level-up passive, sometimes with deck requirements | [05](05-run-structure.md#imprints) |
 | **Inscribe** | A permanent card upgrade (about +30%) | [05](05-run-structure.md#other-upgrades) |
 | **Iterate +N** | Keyword: grows each time it's played this combat | [04](04-combat.md#keywords) |
-| **Known** | Card state: seen via Foresee before being drawn | [04](04-combat.md#card-states) |
+| **Known** | Card state: seen via Foresee before being drawn. The Oracle's first Known card each turn costs 1 less. | [04](04-combat.md#card-states) |
 | **Last Hour** | The end of history foretold by the Canon. *Spoiler:* it is the Tear. | [02](02-world-and-lore.md#the-order-of-the-unbroken-line) |
 | **Litany** | Keyword: a bonus if the previous card this turn was of a given kind | [04](04-combat.md#keywords) |
 | **Lore Bible** | Structured, tagged lore snippets used by writers and the Chronicler | [07](07-genai-design.md#context-packets) |

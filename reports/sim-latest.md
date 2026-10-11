@@ -19,22 +19,22 @@ lost in won fights.
 
 | Bot | Operative | Deck | Win | Normal | Elite | Rounds (won) | HP lost (won) | Draws |
 |---|---|---|---|---|---|---|---|---|
-| planner | Oracle | starter | 93% | 97% | 63% | 4.7 | 32% | 0 |
-| planner | Oracle | mid | 96% | 97% | 91% | 5.1 | 35% | 0 |
-| planner | Splinter | starter | 93% | 98% | 59% | 3.8 | 31% | 0 |
-| planner | Splinter | mid | 95% | 97% | 78% | 4.2 | 32% | 0 |
+| planner | Oracle | starter | 97% | 98% | 88% | 5.1 | 32% | 0 |
+| planner | Oracle | mid | 99% | 99% | 95% | 4.6 | 31% | 0 |
+| planner | Splinter | starter | 95% | 97% | 79% | 4.1 | 32% | 0 |
+| planner | Splinter | mid | 99% | 100% | 97% | 3.8 | 22% | 0 |
 | planner | Vowknight | starter | 100% | 100% | 100% | 3.0 | 20% | 0 |
 | planner | Vowknight | mid | 100% | 100% | 100% | 3.5 | 20% | 0 |
-| greedy | Oracle | starter | 92% | 97% | 58% | 4.7 | 33% | 0 |
-| greedy | Oracle | mid | 91% | 94% | 68% | 5.1 | 36% | 0 |
-| greedy | Splinter | starter | 89% | 94% | 57% | 4.1 | 34% | 0 |
-| greedy | Splinter | mid | 88% | 91% | 60% | 4.4 | 32% | 0 |
+| greedy | Oracle | starter | 95% | 97% | 77% | 5.1 | 33% | 0 |
+| greedy | Oracle | mid | 96% | 98% | 88% | 4.8 | 33% | 0 |
+| greedy | Splinter | starter | 93% | 97% | 59% | 4.3 | 31% | 0 |
+| greedy | Splinter | mid | 97% | 99% | 85% | 4.0 | 24% | 0 |
 | greedy | Vowknight | starter | 100% | 100% | 100% | 3.1 | 21% | 0 |
 | greedy | Vowknight | mid | 100% | 100% | 98% | 3.8 | 23% | 0 |
-| random | Oracle | starter | 62% | 66% | 31% | 7.0 | 46% | 0 |
-| random | Oracle | mid | 57% | 62% | 27% | 7.0 | 47% | 0 |
-| random | Splinter | starter | 50% | 55% | 10% | 6.7 | 46% | 0 |
-| random | Splinter | mid | 51% | 56% | 15% | 6.6 | 47% | 0 |
+| random | Oracle | starter | 56% | 61% | 23% | 7.3 | 48% | 0 |
+| random | Oracle | mid | 64% | 68% | 34% | 6.5 | 47% | 0 |
+| random | Splinter | starter | 59% | 64% | 24% | 6.4 | 44% | 0 |
+| random | Splinter | mid | 63% | 68% | 32% | 6.0 | 43% | 0 |
 | random | Vowknight | starter | 78% | 82% | 50% | 5.1 | 39% | 0 |
 | random | Vowknight | mid | 76% | 79% | 50% | 6.0 | 41% | 0 |
 
@@ -44,63 +44,63 @@ Each cell: win rate · average share of max HP lost in won fights.
 
 | Encounter | Enemies | Oracle (starter) | Oracle (mid) | Splinter (starter) | Splinter (mid) | Vowknight (starter) | Vowknight (mid) |
 |---|---|---|---|---|---|---|---|
-| Fog on Fleet Street | Gaslight Footpad ×2 | 100% · 28% | 100% · 30% | 100% · 23% | 100% · 28% | 100% · 17% | 100% · 18% |
-| Rookery Brawl | Rookery Brawler, Lamplighter | 100% · 27% | 100% · 29% | 100% · 29% | 100% · 27% | 100% · 12% | 100% · 13% |
-| Proxy Patrol | Brass Proxy, Calculating Engine | 100% · 33% | 100% · 30% | 100% · 21% | 100% · 24% | 100% · 14% | 100% · 10% |
-| Misprinted Alley | Misprint, Double | 100% · 21% | 100% · 25% | 100% · 14% | 100% · 19% | 100% · 11% | 100% · 12% |
-| Order Patrol | Squire of the Line, Sergeant-at-Arms | 100% · 28% | 100% · 29% | 100% · 23% | 100% · 27% | 100% · 19% | 100% · 14% |
-| Loose Threads | Ravel, Loose End | 100% · 20% | 100% · 24% | 100% · 30% | 100% · 22% | 100% · 15% | 100% · 13% |
-| Condottieri | Condottiero, Sforza Crossbowman | 100% · 29% | 100% · 26% | 100% · 16% | 100% · 18% | 100% · 11% | 100% · 9% |
-| Plague Season | Plague Doctor, Sforza Crossbowman | 100% · 25% | 100% · 27% | 100% · 15% | 100% · 18% | 100% · 3% | 100% · 8% |
-| Salt Mirage | Salt Wraith, Mirage | 100% · 29% | 100% · 32% | 100% · 25% | 100% · 25% | 100% · 10% | 100% · 13% |
-| Glass Desert | Sandglass Golem, Mirage | 100% · 31% | 100% · 36% | 100% · 33% | 100% · 27% | 100% · 10% | 100% · 13% |
-| Drone Swarm | Drone ×4 | 100% · 28% | 100% · 28% | 100% · 20% | 100% · 25% | 100% · 15% | 100% · 18% |
-| The Inquisitor (elite) | Inquisitor | 100% · 61% | 100% · 57% | 100% · 55% | 100% · 59% | 100% · 18% | 100% · 31% |
-| The Pruner (elite) | Pruner, Drone | 100% · 39% | 100% · 42% | 100% · 53% | 100% · 45% | 100% · 25% | 100% · 26% |
-| The Rent (elite) | The Rent, Loose End | 100% · 31% | 100% · 39% | 100% · 55% | 100% · 42% | 100% · 34% | 100% · 28% |
-| A Footpad in the Fog | Gaslight Footpad | 100% · 7% | 100% · 7% | 100% · 6% | 100% · 7% | 100% · 4% | 100% · 3% |
-| A Rookery Tough | Rookery Brawler | 100% · 6% | 100% · 8% | 100% · 13% | 100% · 7% | 100% · 7% | 100% · 4% |
-| A Fraying Street | Loose End ×2 | 100% · 4% | 100% · 4% | 100% · 3% | 100% · 3% | 100% · 3% | 100% · 2% |
-| A Stray Proxy | Brass Proxy | 100% · 7% | 100% · 10% | 100% · 7% | 100% · 7% | 100% · 5% | 100% · 5% |
-| A Squire Errant | Squire of the Line | 100% · 6% | 100% · 6% | 100% · 5% | 100% · 6% | 100% · 5% | 100% · 3% |
-| A Misprint on Drury Lane | Misprint | 100% · 12% | 100% · 14% | 100% · 7% | 100% · 10% | 100% · 5% | 100% · 7% |
-| The Lamplighters' Round | Lamplighter, Gaslight Footpad | 100% · 24% | 100% · 26% | 100% · 22% | 100% · 24% | 100% · 12% | 100% · 12% |
-| The Rookery Gang | Rookery Brawler, Gaslight Footpad | 100% · 31% | 100% · 32% | 100% · 34% | 100% · 31% | 100% · 22% | 100% · 17% |
-| Brass Constables | Brass Proxy ×2 | 100% · 32% | 100% · 48% | 100% · 30% | 100% · 40% | 100% · 24% | 100% · 27% |
-| The Line in the Fog | Sergeant-at-Arms ×2 | 100% · 39% | 100% · 40% | 99% · 39% | 100% · 40% | 100% · 16% | 100% · 18% |
-| The Misprinted Quarter | Misprint ×2 | 100% · 47% | 99% · 52% | 100% · 40% | 100% · 47% | 100% · 21% | 100% · 27% |
-| The Unravelling | Ravel, Loose End ×2 | 100% · 35% | 100% · 44% | 100% · 40% | 100% · 38% | 100% · 25% | 100% · 25% |
-| The Lattice Engine (elite) | The Lattice Engine | 14% · 63% | 93% · 47% | 10% · 58% | 66% · 54% | 100% · 31% | 100% · 23% |
-| A Condottiero off the Leash | Condottiero | 100% · 3% | 100% · 4% | 100% · 0% | 100% · 2% | 100% · 0% | 100% · 1% |
-| Pikemen at the Porta Romana | Swiss Pikeman | 100% · 6% | 100% · 10% | 100% · 8% | 100% · 9% | 100% · 4% | 100% · 5% |
-| A Penitent in the Duomo | Penitent | 100% · 8% | 100% · 9% | 100% · 8% | 100% · 8% | 100% · 6% | 100% · 4% |
-| An Engine on the Navigli | Calculating Engine | 100% · 3% | 100% · 3% | 100% · 0% | 100% · 1% | 100% · 0% | 100% · 0% |
-| A Double in the Crowd | Double | 100% · 3% | 100% · 5% | 100% · 5% | 100% · 5% | 100% · 5% | 100% · 3% |
-| A Ravel in the Cloister | Ravel | 100% · 16% | 100% · 14% | 100% · 10% | 100% · 10% | 100% · 6% | 100% · 6% |
-| A Pike Square | Swiss Pikeman, Sforza Crossbowman | 100% · 40% | 100% · 35% | 100% · 28% | 100% · 32% | 100% · 19% | 100% · 16% |
-| The Lion Wakes | Leonardo's Lion | 100% · 12% | 100% · 19% | 100% · 13% | 100% · 12% | 100% · 10% | 100% · 7% |
-| A Penitents' Procession | Penitent, Squire of the Line | 100% · 23% | 100% · 28% | 100% · 19% | 100% · 24% | 100% · 16% | 100% · 16% |
-| The Sforza Guard | Sforza Knight, Sforza Crossbowman | 100% · 36% | 100% · 37% | 100% · 36% | 100% · 36% | 100% · 19% | 100% · 18% |
-| The Free Company | Condottiero ×2, Sforza Crossbowman | 100% · 68% | 100% · 65% | 100% · 61% | 100% · 62% | 100% · 27% | 100% · 37% |
-| The Lion and the Pikes | Leonardo's Lion, Swiss Pikeman | 100% · 48% | 100% · 62% | 100% · 47% | 100% · 54% | 100% · 34% | 100% · 30% |
-| The Line in Milan | Sergeant-at-Arms, Penitent, Squire of the Line | 99% · 83% | 89% · 86% | 100% · 89% | 90% · 78% | 100% · 44% | 100% · 47% |
-| The Brass Court | Brass Proxy ×2, Calculating Engine | 20% · 90% | 50% · 86% | 59% · 81% | 56% · 82% | 100% · 48% | 100% · 50% |
-| The Margins of Milan | Misprint ×2, Double | 98% · 63% | 93% · 66% | 95% · 55% | 93% · 60% | 100% · 35% | 100% · 39% |
-| The Fraying Cloister | Ravel ×2, Loose End | 88% · 81% | 90% · 85% | 96% · 94% | 93% · 82% | 100% · 51% | 100% · 52% |
-| Capitano di Ventura (elite) | Capitano di Ventura, Sforza Crossbowman | 11% · 92% | 65% · 86% | 5% · 97% | 48% · 83% | 100% · 59% | 100% · 54% |
-| The Seam-runner (elite) | Seam-runner | 100% · 30% | 100% · 34% | 100% · 34% | 100% · 30% | 100% · 18% | 100% · 17% |
-| A Knight Strayed from the Column | Crusader Knight | 100% · 15% | 100% · 21% | 100% · 19% | 100% · 20% | 100% · 15% | 100% · 13% |
-| A Horse Archer | Ayyubid Horse Archer | 100% · 10% | 100% · 9% | 100% · 9% | 100% · 8% | 100% · 8% | 100% · 7% |
-| Horse Archers on the Ridge | Ayyubid Horse Archer ×2 | 100% · 43% | 100% · 47% | 100% · 31% | 100% · 39% | 100% · 22% | 100% · 25% |
-| A Sandglass Golem | Sandglass Golem | 100% · 2% | 100% · 6% | 100% · 6% | 100% · 5% | 100% · 4% | 100% · 2% |
-| Glassborn | Glassborn | 100% · 7% | 100% · 8% | 100% · 10% | 100% · 7% | 100% · 6% | 100% · 5% |
-| Salt Wraiths | Salt Wraith ×2 | 100% · 21% | 100% · 23% | 100% · 23% | 100% · 21% | 100% · 10% | 100% · 10% |
-| The Column's Rearguard | Crusader Knight, Ayyubid Horse Archer | 100% · 61% | 100% · 66% | 100% · 69% | 99% · 65% | 100% · 42% | 100% · 40% |
-| Glass and Salt | Glassborn, Salt Wraith ×2 | 100% · 81% | 99% · 75% | 100% · 74% | 98% · 76% | 100% · 40% | 100% · 44% |
-| Two Knights of the Column | Crusader Knight ×2 | 96% · 84% | 78% · 88% | 67% · 89% | 68% · 83% | 100% · 58% | 100% · 61% |
-| The Shattered Dunes | Sandglass Golem, Glassborn, Mirage | 82% · 81% | 89% · 78% | 76% · 83% | 79% · 75% | 100% · 48% | 100% · 46% |
-| Archers in the Mirage | Ayyubid Horse Archer ×2, Mirage | 81% · 76% | 76% · 82% | 89% · 70% | 86% · 72% | 100% · 45% | 100% · 53% |
-| The Black Glass Sentinel (elite) | Black Glass Sentinel | 15% · 98% | 78% · 89% | 1% · 90% | 30% · 83% | 100% · 70% | 100% · 58% |
+| Fog on Fleet Street | Gaslight Footpad ×2 | 100% · 29% | 100% · 28% | 100% · 27% | 100% · 16% | 100% · 17% | 100% · 18% |
+| Rookery Brawl | Rookery Brawler, Lamplighter | 100% · 29% | 100% · 26% | 100% · 23% | 100% · 14% | 100% · 12% | 100% · 13% |
+| Proxy Patrol | Brass Proxy, Calculating Engine | 100% · 22% | 100% · 26% | 100% · 28% | 100% · 14% | 100% · 14% | 100% · 10% |
+| Misprinted Alley | Misprint, Double | 100% · 23% | 100% · 24% | 100% · 17% | 100% · 15% | 100% · 11% | 100% · 12% |
+| Order Patrol | Squire of the Line, Sergeant-at-Arms | 100% · 24% | 100% · 22% | 100% · 27% | 100% · 14% | 100% · 19% | 100% · 14% |
+| Loose Threads | Ravel, Loose End | 100% · 18% | 100% · 25% | 100% · 23% | 100% · 13% | 100% · 15% | 100% · 13% |
+| Condottieri | Condottiero, Sforza Crossbowman | 100% · 20% | 100% · 17% | 100% · 16% | 100% · 9% | 100% · 11% | 100% · 9% |
+| Plague Season | Plague Doctor, Sforza Crossbowman | 100% · 28% | 100% · 21% | 100% · 21% | 100% · 12% | 100% · 3% | 100% · 8% |
+| Salt Mirage | Salt Wraith, Mirage | 100% · 29% | 100% · 28% | 100% · 23% | 100% · 15% | 100% · 10% | 100% · 13% |
+| Glass Desert | Sandglass Golem, Mirage | 100% · 33% | 100% · 29% | 100% · 25% | 100% · 15% | 100% · 10% | 100% · 13% |
+| Drone Swarm | Drone ×4 | 100% · 25% | 100% · 29% | 100% · 25% | 100% · 12% | 100% · 15% | 100% · 18% |
+| The Inquisitor (elite) | Inquisitor | 100% · 55% | 100% · 52% | 100% · 64% | 100% · 37% | 100% · 18% | 100% · 31% |
+| The Pruner (elite) | Pruner, Drone | 100% · 26% | 100% · 39% | 100% · 46% | 100% · 26% | 100% · 25% | 100% · 26% |
+| The Rent (elite) | The Rent, Loose End | 100% · 32% | 100% · 33% | 100% · 41% | 100% · 28% | 100% · 34% | 100% · 28% |
+| A Footpad in the Fog | Gaslight Footpad | 100% · 9% | 100% · 7% | 100% · 7% | 100% · 3% | 100% · 4% | 100% · 3% |
+| A Rookery Tough | Rookery Brawler | 100% · 8% | 100% · 7% | 100% · 8% | 100% · 4% | 100% · 7% | 100% · 4% |
+| A Fraying Street | Loose End ×2 | 100% · 5% | 100% · 5% | 100% · 2% | 100% · 1% | 100% · 3% | 100% · 2% |
+| A Stray Proxy | Brass Proxy | 100% · 8% | 100% · 9% | 100% · 7% | 100% · 4% | 100% · 5% | 100% · 5% |
+| A Squire Errant | Squire of the Line | 100% · 7% | 100% · 7% | 100% · 6% | 100% · 2% | 100% · 5% | 100% · 3% |
+| A Misprint on Drury Lane | Misprint | 100% · 15% | 100% · 10% | 100% · 11% | 100% · 6% | 100% · 5% | 100% · 7% |
+| The Lamplighters' Round | Lamplighter, Gaslight Footpad | 100% · 26% | 100% · 23% | 100% · 21% | 100% · 13% | 100% · 12% | 100% · 12% |
+| The Rookery Gang | Rookery Brawler, Gaslight Footpad | 100% · 30% | 100% · 29% | 100% · 30% | 100% · 18% | 100% · 22% | 100% · 17% |
+| Brass Constables | Brass Proxy ×2 | 100% · 32% | 100% · 40% | 100% · 34% | 100% · 23% | 100% · 24% | 100% · 27% |
+| The Line in the Fog | Sergeant-at-Arms ×2 | 100% · 32% | 100% · 28% | 100% · 36% | 100% · 19% | 100% · 16% | 100% · 18% |
+| The Misprinted Quarter | Misprint ×2 | 100% · 47% | 100% · 43% | 100% · 46% | 100% · 29% | 100% · 21% | 100% · 27% |
+| The Unravelling | Ravel, Loose End ×2 | 100% · 33% | 100% · 48% | 100% · 34% | 100% · 23% | 100% · 25% | 100% · 25% |
+| The Lattice Engine (elite) | The Lattice Engine | 96% · 43% | 100% · 33% | 65% · 61% | 98% · 29% | 100% · 31% | 100% · 23% |
+| A Condottiero off the Leash | Condottiero | 100% · 2% | 100% · 2% | 100% · 2% | 100% · 1% | 100% · 0% | 100% · 1% |
+| Pikemen at the Porta Romana | Swiss Pikeman | 100% · 8% | 100% · 9% | 100% · 8% | 100% · 4% | 100% · 4% | 100% · 5% |
+| A Penitent in the Duomo | Penitent | 100% · 11% | 100% · 9% | 100% · 9% | 100% · 4% | 100% · 6% | 100% · 4% |
+| An Engine on the Navigli | Calculating Engine | 100% · 4% | 100% · 1% | 100% · 1% | 100% · 1% | 100% · 0% | 100% · 0% |
+| A Double in the Crowd | Double | 100% · 5% | 100% · 6% | 100% · 2% | 100% · 3% | 100% · 5% | 100% · 3% |
+| A Ravel in the Cloister | Ravel | 100% · 12% | 100% · 12% | 100% · 8% | 100% · 5% | 100% · 6% | 100% · 6% |
+| A Pike Square | Swiss Pikeman, Sforza Crossbowman | 100% · 32% | 100% · 29% | 100% · 28% | 100% · 17% | 100% · 19% | 100% · 16% |
+| The Lion Wakes | Leonardo's Lion | 100% · 21% | 100% · 12% | 100% · 9% | 100% · 5% | 100% · 10% | 100% · 7% |
+| A Penitents' Procession | Penitent, Squire of the Line | 100% · 27% | 100% · 26% | 100% · 24% | 100% · 17% | 100% · 16% | 100% · 16% |
+| The Sforza Guard | Sforza Knight, Sforza Crossbowman | 100% · 30% | 100% · 29% | 100% · 33% | 100% · 19% | 100% · 19% | 100% · 18% |
+| The Free Company | Condottiero ×2, Sforza Crossbowman | 100% · 52% | 100% · 50% | 100% · 60% | 100% · 41% | 100% · 27% | 100% · 37% |
+| The Lion and the Pikes | Leonardo's Lion, Swiss Pikeman | 100% · 49% | 100% · 50% | 100% · 44% | 100% · 30% | 100% · 34% | 100% · 30% |
+| The Line in Milan | Sergeant-at-Arms, Penitent, Squire of the Line | 100% · 72% | 99% · 69% | 97% · 85% | 99% · 55% | 100% · 44% | 100% · 47% |
+| The Brass Court | Brass Proxy ×2, Calculating Engine | 99% · 67% | 90% · 75% | 69% · 87% | 98% · 59% | 100% · 48% | 100% · 50% |
+| The Margins of Milan | Misprint ×2, Double | 97% · 60% | 98% · 60% | 93% · 65% | 99% · 48% | 100% · 35% | 100% · 39% |
+| The Fraying Cloister | Ravel ×2, Loose End | 63% · 82% | 90% · 85% | 92% · 81% | 100% · 55% | 100% · 51% | 100% · 52% |
+| Capitano di Ventura (elite) | Capitano di Ventura, Sforza Crossbowman | 51% · 89% | 79% · 76% | 54% · 89% | 97% · 62% | 100% · 59% | 100% · 54% |
+| The Seam-runner (elite) | Seam-runner | 100% · 27% | 100% · 28% | 100% · 29% | 100% · 18% | 100% · 18% | 100% · 17% |
+| A Knight Strayed from the Column | Crusader Knight | 100% · 19% | 100% · 18% | 100% · 20% | 100% · 10% | 100% · 15% | 100% · 13% |
+| A Horse Archer | Ayyubid Horse Archer | 100% · 13% | 100% · 9% | 100% · 13% | 100% · 5% | 100% · 8% | 100% · 7% |
+| Horse Archers on the Ridge | Ayyubid Horse Archer ×2 | 100% · 47% | 100% · 41% | 100% · 37% | 100% · 26% | 100% · 22% | 100% · 25% |
+| A Sandglass Golem | Sandglass Golem | 100% · 6% | 100% · 4% | 100% · 2% | 100% · 2% | 100% · 4% | 100% · 2% |
+| Glassborn | Glassborn | 100% · 7% | 100% · 7% | 100% · 7% | 100% · 3% | 100% · 6% | 100% · 5% |
+| Salt Wraiths | Salt Wraith ×2 | 100% · 19% | 100% · 21% | 100% · 19% | 100% · 11% | 100% · 10% | 100% · 10% |
+| The Column's Rearguard | Crusader Knight, Ayyubid Horse Archer | 100% · 58% | 100% · 55% | 100% · 63% | 100% · 42% | 100% · 42% | 100% · 40% |
+| Glass and Salt | Glassborn, Salt Wraith ×2 | 99% · 70% | 100% · 66% | 100% · 71% | 100% · 50% | 100% · 40% | 100% · 44% |
+| Two Knights of the Column | Crusader Knight ×2 | 98% · 82% | 93% · 79% | 59% · 90% | 99% · 66% | 100% · 58% | 100% · 61% |
+| The Shattered Dunes | Sandglass Golem, Glassborn, Mirage | 85% · 76% | 94% · 67% | 89% · 79% | 98% · 55% | 100% · 48% | 100% · 46% |
+| Archers in the Mirage | Ayyubid Horse Archer ×2, Mirage | 77% · 78% | 89% · 74% | 75% · 78% | 99% · 58% | 100% · 45% | 100% · 53% |
+| The Black Glass Sentinel (elite) | Black Glass Sentinel | 71% · 89% | 87% · 75% | 32% · 87% | 85% · 72% | 100% · 70% | 100% · 58% |
 
 ## Mechanics in use (`planner` bot)
 
@@ -109,10 +109,10 @@ Per fight unless noted. *Pressure at resolution* averages over intents that reso
 
 | Operative | Deck | Cards / round | Intent Delays | Pressure at resolution | Borrowed | Debt carried out | Unravels | Vow breaks |
 |---|---|---|---|---|---|---|---|---|
-| Oracle | starter | 2.7 | 0.00 | – | 1.27 | 0.48 | 0.00 | 0.00 |
-| Oracle | mid | 2.3 | 0.51 | 1.07 | 1.92 | 0.50 | 0.00 | 0.00 |
-| Splinter | starter | 2.7 | 0.00 | – | 1.47 | 0.88 | 0.00 | 0.00 |
-| Splinter | mid | 2.9 | 0.23 | 1.03 | 1.49 | 0.71 | 0.00 | 0.02 |
+| Oracle | starter | 3.0 | 0.00 | – | 0.55 | 0.10 | 0.00 | 0.00 |
+| Oracle | mid | 2.8 | 0.67 | 1.08 | 1.88 | 0.43 | 0.00 | 0.00 |
+| Splinter | starter | 2.6 | 0.00 | – | 0.53 | 0.35 | 0.00 | 0.00 |
+| Splinter | mid | 2.9 | 0.03 | 1.01 | 0.91 | 0.51 | 0.00 | 0.01 |
 | Vowknight | starter | 2.3 | 0.00 | – | 1.27 | 0.76 | 0.00 | 0.00 |
 | Vowknight | mid | 2.0 | 0.09 | 1.00 | 1.94 | 0.76 | 0.00 | 0.00 |
 
@@ -122,30 +122,30 @@ Plays per fight, per copy in the deck. Low numbers mean the bot rarely finds the
 
 | Operative | Card | Copies | Plays per fight per copy |
 |---|---|---|---|
-| Oracle | Deterministic Model | 1 | 0.09 |
-| Oracle | Firewall | 4 | 0.53 |
-| Oracle | Hold Pattern | 1 | 0.17 |
-| Oracle | Hold the Hour | 1 | 0.35 |
-| Oracle | Lance.exe | 1 | 0.91 |
-| Oracle | Predictive Shield | 1 | 0.14 |
-| Oracle | Probability Lance | 1 | 0.58 |
-| Oracle | Pulse | 4 | 1.23 |
-| Oracle | Recursive Strike | 1 | 0.44 |
-| Oracle | Scatter Protocol | 1 | 0.44 |
-| Oracle | Stitch in Time | 1 | 0.87 |
+| Oracle | Deterministic Model | 1 | 0.73 |
+| Oracle | Expected Value | 1 | 0.79 |
+| Oracle | Firewall | 4 | 0.55 |
+| Oracle | Hold Pattern | 1 | 0.31 |
+| Oracle | Hold the Hour | 1 | 0.36 |
+| Oracle | Lance.exe | 1 | 0.92 |
+| Oracle | Predictive Shield | 1 | 0.42 |
+| Oracle | Probability Lance | 1 | 0.77 |
+| Oracle | Pulse | 4 | 1.13 |
+| Oracle | Recursive Strike | 1 | 0.49 |
+| Oracle | Scatter Protocol | 1 | 0.67 |
 | Oracle | Watchdog.exe | 1 | 0.85 |
-| Splinter | Borrowed Self | 1 | 0.18 |
-| Splinter | Caret Strike | 1 | 1.09 |
-| Splinter | Crosstalk | 1 | 0.95 |
-| Splinter | Double Guard | 4 | 0.46 |
-| Splinter | Elsewhen Guard | 1 | 0.04 |
-| Splinter | Fray Lash | 1 | 0.33 |
-| Splinter | Hold the Hour | 1 | 0.20 |
-| Splinter | Mirage Step | 1 | 0.38 |
-| Splinter | Misprinted Edict | 1 | 0.57 |
-| Splinter | Splinter Cut | 4 | 1.13 |
-| Splinter | Split the Moment | 1 | 0.11 |
-| Splinter | Two Places at Once | 1 | 0.95 |
+| Splinter | Borrowed Self | 1 | 0.99 |
+| Splinter | Caret Strike | 1 | 1.10 |
+| Splinter | Crosstalk | 1 | 0.85 |
+| Splinter | Dele | 1 | 0.28 |
+| Splinter | Double Guard | 4 | 0.18 |
+| Splinter | Elsewhen Guard | 1 | 0.60 |
+| Splinter | Fray Lash | 1 | 0.47 |
+| Splinter | Misprinted Edict | 1 | 0.68 |
+| Splinter | Splinter Cut | 4 | 0.84 |
+| Splinter | Split the Moment | 1 | 0.12 |
+| Splinter | Stet | 1 | 0.03 |
+| Splinter | Two Places at Once | 1 | 0.69 |
 | Vowknight | Crusader's Charge | 1 | 0.60 |
 | Vowknight | Gnomon Blade | 1 | 0.68 |
 | Vowknight | Hold Fast | 1 | 0.07 |
@@ -180,27 +180,31 @@ from the same data it plays. Authored cards must land within ±10%.
 | Smite the Heretic | Order | Attack | 1F+1 | U | Deal 10. Double damage against Errata and Tear enemies. | 28.0 / 26.4 | 1.06 |
 | Vow of Silence | Order | Constant (Vow) | 1F | R | Vow: never Borrow or Delay. While kept: at Dawn, gain 1 Faith. | 16.0 / 15.0 | 1.07 |
 | Verdict of the Line | Order | Attack | 2F+1 | L | Deal 18, +1 per card in your Past (max +14). Erase. | 49.0 / 50.4 | 0.97 |
-| Firewall | Convergence | Skill | 1 | St | Gain 4 Block. Attuned: +2 Block. | 12.0 / 12.0 | 1.00 |
-| Probability Lance | Convergence | Attack | 1C | St | Deal 4. Calculated: +4. | 12.8 / 12.0 | 1.07 |
-| Pulse | Convergence | Attack | 1 | St | Deal 5. Attuned: +2. | 12.0 / 12.0 | 1.00 |
+| Firewall | Convergence | Skill | 1 | St | Gain 4 Block. Calculated: +3 Block. | 13.2 / 12.0 | 1.10 |
+| Probability Lance | Convergence | Attack | 1C | St | Deal 3. Calculated: +7. | 13.0 / 12.0 | 1.08 |
+| Pulse | Convergence | Attack | 1 | St | Deal 5. Calculated: +3. | 13.0 / 12.0 | 1.08 |
 | Watchdog.exe | Convergence | Constant (Subroutine) | 1C | St | Dusk: gain 2 Block. | 11.5 / 12.0 | 0.96 |
+| Confidence Interval | Convergence | Skill | 1C | C | Gain 3 Block, +1 per Known card in your Present (max +4). | 11.5 / 12.0 | 0.96 |
+| Expected Value | Convergence | Attack | 1C | C | Deal 3, +2 per Known card in your Present (max +6). | 13.2 / 12.0 | 1.10 |
 | Predictive Shield | Convergence | Skill | 1C | C | Gain 4 Block. Foresee 1. | 11.6 / 12.0 | 0.97 |
 | Recursive Strike | Convergence | Attack | 1 | C | Deal 3. Iterate +2. | 12.0 / 12.0 | 1.00 |
-| Scatter Protocol | Convergence | Attack | 1C | C | Deal 3 to all enemies. Calculated: Foresee 2. | 11.4 / 12.0 | 0.95 |
-| Deterministic Model | Convergence | Skill | 1C+1 | U | Foresee 3. Draw 2. Calculated: gain 1 Compute. | 24.0 / 26.4 | 0.91 |
-| Hold Pattern | Convergence | Skill | 1C | U | Delay 1. Calculated: draw 1. | 13.6 / 13.2 | 1.03 |
+| Scatter Protocol | Convergence | Attack | 1C | C | Deal 3 to all enemies. Calculated: Foresee 2. | 11.0 / 12.0 | 0.92 |
+| Deterministic Model | Convergence | Skill | 1C+1 | U | Foresee 3. Draw 2. Calculated: gain 2 Compute. | 28.0 / 26.4 | 1.06 |
+| Hold Pattern | Convergence | Skill | 1C | U | Delay 1. Calculated: draw 1. | 13.0 / 13.2 | 0.98 |
 | Lance.exe | Convergence | Constant (Subroutine) | 2C | U | Dusk: deal 6 to the weakest enemy. | 27.4 / 26.4 | 1.04 |
 | Rollback | Convergence | Skill | 1C | U | Restore the HP you lost during the last enemy phase (max 12). Erase. | 13.0 / 13.2 | 0.98 |
-| Monte Carlo | Convergence | Attack | 1C+1 | R | Deal 3 to a random enemy 5 times. Calculated: deal 3 to the weakest enemy 5 times instead. | 27.3 / 30.0 | 0.91 |
+| Monte Carlo | Convergence | Attack | 1C+1 | R | Deal 3 to a random enemy 5 times. Calculated: deal 3 to the weakest enemy 5 times instead. | 27.0 / 30.0 | 0.90 |
 | Optimal Path | Convergence | Skill | 1C | R | Foresee 3. Put one of them into your Present. | 14.0 / 15.0 | 0.93 |
 | Proof of MERIDIAN | Convergence | Constant (Subroutine) | 2C+1 | L | Dawn: gain 1 Compute per Known card in your Present (max 3). Dusk: Foresee 1. | 48.0 / 50.4 | 0.95 |
-| Double Guard | Errata | Skill | 1 | St | Gain 4 Block. Attuned: +2 Block. | 12.0 / 12.0 | 1.00 |
-| Splinter Cut | Errata | Attack | 1 | St | Deal 5. Attuned: +2. | 12.0 / 12.0 | 1.00 |
+| Double Guard | Errata | Skill | 1 | St | Gain 5 Block. Elsewhere: gain 3 Block. | 13.1 / 12.0 | 1.09 |
+| Splinter Cut | Errata | Attack | 1 | St | Deal 6. Elsewhere: deal 3 to a random enemy. | 12.8 / 12.0 | 1.06 |
 | Split the Moment | Errata | Skill | 1X | St | Fork a card in your Present. Draw 1. | 12.0 / 12.0 | 1.00 |
 | Two Places at Once | Errata | Fork (Attack / Skill) | 1 | St | A: Deal 5. B: Gain 4 Block. | 12.0 / 12.0 | 1.00 |
 | Borrowed Self | Errata | Skill | 0 | C | Shift 2. Gain 1 Paradox. | 6.0 / 6.0 | 1.00 |
 | Caret Strike | Errata | Attack | 1 | C | Deal 4. If you Shifted this turn: +3. | 11.6 / 12.0 | 0.97 |
+| Dele | Errata | Attack | 1X | C | Deal 5. Elsewhere: deal 5 to the weakest enemy. | 11.4 / 12.0 | 0.95 |
 | Fray Lash | Errata | Attack | 1X | C | Deal 3, +1 per Paradox (max +6). | 12.0 / 12.0 | 1.00 |
+| Stet | Errata | Skill | 1X | C | Gain 3 Block. Elsewhere: gain 5 Block. | 13.1 / 12.0 | 1.09 |
 | Crosstalk | Errata | Skill | 1X | U | Bleed-through 2. Gain 1 Paradox. | 14.0 / 13.2 | 1.06 |
 | Elsewhen Guard | Errata | Skill | 1X | U | Gain 4 Block. Shift 1. | 13.6 / 13.2 | 1.03 |
 | Misprinted Edict | Errata | Attack | 1X+1 | U | Misprint. A: Deal 14. B: Deal 7 to all enemies. C: Gain 10 Block. Draw 1. | 26.3 / 26.4 | 1.00 |
@@ -223,30 +227,27 @@ from the same data it plays. Authored cards must land within ±10%.
 Automatic checks on the `planner` results. *Hard*: win rate under 50%. *Trivial*: a normal fight won 99%+ of the
 time for under 10% of max HP. *Soft elite*: an elite won 95%+ of the time for under 20% of max HP.
 
-- **Trivial:** Condottieri, for Vowknight (mid).
+- **Trivial:** Condottieri, for Splinter (mid), Vowknight (mid).
 - **Trivial:** Plague Season, for Vowknight (starter), Vowknight (mid).
 - **Trivial:** Glass Desert, for Vowknight (starter).
 - **Soft elite:** The Inquisitor: Vowknight (starter) loses 18%.
 - **Trivial:** A Footpad in the Fog, for every operative and deck.
-- **Trivial:** A Rookery Tough, for Oracle (starter), Oracle (mid), Splinter (mid), Vowknight (starter), Vowknight (mid).
+- **Trivial:** A Rookery Tough, for every operative and deck.
 - **Trivial:** A Fraying Street, for every operative and deck.
 - **Trivial:** A Stray Proxy, for every operative and deck.
 - **Trivial:** A Squire Errant, for every operative and deck.
-- **Trivial:** A Misprint on Drury Lane, for Splinter (starter), Vowknight (starter), Vowknight (mid).
-- **Hard:** The Lattice Engine: Oracle (starter) wins 14%, Splinter (starter) wins 10%
+- **Trivial:** A Misprint on Drury Lane, for Splinter (mid), Vowknight (starter), Vowknight (mid).
 - **Trivial:** A Condottiero off the Leash, for every operative and deck.
-- **Trivial:** Pikemen at the Porta Romana, for Oracle (starter), Splinter (starter), Splinter (mid), Vowknight (starter), Vowknight (mid).
-- **Trivial:** A Penitent in the Duomo, for every operative and deck.
+- **Trivial:** Pikemen at the Porta Romana, for every operative and deck.
+- **Trivial:** A Penitent in the Duomo, for Oracle (mid), Splinter (starter), Splinter (mid), Vowknight (starter), Vowknight (mid).
 - **Trivial:** An Engine on the Navigli, for every operative and deck.
 - **Trivial:** A Double in the Crowd, for every operative and deck.
-- **Trivial:** A Ravel in the Cloister, for Splinter (starter), Vowknight (starter), Vowknight (mid).
-- **Trivial:** The Lion Wakes, for Vowknight (starter), Vowknight (mid).
-- **Hard:** The Brass Court: Oracle (starter) wins 20%, Oracle (mid) wins 50%
-- **Hard:** Capitano di Ventura: Oracle (starter) wins 11%, Splinter (starter) wins 5%, Splinter (mid) wins 48%
-- **Soft elite:** The Seam-runner: Vowknight (starter) loses 18%, Vowknight (mid) loses 17%.
-- **Trivial:** A Horse Archer, for Oracle (mid), Splinter (starter), Splinter (mid), Vowknight (starter), Vowknight (mid).
+- **Trivial:** A Ravel in the Cloister, for Splinter (starter), Splinter (mid), Vowknight (starter), Vowknight (mid).
+- **Trivial:** The Lion Wakes, for Splinter (starter), Splinter (mid), Vowknight (starter), Vowknight (mid).
+- **Soft elite:** The Seam-runner: Splinter (mid) loses 18%, Vowknight (starter) loses 18%, Vowknight (mid) loses 17%.
+- **Trivial:** A Horse Archer, for Oracle (mid), Splinter (mid), Vowknight (starter), Vowknight (mid).
 - **Trivial:** A Sandglass Golem, for every operative and deck.
 - **Trivial:** Glassborn, for every operative and deck.
 - **Trivial:** Salt Wraiths, for Vowknight (mid).
-- **Hard:** The Black Glass Sentinel: Oracle (starter) wins 15%, Splinter (starter) wins 1%, Splinter (mid) wins 30%
+- **Hard:** The Black Glass Sentinel: Splinter (starter) wins 32%
 
