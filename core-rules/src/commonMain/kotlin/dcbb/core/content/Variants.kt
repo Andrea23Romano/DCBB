@@ -53,6 +53,7 @@ object Variants {
             forkFaces = null,
             misprintFaces = faces,
             elsewhere = emptyList(),
+            afterimage = false,
             flavor = "The Weave rewrote this one.",
         )
     }
@@ -127,7 +128,10 @@ object Variants {
         private fun constant(c: ConstantSpec): ConstantSpec {
             val strikeDamage = if (here(false) && c.strikeDamage > 0) c.strikeDamage + 1 else c.strikeDamage
             val strikeBlock = if (here(false) && c.strikeBlock > 0) c.strikeBlock + 1 else c.strikeBlock
-            return c.copy(dawn = effects(c.dawn), dusk = effects(c.dusk), strikeDamage = strikeDamage, strikeBlock = strikeBlock)
+            return c.copy(
+                dawn = effects(c.dawn), dusk = effects(c.dusk), strikeDamage = strikeDamage, strikeBlock = strikeBlock,
+                martyr = effects(c.martyr),
+            )
         }
 
         private fun effects(list: List<Effect>): List<Effect> = list.map { effect(it) }
@@ -139,11 +143,13 @@ object Variants {
             is Effect.Damage -> e.copy(amount = amount(e.amount))
             is Effect.Block -> e.copy(amount = amount(e.amount))
             is Effect.GainPlate -> if (here(true)) e.copy(n = e.n + 1) else e
+            is Effect.GainMight -> if (here(true)) e.copy(n = e.n + 1) else e
             is Effect.ApplyStatus -> if (e.status != StatusType.SLOW && here(true)) e.copy(n = e.n + 1) else e
             is Effect.Draw -> if (here(true)) e.copy(n = e.n + 1) else e
             is Effect.Foresee -> if (here(true)) e.copy(n = e.n + 1) else e
             is Effect.Recall -> if (here(true)) e.copy(n = e.n + 1) else e
             is Effect.Shift -> if (here(true)) e.copy(n = e.n + 1) else e
+            is Effect.Accelerate -> if (here(true)) e.copy(n = e.n + 1) else e
             is Effect.BleedThrough -> if (here(true)) e.copy(n = e.n + 1) else e
             is Effect.RestoreLastPhaseLoss -> if (here(true)) e.copy(max = e.max + 4) else e
             is Effect.GainParadox -> if (here(true) && e.n > 0) e.copy(n = e.n - 1) else e

@@ -83,6 +83,9 @@ data class PlayerState(
     val knownDrawUsed: Boolean = false,
     /** The Oracle's first Known card this turn has had its discount. */
     val knownDiscountUsed: Boolean = false,
+    /** Martyr has triggered in this enemy phase. */
+    val martyrUsed: Boolean = false,
+    val afterimages: List<Afterimage> = emptyList(),
 ) {
     fun status(type: StatusType): Int = statuses[type] ?: 0
     fun energyOf(color: EnergyColor): Int = energy[color] ?: 0
@@ -151,7 +154,12 @@ data class FxCtx(
     val iterations: Int = 0,
     /** The effect comes from an Attack card (Misprinted Psalter). */
     val attack: Boolean = false,
+    /** A delayed effect (Scheduled, Afterimage): if the chosen enemy has fallen, it hits the weakest one instead. */
+    val retarget: Boolean = false,
 )
+
+/** An Afterimage waiting for your next Dawn: a played card's effects at half value. */
+data class Afterimage(val effects: List<Effect>, val ctx: FxCtx, val label: String)
 
 enum class TurnStep {
     DUSK_REST,

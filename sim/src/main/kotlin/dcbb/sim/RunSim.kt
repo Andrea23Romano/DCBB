@@ -3,6 +3,9 @@ package dcbb.sim
 import dcbb.core.bot.RunBot
 import dcbb.core.bot.RunRunner
 import dcbb.core.content.FirstHour
+import dcbb.core.model.EnergyColor
+import dcbb.core.model.Faction
+import dcbb.core.model.Rarity
 import dcbb.core.run.MomentType
 import dcbb.core.run.RunEngine
 import dcbb.core.run.RunReplay
@@ -97,6 +100,54 @@ private class RunReport(val re: RunEngine, val byOp: Map<String, List<RunState>>
     private fun encName(id: String): String {
         val n = content.encounter(id).name
         return if (content.encounters.count { it.name == n } > 1) "$n ($id)" else n
+    }
+
+    /**
+     * How often a run sees the same cards. The pool is what card rewards can show in this mission: your faction's
+     * cards, neutral cards and the three eras' cards that you can pay for.
+     */
+    private fun StringBuilder.variety() {
+        appendLine("## Card variety")
+        appendLine()
+        appendLine("How often runs see the same cards. *Pool*: the cards rewards can show in this mission (your faction's,")
+        appendLine("neutral, and the three eras' that you can pay for). *Offered*: cards on reward screens in a run. *Repeats*:")
+        appendLine("the share of those the run had already been shown. *Taken (all runs)*: how many different cards the bot took.")
+        appendLine()
+        appendLine("| Operative | Pool | Offered per run | Different per run | Repeats | Taken per run | Taken (all runs) |")
+        appendLine("|---|---|---|---|---|---|---|")
+        for ((op, states) in byOp) {
+            val pool = pool(op)
+            val offered = states.map { it.stats.cardsOffered.size.toDouble() }.avg()
+            val distinct = states.map { it.stats.cardsOffered.toSet().size.toDouble() }.avg()
+            val repeats = states.sumOf { it.stats.cardsOffered.size - it.stats.cardsOffered.toSet().size }.toDouble() /
+                states.sumOf { it.stats.cardsOffered.size }
+            val takenAll = states.flatMap { it.stats.cardsPicked }.toSet()
+            appendLine(
+                "| ${name(op)} | ${pool.size} | ${num(offered)} | ${num(distinct)} | ${pct(repeats)} | " +
+                    "${num(states.map { it.stats.cardsPicked.size.toDouble() }.avg())} | ${takenAll.size} |",
+            )
+        }
+        appendLine()
+        appendLine("Most taken (share of runs that took the card at least once):")
+        appendLine()
+        for ((op, states) in byOp) {
+            val top = states.flatMap { it.stats.cardsPicked.toSet() }.groupingBy { it }.eachCount().entries
+                .sortedWith(compareByDescending<Map.Entry<String, Int>> { it.value }.thenBy { it.key }).take(5)
+            appendLine("- **${name(op)}:** " + top.joinToString(", ") { "${content.card(it.key).name} ${pct(it.value.toDouble() / states.size)}" })
+        }
+        appendLine()
+    }
+
+    private fun pool(op: String): List<String> {
+        val color = content.operative(op).color
+        val faction = content.operative(op).faction
+        val prefixes = acts.map { it.cardPrefix }
+        return content.authored.filter { def ->
+            def.rarity != Rarity.STARTER &&
+                (def.faction == faction || def.faction == Faction.NEUTRAL || (def.faction == Faction.ERA && prefixes.any { def.id.startsWith(it) })) &&
+                (def.cost.faith == 0 || color == EnergyColor.FAITH) && (def.cost.compute == 0 || color == EnergyColor.COMPUTE) &&
+                (def.cost.flux == 0 || color == EnergyColor.FLUX)
+        }.map { it.id }
     }
 
     fun render(): String = buildString {
@@ -261,6 +312,8 @@ private class RunReport(val re: RunEngine, val byOp: Map<String, List<RunState>>
             appendLine("| ${name(op)} | " + types.joinToString(" | ") { t -> num(states.map { (it.stats.chosen[t] ?: 0).toDouble() }.avg()) } + " |")
         }
         appendLine()
+
+        variety()
 
         appendLine("## Encounters")
         appendLine()

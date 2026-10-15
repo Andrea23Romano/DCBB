@@ -90,7 +90,7 @@ class SimulationTest {
     fun `engine invariants hold through hundreds of random fights`() {
         var fights = 0
         for (seed in 1L..12L) for (enc in content.encounters) for (op in content.operatives.keys) {
-            val deck = content.deck(op, if (seed % 2 == 0L) "mid" else "starter")
+            val deck = content.deck(op, listOf("starter", "mid", "expansion")[(seed % 3).toInt()])
             val bot = RandomBot(seed * 7 + fights)
             var out = engine.start(CombatSetup(op, deck, enc.enemies, seed * 1000 + fights))
             check(out.state, deck.size, "start")

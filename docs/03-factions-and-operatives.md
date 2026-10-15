@@ -34,7 +34,7 @@ Lore for each faction is in [02](02-world-and-lore.md#the-factions). Rules for e
 ## How to Read the Card Tables
 
 - **Cost:** `1F+1` means one Faith pip plus one generic pip. F is Faith, C is Compute, X is Flux. Full rules in [04](04-combat.md#costs-and-paying).
-- **Pts:** the card's budget points against its target. Every sample card is within the ±10% window. The formula is in [08](08-card-dsl.md#primitives-and-point-costs).
+- **Pts:** the card's budget points against its target. Every card in these tables is within the ±10% window. The formula is in [08](08-card-dsl.md#primitives-and-point-costs).
 - **Rarity:** St (starter), C (common), U (uncommon), R (rare), L (legendary).
 
 ---
@@ -51,6 +51,8 @@ Lore for each faction is in [02](02-world-and-lore.md#the-factions). Rules for e
 
 - The Vowknight takes **Vows** early. Vows are self-imposed restrictions that buff the Strike.
 - They sequence cards for **Litany**, and they let the Past fill up so **Remember** cards hit hard.
+- **Martyrdom.** **Martyr** Constants answer the first HP you lose each enemy phase: *Cilice* strikes back, *Martyr's Vigil* and *Stigmata* harden you, and *Martyr's Crown* burns every enemy. *Penitent's Lash* and *Blood Oath* hit harder after a round that hurt.
+- **Prophecy.** Schedule the blow the Canon foretells (*Foretold Blow*, *Revelation*, *The Last Hour*), then **Accelerate** it so it lands sooner (*Matins Bell*, *Hasten the Hour*, *Seventh Seal*).
 - The Vowknight is the most forgiving operative: high HP, plenty of Block, and a free attack every turn.
 - **How they lose:** breaking Vows at the wrong time, or reshuffling just before a Remember payoff.
 
@@ -63,19 +65,33 @@ Lore for each faction is in [02](02-world-and-lore.md#the-factions). Rules for e
 | Vow of the Sword | 1 | Constant (Vow) | 1F | St | Vow: play at most 1 Skill per turn. While kept, your Strike deals +4. | 11.2 / 12 |
 | Remembered Blow | 1 | Attack | 1F+1 | St | Deal 9. Remember 3 Attacks: +5. | 24 / 24 |
 
-### Sample card pool
+### Card pool
 
 | Card | Type | Cost | Rarity | Text | Pts |
 |---|---|---|---|---|---|
 | Hold Fast | Skill | 1F | C | Gain 4 Block. Litany (Skill): gain Plate 1. | 12.6 / 12 |
 | Sundial Cut | Attack | 1F | C | Deal 5. Remember 2 Skills: apply Weak 1. | 12.4 / 12 |
 | Crusader's Charge | Attack | 2F | C | Deal 10. Litany (Attack): +4. | 24.8 / 24 |
+| Cilice | Constant | 1F | C | Martyr: deal 5 to the enemy that hurt you. | 12 / 12 |
+| Martyr's Vigil | Constant | 1F | C | Martyr: gain Plate 2. | 12 / 12 |
+| Penitent's Lash | Attack | 1F | C | Deal 4. If you lost HP last round: +3. | 11.6 / 12 |
+| Foretold Blow | Attack | 1F | C | Schedule 2: deal 8. | 12.8 / 12 |
+| Matins Bell | Skill | 1 | C | Gain 3 Block. Accelerate 1. | 11.2 / 12 |
+| Antiphon | Attack | 1F | C | Deal 4. Litany (Skill): +4. | 12.8 / 12 |
 | Litany of Steel | Skill | 1 | U | Gain 4 Block. Litany (Attack): draw 1. | 13.2 / 13.2 |
 | Gnomon Blade | Constant (Relic) | 1F+1 | U | Your Strike deals +3 and gives 2 Block. | 25.9 / 26.4 |
 | Oathkeeper's Stand | Skill | 2F | U | Gain 9 Block. If you have an unbroken Vow: gain Plate 2. | 27.6 / 26.4 |
 | Smite the Heretic | Attack | 1F+1 | U | Deal 10. Double damage against Errata and Tear enemies. | 28 / 26.4 |
 | Recite the Canon | Skill | 1F | U | Recall 1. Remember 5: Recall 2 instead. Retain. | 13.2 / 13.2 |
+| Stigmata | Constant | 1F+1 | U | Martyr: gain Might 2 and gain Plate 1. | 25.2 / 26.4 |
+| Blood Oath | Attack | 2F | U | Deal 10. If you lost HP last round: +5. | 26 / 26.4 |
+| Absolution | Skill | 1F | U | Restore the HP you lost during the last enemy phase (max 4). Gain 2 Block. | 12.8 / 13.2 |
+| Hasten the Hour | Skill | 1 | U | Accelerate 2. Draw 1. | 14 / 13.2 |
+| Revelation | Skill | 1F+1 | U | Schedule 3: deal 13 to all enemies. | 25 / 26.4 |
 | Vow of Silence | Constant (Vow) | 1F | R | Vow: never Borrow or Delay. While kept: at Dawn, gain 1 Faith. | 16 / 15 |
+| Martyr's Crown | Constant | 2F | R | Martyr: deal 8 to all enemies. | 28.8 / 30 |
+| The Last Hour | Skill | 2F+1 | R | Schedule 3: deal 22 to all enemies. Retain. | 44.2 / 45 |
+| Seventh Seal | Skill | 1F | R | Accelerate 3. Retain. | 14 / 15 |
 | Verdict of the Line | Attack | 2F+1 | L | Deal 18, +1 per card in your Past (max +14). Erase. | 49 / 50.4 |
 
 > **Design note:** *Hold Fast* rewards back-to-back Skills, while *Vow of the Sword* forbids them. The best Vowknight decks are the ones that resolve that tension, for example by choosing *Vow of Silence* instead.
@@ -107,7 +123,8 @@ Imprints are level-up passives ([05](05-run-structure.md#imprints)).
 
 - **Forecast** every turn to make your next draws **Known**. The first one you play is cheaper, and every starter card has a **Calculated** bonus that only a Known card gets.
 - **Expected Value** and **Confidence Interval** grow with each Known card in your Present, so Foresee more and play the Known cards together.
-- Install **Subroutines** that work every turn without you.
+- Install **Subroutines** that work every turn without you: *Crawler.exe* and *Sentinel.exe* join *Watchdog.exe* and *Lance.exe*.
+- Feed Known cards to bigger payoffs: *Overfit* and *Ensemble Model* hit harder Calculated, *Bayesian Update* draws, and *The Halting Problem* turns a Known hand into Compute.
 - **Iterate** cards grow stronger each time you play them.
 - The Oracle is the precision operative: it rarely gets surprised and gets stronger as a fight goes on.
 - **How they lose:** a slow first turn against a fast elite, enemies that Glitch and Disrupt, and the Tear, which Erases the top of your Future, where the Known cards wait.
@@ -121,7 +138,7 @@ Imprints are level-up passives ([05](05-run-structure.md#imprints)).
 | Probability Lance | 1 | Attack | 1C | St | Deal 3. Calculated: +7. | 13 / 12 |
 | Watchdog.exe | 1 | Constant (Subroutine) | 1C | St | Dusk: gain 2 Block. | 11.5 / 12 |
 
-### Sample card pool
+### Card pool
 
 | Card | Type | Cost | Rarity | Text | Pts |
 |---|---|---|---|---|---|
@@ -130,12 +147,22 @@ Imprints are level-up passives ([05](05-run-structure.md#imprints)).
 | Expected Value | Attack | 1C | C | Deal 3, +2 per Known card in your Present (max +6). | 13.2 / 12 |
 | Confidence Interval | Skill | 1C | C | Gain 3 Block, +1 per Known card in your Present (max +4). | 11.5 / 12 |
 | Scatter Protocol | Attack | 1C | C | Deal 3 to all enemies. Calculated: Foresee 2. | 11 / 12 |
+| Heuristic | Skill | 1C | C | Foresee 3. Draw 1. | 12 / 12 |
+| Backpropagation | Skill | 1C | C | Gain 2 Block. Iterate +2. | 12 / 12 |
+| Crawler.exe | Constant (Subroutine) | 1C | C | Dusk: deal 3 to a random enemy. | 12.2 / 12 |
+| Ghost Signal | Attack | 1C+1 | C | Deal 8. Afterimage. | 24 / 24 |
 | Deterministic Model | Skill | 1C+1 | U | Foresee 3. Draw 2. Calculated: gain 2 Compute. | 28 / 26.4 |
 | Lance.exe | Constant (Subroutine) | 2C | U | Dusk: deal 6 to the weakest enemy. | 27.4 / 26.4 |
 | Rollback | Skill | 1C | U | Restore the HP you lost during the last enemy phase (max 12). Erase. | 13 / 13.2 |
 | Hold Pattern | Skill | 1C | U | Delay 1. Calculated: draw 1. | 13 / 13.2 |
+| Overfit | Attack | 1C+1 | U | Deal 10. Calculated: +8. | 28 / 26.4 |
+| Bayesian Update | Skill | 1C | U | Draw 1. Calculated: draw 2. | 12 / 13.2 |
+| Sentinel.exe | Constant (Subroutine) | 2C | U | Dusk: gain 3 Block and deal 2 to the weakest enemy. | 26.4 / 26.4 |
+| Overclock | Skill | 0 | U | Gain 1 Compute. Lose 2 HP. | 6 / 6.6 |
 | Optimal Path | Skill | 1C | R | Foresee 3. Put one of them into your Present. | 14 / 15 |
 | Monte Carlo | Attack | 1C+1 | R | Deal 3 to a random enemy 5 times. Calculated: target the weakest enemy instead. | 27 / 30 |
+| The Halting Problem | Skill | 2C | R | Foresee 5. Gain 1 Compute per Known card in your Present (max 3). | 28 / 30 |
+| Ensemble Model | Attack | 1C+1 | R | Deal 7 to all enemies. Calculated: +5. | 28.5 / 30 |
 | Proof of MERIDIAN | Constant (Subroutine) | 2C+1 | L | Dawn: gain 1 Compute per Known card in your Present (max 3). Dusk: Foresee 1. | 48 / 50.4 |
 
 ### Sample Imprints
@@ -173,10 +200,11 @@ Imprints are level-up passives ([05](05-run-structure.md#imprints)).
 **How they play.**
 
 - **Shift every turn.** Each Shift is two decisions: the card you need now comes in, and the card you send away acts.
+- More Elsewhere cards (*Marginalia*, *Hairline Split*, *Rival Self*, *Multitude*) and more ways to Shift (*Version Control*, *Palimpsest*) make the Shift engine a whole deck.
 - Stash key cards in the Other Hand until the right moment.
 - **Fork** cards to choose between faces.
 - **Misprint** and **Bleed-through** bring in power from other branches.
-- Spend **Paradox** for spikes, while watching the Unravel line.
+- Spend **Paradox** for spikes, while watching the Unravel line: *Feedback Loop*, *Overprint* and *Fray Lash* grow with it, and *Wild Erratum* feeds it.
 - The Splinter is the highest-skill operative and its turns have the highest ceiling. It also humiliates Predictive enemies by changing its hand after they read it.
 - **How they lose:** greed with Paradox (Unravel), and a low HP pool.
 
@@ -189,7 +217,7 @@ Imprints are level-up passives ([05](05-run-structure.md#imprints)).
 | Split the Moment | 1 | Skill | 1X | St | Fork a card in your Present. Draw 1. | 12 / 12 |
 | Two Places at Once | 1 | Fork (Attack / Skill) | 1 | St | A: Deal 5. B: Gain 4 Block. | 12 / 12 |
 
-### Sample card pool
+### Card pool
 
 | Card | Type | Cost | Rarity | Text | Pts |
 |---|---|---|---|---|---|
@@ -198,12 +226,22 @@ Imprints are level-up passives ([05](05-run-structure.md#imprints)).
 | Caret Strike | Attack | 1 | C | Deal 4. If you Shifted this turn: +3. | 11.6 / 12 |
 | Stet | Skill | 1X | C | Gain 3 Block. Elsewhere: gain 5 Block. | 13.1 / 12 |
 | Dele | Attack | 1X | C | Deal 5. Elsewhere: deal 5 to the weakest enemy. | 11.4 / 12 |
+| Marginalia | Skill | 1X | C | Draw 2. Elsewhere: draw 1. | 12.9 / 12 |
+| Hairline Split | Attack | 1X | C | Deal 3 twice. Elsewhere: deal 3 to a random enemy. | 12.8 / 12 |
+| Feedback Loop | Skill | 1X | C | Gain 2 Block, +1 per Paradox (max +5). | 12 / 12 |
+| Double Take | Attack | 1X+1 | C | Deal 9. Afterimage. | 26 / 24 |
 | Crosstalk | Skill | 1X | U | Bleed-through 2. Gain 1 Paradox. | 14 / 13.2 |
 | Misprinted Edict | Attack | 1X+1 | U | Misprint. A: Deal 14. B: Deal 7 to all enemies. C: Gain 10 Block, draw 1. | 26.3 / 26.4 |
-| Paradox Engine | Constant | 1X | U | Dawn: gain 1 Flux and 2 Paradox. | 14.4 / 13.2 |
+| Paradox Engine | Constant | 1X | U | Dawn: gain 1 Flux and gain 2 Paradox. | 14.4 / 13.2 |
 | Elsewhen Guard | Skill | 1X | U | Gain 4 Block. Shift 1. | 13.6 / 13.2 |
+| Wild Erratum | Attack | 1X+1 | U | Deal 9 to all enemies. Gain 1 Paradox. | 25 / 26.4 |
+| Version Control | Skill | 1X | U | Shift 2. Draw 1. Gain 1 Paradox. | 12 / 13.2 |
+| Rival Self | Attack | 1X | U | Deal 6. Elsewhere: deal 6 to a random enemy. | 13.5 / 13.2 |
+| Overprint | Attack | 1X | U | Deal 5. Paradox 4+: +3. | 13.6 / 13.2 |
 | Unwrite | Skill | 1X | R | Spend 2 Paradox. Remove an enemy intent from the Track (not Fixed). Draw 1. | 14 / 15 |
 | Double Exposure | Fork (Attack / Skill) | 1X+1 | R | A: Deal 7 twice. B: Gain 11 Block. Shift 1. | 32.4 / 30 |
+| Palimpsest | Skill | 1X | R | Shift 3. Draw 1. Gain 1 Paradox. | 16 / 15 |
+| Multitude | Attack | 2X | R | Deal 10. Elsewhere: deal 10 to a random enemy. Afterimage. | 32.6 / 30 |
 | The Thousand Doors | Constant | 2X+1 | L | Whenever you Shift a card into your Present, Fork it. The first card you Shift in each turn costs 1 less. | 45.6 / 50.4 |
 
 ### Sample Imprints
@@ -221,19 +259,35 @@ Imprints are level-up passives ([05](05-run-structure.md#imprints)).
 
 - **Neutral cards** can appear for anyone.
 - **Era cards** join reward and shop pools only while you are in that era, so every era tastes different.
-- Both use universal keywords only.
+- Both use universal keywords only. **Afterimage** (*Lingering Strike*, *Lingering Ward*, *Resonance*, *Sfumato*) repeats a card at half value at your next Dawn, and **Accelerate** (*Tempus Fugit*, *Ornithopter*) brings a Scheduled effect sooner.
 
 | Card | Pool | Type | Cost | Rarity | Text | Pts |
 |---|---|---|---|---|---|---|
 | Hold the Hour | Neutral | Skill | 1 | C | Delay 1. Foresee 1. | 12 / 12 |
 | Stitch in Time | Neutral | Skill | 1 | C | Gain 3 Block. Schedule 2: gain 3 Block. | 13 / 12 |
 | Observe | Neutral | Skill | 0 | C | Observe (collapse a Forked intent). Foresee 1. | 6 / 6 |
+| Quick Study | Neutral | Skill | 0 | C | Draw 1. | 6 / 6 |
+| Rally | Neutral | Skill | 1 | C | Gain 3 Block. Draw 1. | 13.2 / 12 |
+| Lingering Strike | Neutral | Attack | 2 | C | Deal 8. Afterimage. | 24 / 24 |
+| Lingering Ward | Neutral | Skill | 2 | C | Gain 7 Block. Afterimage. | 24 / 24 |
+| Tempus Fugit | Neutral | Skill | 1 | U | Accelerate 2. Foresee 2. | 12 / 13.2 |
+| Déjà Vu | Neutral | Skill | 1 | U | Recall 1. Draw 1. | 13 / 13.2 |
+| Stolen Time | Neutral | Skill | 0 | U | Draw 2. Schedule 1: lose 3 HP. | 6 / 6.6 |
+| Pocket Watch | Neutral | Constant | 1 | U | Dawn: draw 1. | 14.4 / 13.2 |
+| Stopped Clock | Neutral | Skill | 1 | R | Delay 2. Erase. | 15 / 15 |
+| Resonance | Neutral | Attack | 2 | R | Deal 7 to all enemies. Afterimage. | 30 / 30 |
 | Gaslight Ambush | London 1843 | Attack | 1 | C | Deal 4 to all enemies. | 12 / 12 |
+| Fleet Street Fog | London 1843 | Skill | 1 | C | Apply Weak 1 to all enemies. Gain 3 Block. | 13.2 / 12 |
 | Punchcard Program | London 1843 | Skill | 1 | U | Foresee 2. Schedule 2: draw 2. | 13.6 / 13.2 |
+| Steam Hammer | London 1843 | Attack | 2 | U | Deal 10. Schedule 2: deal 5. | 28 / 26.4 |
 | Vitruvian Guard | Milan 1495 | Skill | 1 | C | Gain 4 Block, +1 per Constant you have (max +3). | 12 / 12 |
+| Ornithopter | Milan 1495 | Skill | 1 | C | Accelerate 2. Gain 2 Block. | 12.8 / 12 |
 | Codex Sketch | Milan 1495 | Skill | 1 | U | Choose a card in your Present: it gains Retain and costs 1 less this turn. | 12 / 13.2 |
+| Sfumato | Milan 1495 | Skill | 2 | U | Gain 8 Block. Afterimage. | 28.8 / 26.4 |
 | Mirage Step | Salt Waste 1191 | Skill | 0 | C | Gain 1 Block. Shift 1. | 6.4 / 6 |
+| Sandglass Blade | Salt Waste 1191 | Attack | 1 | C | Deal 4. Schedule 2: deal 3. | 12.8 / 12 |
 | Salt Ward | Salt Waste 1191 | Skill | 2 | U | Gain 9 Block. Observe. | 25.6 / 26.4 |
+| Sirocco | Salt Waste 1191 | Attack | 2 | U | Deal 6 to all enemies. Apply Weak 1 to all enemies. | 24 / 26.4 |
 
 ---
 

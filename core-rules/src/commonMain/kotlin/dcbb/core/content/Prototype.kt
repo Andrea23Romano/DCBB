@@ -85,6 +85,27 @@ object Prototype {
             it.copy(constant = it.constant?.copy(dawn = listOf(Effect.GainEnergy(EnergyColor.FAITH, Amount(1)), Effect.Foresee(1))))
         },
         "saltwaste.mirage_step" to { it.copy(effects = listOf(block(1), Effect.Shift(1), Effect.Foresee(1))) },
+        // The content expansion: upgrades a single step can't bring to ×1.30.
+        "order.martyrs_vigil" to { it.copy(constant = it.constant?.copy(martyr = listOf(Effect.GainPlate(2), block(1)))) },
+        "conv.heuristic" to { it.copy(effects = listOf(Effect.Foresee(5), Effect.Draw(1))) },
+        "conv.overclock" to { it.copy(effects = listOf(Effect.GainEnergy(EnergyColor.COMPUTE, Amount(1)), Effect.LoseHp(1))) },
+        "conv.halting_problem" to {
+            it.copy(
+                effects = listOf(
+                    Effect.Foresee(5),
+                    Effect.Draw(2),
+                    Effect.GainEnergy(EnergyColor.COMPUTE, Amount(0, Bonus.Per(Counter.KNOWN_IN_PRESENT, 1, 3))),
+                ),
+            )
+        },
+        "errata.marginalia" to { it.copy(effects = listOf(Effect.Draw(2)), elsewhere = listOf(Effect.Draw(1)), retain = true) },
+        "neutral.quick_study" to { it.copy(effects = listOf(Effect.Draw(1), block(1))) },
+        "neutral.deja_vu" to { it.copy(effects = listOf(Effect.Recall(1), Effect.Draw(1), block(2))) },
+        "neutral.stolen_time" to { it.copy(effects = listOf(Effect.Draw(2), Effect.Schedule(1, listOf(Effect.LoseHp(2))))) },
+        "neutral.pocket_watch" to {
+            it.copy(constant = ConstantSpec(ConstantKind.NONE, dawn = listOf(Effect.Draw(1))), retain = true)
+        },
+        "neutral.stopped_clock" to { it.copy(effects = listOf(Effect.Delay(2)), eraseAfterPlay = false) },
     )
 
     // ---- effect shorthands ------------------------------------------------------------------------------------
@@ -114,6 +135,7 @@ object Prototype {
         requiresParadox: Int = 0,
         exception: String? = null,
         elsewhere: List<Effect> = emptyList(),
+        afterimage: Boolean = false,
     ) = CardDef(
         id = id,
         name = name,
@@ -130,6 +152,7 @@ object Prototype {
         requiresParadox = requiresParadox,
         budgetException = exception,
         elsewhere = elsewhere,
+        afterimage = afterimage,
     )
 
     // ---- cards ------------------------------------------------------------------------------------------------
@@ -194,6 +217,60 @@ object Prototype {
                 "order.verdict_of_the_line", "Verdict of the Line", o, CardType.ATTACK, Rarity.LEGENDARY, "2F+1",
                 listOf(dmg(18, Bonus.Per(Counter.PAST_SIZE, 1, 14))),
                 erase = true,
+            ),
+            // Martyr: the first time you lose HP in an enemy phase, the Order answers.
+            card(
+                "order.cilice", "Cilice", o, CardType.CONSTANT, Rarity.COMMON, "1F",
+                constant = ConstantSpec(ConstantKind.NONE, martyr = listOf(dmgTo(5, Tgt.ATTACKER))),
+            ),
+            card(
+                "order.martyrs_vigil", "Martyr's Vigil", o, CardType.CONSTANT, Rarity.COMMON, "1F",
+                constant = ConstantSpec(ConstantKind.NONE, martyr = listOf(Effect.GainPlate(2))),
+            ),
+            card(
+                "order.penitents_lash", "Penitent's Lash", o, CardType.ATTACK, Rarity.COMMON, "1F",
+                listOf(dmg(4, Bonus.If(Cond.HurtLastRound, 3))),
+            ),
+            card(
+                "order.stigmata", "Stigmata", o, CardType.CONSTANT, Rarity.UNCOMMON, "1F+1",
+                constant = ConstantSpec(ConstantKind.NONE, martyr = listOf(Effect.GainMight(2), Effect.GainPlate(1))),
+            ),
+            card(
+                "order.blood_oath", "Blood Oath", o, CardType.ATTACK, Rarity.UNCOMMON, "2F",
+                listOf(dmg(10, Bonus.If(Cond.HurtLastRound, 5))),
+            ),
+            card(
+                "order.absolution", "Absolution", o, CardType.SKILL, Rarity.UNCOMMON, "1F",
+                listOf(Effect.RestoreLastPhaseLoss(4), block(2)),
+            ),
+            card(
+                "order.martyrs_crown", "Martyr's Crown", o, CardType.CONSTANT, Rarity.RARE, "2F",
+                constant = ConstantSpec(ConstantKind.NONE, martyr = listOf(dmgTo(8, Tgt.ALL_ENEMIES))),
+            ),
+            // Prophecy: the Canon's calendar. Schedule the blow, then Accelerate the hour.
+            card(
+                "order.foretold_blow", "Foretold Blow", o, CardType.ATTACK, Rarity.COMMON, "1F",
+                listOf(Effect.Schedule(2, listOf(dmg(8)))),
+            ),
+            card("order.matins_bell", "Matins Bell", o, CardType.SKILL, Rarity.COMMON, "1", listOf(block(3), Effect.Accelerate(1))),
+            card(
+                "order.hasten_the_hour", "Hasten the Hour", o, CardType.SKILL, Rarity.UNCOMMON, "1",
+                listOf(Effect.Accelerate(2), Effect.Draw(1)),
+            ),
+            card(
+                "order.revelation", "Revelation", o, CardType.SKILL, Rarity.UNCOMMON, "1F+1",
+                listOf(Effect.Schedule(3, listOf(dmgTo(13, Tgt.ALL_ENEMIES)))),
+            ),
+            card(
+                "order.the_last_hour", "The Last Hour", o, CardType.SKILL, Rarity.RARE, "2F+1",
+                listOf(Effect.Schedule(3, listOf(dmgTo(22, Tgt.ALL_ENEMIES)))),
+                retain = true,
+            ),
+            card("order.seventh_seal", "Seventh Seal", o, CardType.SKILL, Rarity.RARE, "1F", listOf(Effect.Accelerate(3)), retain = true),
+            // Litany: call and response.
+            card(
+                "order.antiphon", "Antiphon", o, CardType.ATTACK, Rarity.COMMON, "1F",
+                listOf(dmg(4, Bonus.If(Cond.Litany(Kind.SKILL), 4))),
             ),
         )
     }
@@ -274,6 +351,37 @@ object Prototype {
                     dawn = listOf(Effect.GainEnergy(EnergyColor.COMPUTE, Amount(0, Bonus.Per(Counter.KNOWN_IN_PRESENT, 1, 3)))),
                     dusk = listOf(Effect.Foresee(1)),
                 ),
+            ),
+            card("conv.heuristic", "Heuristic", c, CardType.SKILL, Rarity.COMMON, "1C", listOf(Effect.Foresee(3), Effect.Draw(1))),
+            card(
+                "conv.backpropagation", "Backpropagation", c, CardType.SKILL, Rarity.COMMON, "1C",
+                listOf(block(2, Bonus.Per(Counter.ITERATIONS, 2, 40))),
+            ),
+            card(
+                "conv.crawler", "Crawler.exe", c, CardType.CONSTANT, Rarity.COMMON, "1C",
+                constant = ConstantSpec(ConstantKind.SUBROUTINE, dusk = listOf(dmgTo(3, Tgt.RANDOM_ENEMY))),
+            ),
+            card("conv.ghost_signal", "Ghost Signal", c, CardType.ATTACK, Rarity.COMMON, "1C+1", listOf(dmg(8)), afterimage = true),
+            card("conv.overfit", "Overfit", c, CardType.ATTACK, Rarity.UNCOMMON, "1C+1", listOf(dmg(10, calculated(8)))),
+            card(
+                "conv.bayesian_update", "Bayesian Update", c, CardType.SKILL, Rarity.UNCOMMON, "1C",
+                listOf(Effect.Draw(1), whenever(Cond.Calculated, Effect.Draw(2))),
+            ),
+            card(
+                "conv.sentinel", "Sentinel.exe", c, CardType.CONSTANT, Rarity.UNCOMMON, "2C",
+                constant = ConstantSpec(ConstantKind.SUBROUTINE, dusk = listOf(block(3), dmgTo(2, Tgt.WEAKEST_ENEMY))),
+            ),
+            card(
+                "conv.overclock", "Overclock", c, CardType.SKILL, Rarity.UNCOMMON, "0",
+                listOf(Effect.GainEnergy(EnergyColor.COMPUTE, Amount(1)), Effect.LoseHp(2)),
+            ),
+            card(
+                "conv.halting_problem", "The Halting Problem", c, CardType.SKILL, Rarity.RARE, "2C",
+                listOf(Effect.Foresee(5), Effect.GainEnergy(EnergyColor.COMPUTE, Amount(0, Bonus.Per(Counter.KNOWN_IN_PRESENT, 1, 3)))),
+            ),
+            card(
+                "conv.ensemble_model", "Ensemble Model", c, CardType.ATTACK, Rarity.RARE, "1C+1",
+                listOf(Effect.Damage(Amount(7, calculated(5)), Tgt.ALL_ENEMIES)),
             ),
         )
     }
@@ -356,6 +464,45 @@ object Prototype {
                 "errata.thousand_doors", "The Thousand Doors", x, CardType.CONSTANT, Rarity.LEGENDARY, "2X+1",
                 constant = ConstantSpec(ConstantKind.NONE, onShiftIn = ShiftInRule(forkShifted = true, firstShiftDiscount = 1)),
             ),
+            card(
+                "errata.marginalia", "Marginalia", x, CardType.SKILL, Rarity.COMMON, "1X", listOf(Effect.Draw(2)),
+                elsewhere = listOf(Effect.Draw(1)),
+            ),
+            card(
+                "errata.hairline_split", "Hairline Split", x, CardType.ATTACK, Rarity.COMMON, "1X", listOf(hits(3, 2)),
+                elsewhere = listOf(dmgTo(3, Tgt.RANDOM_ENEMY)),
+            ),
+            card(
+                "errata.feedback_loop", "Feedback Loop", x, CardType.SKILL, Rarity.COMMON, "1X",
+                listOf(block(2, Bonus.Per(Counter.PARADOX, 1, 5))),
+            ),
+            card("errata.double_take", "Double Take", x, CardType.ATTACK, Rarity.COMMON, "1X+1", listOf(dmg(9)), afterimage = true),
+            card(
+                "errata.wild_erratum", "Wild Erratum", x, CardType.ATTACK, Rarity.UNCOMMON, "1X+1",
+                listOf(dmgTo(9, Tgt.ALL_ENEMIES), Effect.GainParadox(1)),
+            ),
+            card(
+                "errata.version_control", "Version Control", x, CardType.SKILL, Rarity.UNCOMMON, "1X",
+                listOf(Effect.Shift(2), Effect.Draw(1), Effect.GainParadox(1)),
+            ),
+            // Every version of you wants to be the one that stays.
+            card(
+                "errata.rival_self", "Rival Self", x, CardType.ATTACK, Rarity.UNCOMMON, "1X", listOf(dmg(6)),
+                elsewhere = listOf(dmgTo(6, Tgt.RANDOM_ENEMY)),
+            ),
+            card(
+                "errata.overprint", "Overprint", x, CardType.ATTACK, Rarity.UNCOMMON, "1X",
+                listOf(dmg(5, Bonus.If(Cond.ParadoxAtLeast(4), 3))),
+            ),
+            card(
+                "errata.palimpsest", "Palimpsest", x, CardType.SKILL, Rarity.RARE, "1X",
+                listOf(Effect.Shift(3), Effect.Draw(1), Effect.GainParadox(1)),
+            ),
+            card(
+                "errata.multitude", "Multitude", x, CardType.ATTACK, Rarity.RARE, "2X", listOf(dmg(10)),
+                elsewhere = listOf(dmgTo(10, Tgt.RANDOM_ENEMY)),
+                afterimage = true,
+            ),
         )
     }
 
@@ -369,10 +516,41 @@ object Prototype {
                 listOf(block(3), Effect.Schedule(2, listOf(block(3)))),
             ),
             card("neutral.observe", "Observe", n, CardType.SKILL, Rarity.COMMON, "0", listOf(Effect.Observe, Effect.Foresee(1))),
+            card("neutral.quick_study", "Quick Study", n, CardType.SKILL, Rarity.COMMON, "0", listOf(Effect.Draw(1))),
+            card("neutral.rally", "Rally", n, CardType.SKILL, Rarity.COMMON, "1", listOf(block(3), Effect.Draw(1))),
+            card("neutral.lingering_strike", "Lingering Strike", n, CardType.ATTACK, Rarity.COMMON, "2", listOf(dmg(8)), afterimage = true),
+            card("neutral.lingering_ward", "Lingering Ward", n, CardType.SKILL, Rarity.COMMON, "2", listOf(block(7)), afterimage = true),
+            card(
+                "neutral.tempus_fugit", "Tempus Fugit", n, CardType.SKILL, Rarity.UNCOMMON, "1",
+                listOf(Effect.Accelerate(2), Effect.Foresee(2)),
+            ),
+            card("neutral.deja_vu", "Déjà Vu", n, CardType.SKILL, Rarity.UNCOMMON, "1", listOf(Effect.Recall(1), Effect.Draw(1))),
+            card(
+                "neutral.stolen_time", "Stolen Time", n, CardType.SKILL, Rarity.UNCOMMON, "0",
+                listOf(Effect.Draw(2), Effect.Schedule(1, listOf(Effect.LoseHp(3)))),
+            ),
+            card(
+                "neutral.pocket_watch", "Pocket Watch", n, CardType.CONSTANT, Rarity.UNCOMMON, "1",
+                constant = ConstantSpec(ConstantKind.NONE, dawn = listOf(Effect.Draw(1))),
+            ),
+            card("neutral.stopped_clock", "Stopped Clock", n, CardType.SKILL, Rarity.RARE, "1", listOf(Effect.Delay(2)), erase = true),
+            card(
+                "neutral.resonance", "Resonance", n, CardType.ATTACK, Rarity.RARE, "2",
+                listOf(dmgTo(7, Tgt.ALL_ENEMIES)),
+                afterimage = true,
+            ),
             card("london.gaslight_ambush", "Gaslight Ambush", era, CardType.ATTACK, Rarity.COMMON, "1", listOf(dmgTo(4, Tgt.ALL_ENEMIES))),
             card(
                 "london.punchcard_program", "Punchcard Program", era, CardType.SKILL, Rarity.UNCOMMON, "1",
                 listOf(Effect.Foresee(2), Effect.Schedule(2, listOf(Effect.Draw(2)))),
+            ),
+            card(
+                "london.fleet_street_fog", "Fleet Street Fog", era, CardType.SKILL, Rarity.COMMON, "1",
+                listOf(Effect.ApplyStatus(StatusType.WEAK, 1, Tgt.ALL_ENEMIES), block(3)),
+            ),
+            card(
+                "london.steam_hammer", "Steam Hammer", era, CardType.ATTACK, Rarity.UNCOMMON, "2",
+                listOf(dmg(10), Effect.Schedule(2, listOf(dmg(5)))),
             ),
             card(
                 "milan.vitruvian_guard", "Vitruvian Guard", era, CardType.SKILL, Rarity.COMMON, "1",
@@ -382,8 +560,18 @@ object Prototype {
                 "milan.codex_sketch", "Codex Sketch", era, CardType.SKILL, Rarity.UNCOMMON, "1",
                 listOf(Effect.GrantRetain, Effect.ReduceCostThisTurn(1)),
             ),
+            card("milan.ornithopter", "Ornithopter", era, CardType.SKILL, Rarity.COMMON, "1", listOf(Effect.Accelerate(2), block(2))),
+            card("milan.sfumato", "Sfumato", era, CardType.SKILL, Rarity.UNCOMMON, "2", listOf(block(8)), afterimage = true),
             card("saltwaste.mirage_step", "Mirage Step", era, CardType.SKILL, Rarity.COMMON, "0", listOf(block(1), Effect.Shift(1))),
             card("saltwaste.salt_ward", "Salt Ward", era, CardType.SKILL, Rarity.UNCOMMON, "2", listOf(block(9), Effect.Observe)),
+            card(
+                "saltwaste.sandglass_blade", "Sandglass Blade", era, CardType.ATTACK, Rarity.COMMON, "1",
+                listOf(dmg(4), Effect.Schedule(2, listOf(dmg(3)))),
+            ),
+            card(
+                "saltwaste.sirocco", "Sirocco", era, CardType.ATTACK, Rarity.UNCOMMON, "2",
+                listOf(dmgTo(6, Tgt.ALL_ENEMIES), Effect.ApplyStatus(StatusType.WEAK, 1, Tgt.ALL_ENEMIES)),
+            ),
         )
     }
 
@@ -885,6 +1073,11 @@ object Prototype {
                     "order.hold_fast", "order.sundial_cut", "order.crusaders_charge", "order.litany_of_steel",
                     "order.gnomon_blade", "order.oathkeepers_stand", "neutral.hold_the_hour", "neutral.stitch_in_time",
                 ),
+                // The content expansion's cards, for trying them in the combat lab (the simulator plays starter and mid).
+                "expansion" to vow + listOf(
+                    "order.cilice", "order.martyrs_vigil", "order.penitents_lash", "order.foretold_blow",
+                    "order.matins_bell", "order.revelation", "order.stigmata", "neutral.lingering_strike",
+                ),
             ),
             "oracle" to mapOf(
                 "starter" to oracle,
@@ -892,12 +1085,20 @@ object Prototype {
                     "conv.recursive_strike", "conv.predictive_shield", "conv.scatter_protocol", "conv.deterministic_model",
                     "conv.lance_exe", "conv.hold_pattern", "conv.expected_value", "neutral.hold_the_hour",
                 ),
+                "expansion" to oracle + listOf(
+                    "conv.heuristic", "conv.crawler", "conv.ghost_signal", "conv.overfit",
+                    "conv.bayesian_update", "conv.sentinel", "neutral.tempus_fugit", "neutral.lingering_ward",
+                ),
             ),
             "splinter" to mapOf(
                 "starter" to splinter,
                 "mid" to splinter + listOf(
                     "errata.borrowed_self", "errata.fray_lash", "errata.caret_strike", "errata.crosstalk",
                     "errata.elsewhen_guard", "errata.misprinted_edict", "errata.stet", "errata.dele",
+                ),
+                "expansion" to splinter + listOf(
+                    "errata.marginalia", "errata.hairline_split", "errata.feedback_loop", "errata.double_take",
+                    "errata.rival_self", "errata.version_control", "errata.overprint", "neutral.rally",
                 ),
             ),
         )

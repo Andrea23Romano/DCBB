@@ -8,6 +8,7 @@ import dcbb.core.model.CardType
 import dcbb.core.model.EnergyColor.FLUX
 import dcbb.core.model.EnergyColor.NEUTRAL
 import dcbb.core.model.Faction
+import dcbb.core.state.CardInst
 import dcbb.core.state.ShiftPair
 import dcbb.core.state.TrackKind
 import kotlin.test.Test
@@ -149,7 +150,11 @@ class ErrataTest {
             assertEquals(maxOf(0, def.cost.total - 1), cost.total)
             assertEquals(cost.total, cost.generic, "colored pips become generic")
         }
-        val card = bled.first { content.card(it.defId).type != CardType.CONSTANT }
+        // A bled card that isn't a Constant is Erased after play. If both bled cards are Constants, bleed a Line Strike in.
+        val card = bled.firstOrNull { content.card(it.defId).type != CardType.CONSTANT }
+            ?: CardInst(s.nextUid, "order.line_strike", bleed = true, costDelta = -1).also { c ->
+                s = s.copy(nextUid = s.nextUid + 1, player = s.player.copy(present = s.player.present + c))
+            }
         val target = if (engine.needs(engine.faces(card)[0]).enemy) s.enemies[0].uid else null
         val played = engine.apply(s, PlayCard(card.uid, target = target))
         if (played.error == null) assertTrue(played.state.settle().player.erased.any { it.uid == card.uid })

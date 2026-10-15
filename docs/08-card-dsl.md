@@ -52,7 +52,7 @@ type: constant
 subtype: vow
 rarity: starter
 cost: { faith: 1 }
-trigger: while_kept            # start_of_turn | end_of_turn | on_play:<kind> | on_shift | on_delay | on_lose_hp | while_kept
+trigger: while_kept            # start_of_turn | end_of_turn | on_play:<kind> | on_shift | on_delay | on_lose_hp (Martyr) | while_kept
 effects:
   - { op: modify_signature, stat: damage, amount: 4 }
 vow:
@@ -93,13 +93,13 @@ elsewhere:                     # resolves when you Shift this card out of your P
 | Field | Meaning |
 |---|---|
 | `op` | A primitive (see [the table below](#primitives-and-point-costs)) |
-| `target` | `self`, `chosen_enemy`, `same_target`, `random_enemy`, `weakest_enemy`, `all_enemies`, `chosen_intent`, `chosen_track_item`, `card_in_present`, `card_in_past` |
+| `target` | `self`, `chosen_enemy`, `same_target`, `random_enemy`, `weakest_enemy`, `all_enemies`, `attacker` (Martyr only: the enemy that hurt you), `chosen_intent`, `chosen_track_item`, `card_in_present`, `card_in_past` |
 | `amount` / `n` / `turns` / `stacks` | Magnitude |
 | `repeat` | Number of hits (`damage` ×repeat) |
 | `when` | A condition (below) |
 | `schedule` | Countdown N; the effect goes on the Track |
 | `scale` | `{ per: <counter>, amount: N, max: M }` for "+N per X" effects |
-| `afterimage` | `true` to repeat at half value next Dawn |
+| `afterimage` | `true` to repeat at half value next Dawn. Only damage, Block, Plate, Might, energy, draw and statuses can echo. |
 
 ### Conditions
 
@@ -117,6 +117,7 @@ Each condition has a **difficulty category**, which sets its budget multiplier.
 | `hp_below_pct: n` | your HP below n% | n ≥ 50 easy · n < 50 medium |
 | `constants_at_least: n` | n+ Constants in play | n = 1 easy · n ≥ 2 medium |
 | `shifted_this_turn` | you Shifted at least once this turn | medium |
+| `hurt_last_round` | you lost HP in the last enemy phase | medium |
 | `target_has: <status>` | target is Exposed | medium |
 
 ---
@@ -131,6 +132,7 @@ Each condition has a **difficulty category**, which sets its budget multiplier.
 | `damage` (weakest enemy) | amount | 1.9 per damage |
 | `damage` (random enemy) | amount | 1.7 per damage |
 | `damage` (all enemies) | amount | 3 per damage |
+| `damage` (the attacker, Martyr) | amount | 2 per damage |
 | `block` | amount | **2.4** per Block |
 | `plate` | stacks | 5 per stack |
 | `might` | stacks | 8 per stack |
@@ -171,7 +173,8 @@ Each condition has a **difficulty category**, which sets its budget multiplier.
 | **Schedule N** | Effect value × **0.8^(N−1)**. Schedule 1 resolves at this Dusk's enemy phase, so it is undiscounted. |
 | **Constant** | Per-trigger value × **2.4**. This assumes about 4 triggers, discounted for setup tempo and slot cost. |
 | **Iterate +N** | Increment value × **1.5** (expected extra plays) |
-| **Afterimage** | +50% of the repeated effect's value |
+| **Afterimage** | + the value of the repeat: the effects at half value, rounded down (Deal 9 repeats as Deal 4) |
+| **Martyr** | Per-trigger value × **0.5** (you lose HP in about half your enemy phases), then × 2.4 like any Constant trigger |
 | **Fork card** (two faces) | max(face A, face B) **+ 2** |
 | **Misprint card** | Mean of its faces; each face must be within ±25% of the target |
 | **Scaling** (`scale`) | Costed at the **expected value** using the standard assumptions below |

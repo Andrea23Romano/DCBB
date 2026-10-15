@@ -910,6 +910,7 @@ class RunEngine(val rc: RunContent) {
                 listOf(first, Rarity.RARE, Rarity.UNCOMMON).firstNotNullOfOrNull { r -> pool(r).takeIf { it.isNotEmpty() } }
                     ?.let { out += pick(it).id }
             }
+            s = s.copy(stats = s.stats.copy(cardsOffered = s.stats.cardsOffered + out))
             return out
         }
 
@@ -925,7 +926,7 @@ class RunEngine(val rc: RunContent) {
             is RunAction.Choose -> {
                 if (r.artifacts.isNotEmpty() && !r.lostWeight) return "Choose an Artifact first"
                 val id = r.cards.getOrNull(a.index) ?: return "No such card"
-                s = s.copy(deck = s.deck + id, stats = s.stats.copy(cardsTaken = s.stats.cardsTaken + 1))
+                s = s.copy(deck = s.deck + id, stats = s.stats.copy(cardsTaken = s.stats.cardsTaken + 1, cardsPicked = s.stats.cardsPicked + id))
                 log += "You take ${content.card(id).name}."
                 advance()
                 null
@@ -960,7 +961,7 @@ class RunEngine(val rc: RunContent) {
                 drawCard(rarity, exclude + offered)?.let { offered += it }
             }
             val sawRare = offered.any { content.card(it).rarity == Rarity.RARE }
-            s = s.copy(rareBonus = if (sawRare) 0 else s.rareBonus + 2)
+            s = s.copy(rareBonus = if (sawRare) 0 else s.rareBonus + 2, stats = s.stats.copy(cardsOffered = s.stats.cardsOffered + offered))
             return offered
         }
 

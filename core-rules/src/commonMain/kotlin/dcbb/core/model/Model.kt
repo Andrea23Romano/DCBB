@@ -148,6 +148,8 @@ data class ConstantSpec(
     val strikeBlock: Int = 0,
     val vow: VowRule? = null,
     val onShiftIn: ShiftInRule? = null,
+    /** Martyr (the Order): resolves the first time you lose HP in each enemy phase. */
+    val martyr: List<Effect> = emptyList(),
 )
 
 /** The Thousand Doors: cards Shifted into the Present get Forked; the first each turn costs less. */
@@ -170,6 +172,8 @@ data class CardDef(
     val unplayable: Boolean = false,
     /** Elsewhere (the Errata): when you Shift this card out of your Present, these effects resolve. */
     val elsewhere: List<Effect> = emptyList(),
+    /** Afterimage: at your next Dawn, the card's effects resolve again at half value, rounded down. */
+    val afterimage: Boolean = false,
     val flavor: String = "",
     /** Why this card may sit outside the ±10% budget window (docs/08 "Budget Targets"). Reviewed in playtests. */
     val budgetException: String? = null,
@@ -181,6 +185,9 @@ data class CardDef(
         require(forkFaces == null || forkFaces.size == 2) { "$id: Fork cards need exactly two faces" }
         require(type != CardType.CONSTANT || constant != null) { "$id: Constants need a ConstantSpec" }
         require(elsewhere.none { it.needsChoice() }) { "$id: Elsewhere effects resolve on their own, so they can't need a target or a choice" }
+        require(!afterimage || (forkFaces == null && misprintFaces == null && effects.all { it.canEcho() })) {
+            "$id: an Afterimage echoes damage, Block, Plate, energy, draw or statuses only"
+        }
     }
 }
 

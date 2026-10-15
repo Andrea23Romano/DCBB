@@ -19,6 +19,8 @@ import dcbb.core.model.Signature
 import dcbb.core.model.StatusType
 import dcbb.core.model.Tgt
 import dcbb.core.model.VowRule
+import dcbb.core.model.halved
+import dcbb.core.state.Afterimage
 import dcbb.core.state.CardInst
 import dcbb.core.state.CombatState
 import dcbb.core.state.EnemyState
@@ -60,7 +62,7 @@ data class EchoSetup(val hp: Int, val intents: List<dcbb.core.model.IntentSpec>)
 
 data class Outcome(val state: CombatState, val events: List<GameEvent>, val error: String? = null)
 
-enum class TrackNeed { NONE, DELAYABLE, REMOVABLE_INTENT, FORKED_INTENT }
+enum class TrackNeed { NONE, DELAYABLE, ACCELERATABLE, REMOVABLE_INTENT, FORKED_INTENT }
 
 /** What a face needs chosen when it is played. */
 data class Needs(
@@ -211,6 +213,7 @@ class Engine(val content: Content) {
             is Effect.Damage -> if (e.target == Tgt.CHOSEN_ENEMY) n.copy(enemy = true) else n
             is Effect.ApplyStatus -> if (e.target == Tgt.CHOSEN_ENEMY) n.copy(enemy = true) else n
             is Effect.Delay -> n.copy(track = TrackNeed.DELAYABLE)
+            is Effect.Accelerate -> n.copy(track = TrackNeed.ACCELERATABLE)
             Effect.RemoveIntent -> n.copy(track = TrackNeed.REMOVABLE_INTENT)
             Effect.Observe -> if (n.track == TrackNeed.NONE) n.copy(track = TrackNeed.FORKED_INTENT) else n
             Effect.ForkCard, Effect.GrantRetain, is Effect.ReduceCostThisTurn -> n.copy(card = true)
@@ -265,6 +268,7 @@ class Engine(val content: Content) {
     fun trackCandidates(state: CombatState, need: TrackNeed): List<TrackItem> = when (need) {
         TrackNeed.NONE -> emptyList()
         TrackNeed.DELAYABLE -> state.track.filter { !(it.kind == TrackKind.INTENT && it.fixed) }
+        TrackNeed.ACCELERATABLE -> state.track.filter { it.countdown > 1 && !(it.kind == TrackKind.INTENT && it.fixed) }
         TrackNeed.REMOVABLE_INTENT -> state.track.filter { it.kind == TrackKind.INTENT && !it.fixed }
         TrackNeed.FORKED_INTENT -> state.track.filter { it.forked && it.collapsed == null }
     }
@@ -458,12 +462,17 @@ class Engine(val content: Content) {
                     if (candidates.size == 1 || needs.track == TrackNeed.FORKED_INTENT) {
                         trackTarget = candidates.firstOrNull()?.id
                     } else if (candidates.size > 1) {
-                        return if (needs.track == TrackNeed.DELAYABLE) "Choose a Track item to Delay" else "Choose an enemy intent"
+                        return when (needs.track) {
+                            TrackNeed.DELAYABLE -> "Choose a Track item to Delay"
+                            TrackNeed.ACCELERATABLE -> "Choose a Track item to Accelerate"
+                            else -> "Choose an enemy intent"
+                        }
                     }
                 } else if (candidates.none { it.id == trackTarget }) {
                     val item = s.trackItem(trackTarget) ?: return "No such Track item"
                     return when {
                         item.fixed -> "${item.label} is Fixed"
+                        needs.track == TrackNeed.ACCELERATABLE -> "${item.label} can't come any sooner"
                         needs.track == TrackNeed.FORKED_INTENT -> "${item.label} isn't a Forked intent"
                         else -> "Choose an enemy intent"
                     }
@@ -551,6 +560,12 @@ class Engine(val content: Content) {
                 iterations = inst.iterations,
                 attack = face.type == CardType.ATTACK,
             )
+            if (def.afterimage) {
+                val echo = face.effects.mapNotNull { it.halved() }
+                if (echo.isNotEmpty()) {
+                    player { it.copy(afterimages = it.afterimages + Afterimage(echo, ctx.copy(retarget = true), def.name)) }
+                }
+            }
             pushFront(
                 listOfNotNull(
                     Work.Fx(face.effects, ctx),
@@ -687,6 +702,7 @@ class Engine(val content: Content) {
                 is Effect.Damage -> damage(e, ctx)
                 is Effect.Block -> gainBlock(amount(e.amount, ctx, null))
                 is Effect.GainPlate -> addPlayerStatus(StatusType.PLATE, e.n)
+                is Effect.GainMight -> addPlayerStatus(StatusType.MIGHT, e.n)
                 is Effect.Draw -> draw(e.n)
                 is Effect.GainEnergy -> {
                     val n = amount(e.amount, ctx, null)
@@ -699,6 +715,7 @@ class Engine(val content: Content) {
                 is Effect.Foresee -> foresee(e.n + s.mods.foreseeBonus, e.tutor)
                 is Effect.Recall -> recall(e.n, ctx)
                 is Effect.Delay -> delay(e.n, ctx)
+                is Effect.Accelerate -> accelerate(e.n, ctx)
                 Effect.RemoveIntent -> removeIntent(ctx)
                 Effect.Observe -> observe(ctx)
                 is Effect.ApplyStatus -> applyStatus(e, ctx)
@@ -724,7 +741,7 @@ class Engine(val content: Content) {
                         order = newOrder(),
                         label = RulesText.effects(e.effects).removeSuffix("."),
                         effects = e.effects,
-                        ctx = ctx,
+                        ctx = ctx.copy(retarget = true),
                     )
                     s = s.copy(track = s.track + item)
                     emit(GameEvent.Scheduled(item.label, item.countdown))
@@ -762,7 +779,13 @@ class Engine(val content: Content) {
             is Cond.ConstantsAtLeast -> p.constants.size >= c.n
             Cond.ShiftedThisTurn -> p.shiftedThisTurn
             is Cond.ParadoxAtLeast -> p.paradox >= c.n
+            Cond.HurtLastRound -> p.hpLostLastEnemyPhase > 0
         }
+
+        /** The chosen enemy, or for a delayed effect whose target has fallen, the weakest one standing. */
+        private fun chosen(ctx: FxCtx): EnemyState? =
+            ctx.targetEnemy?.let { s.enemy(it) }?.takeIf { it.alive }
+                ?: if (ctx.retarget) s.livingEnemies.minByOrNull { it.hp } else null
 
         private fun damage(e: Effect.Damage, ctx: FxCtx) {
             val per = s.mods.attackPerParadox
@@ -770,6 +793,11 @@ class Engine(val content: Content) {
             fun value(t: EnemyState) = amount(e.amount, ctx, t) + edge
             when (e.target) {
                 Tgt.CHOSEN_ENEMY -> repeat(e.hits) {
+                    val t = chosen(ctx) ?: return
+                    hitEnemy(t, value(t))
+                }
+
+                Tgt.ATTACKER -> repeat(e.hits) {
                     val t = ctx.targetEnemy?.let { s.enemy(it) }?.takeIf { it.alive } ?: return
                     hitEnemy(t, value(t))
                 }
@@ -919,6 +947,15 @@ class Engine(val content: Content) {
             emit(GameEvent.Delayed(fullLabel(item), n, updated.pressure, isIntent))
         }
 
+        private fun accelerate(n: Int, ctx: FxCtx) {
+            val item = ctx.trackTarget?.let { s.trackItem(it) } ?: return
+            if (item.kind == TrackKind.INTENT && item.fixed) return
+            val sooner = max(1, item.countdown - n)
+            if (sooner == item.countdown) return
+            replaceTrack(item.copy(countdown = sooner))
+            emit(GameEvent.Info("${fullLabel(item)} is Accelerated: it resolves in $sooner"))
+        }
+
         private fun removeIntent(ctx: FxCtx) {
             val item = ctx.trackTarget?.let { s.trackItem(it) } ?: return
             if (item.kind != TrackKind.INTENT || item.fixed) return
@@ -943,7 +980,8 @@ class Engine(val content: Content) {
 
         private fun applyStatus(e: Effect.ApplyStatus, ctx: FxCtx) {
             val targets = when (e.target) {
-                Tgt.CHOSEN_ENEMY -> listOfNotNull(ctx.targetEnemy?.let { s.enemy(it) }?.takeIf { it.alive })
+                Tgt.CHOSEN_ENEMY -> listOfNotNull(chosen(ctx))
+                Tgt.ATTACKER -> listOfNotNull(ctx.targetEnemy?.let { s.enemy(it) }?.takeIf { it.alive })
                 Tgt.ALL_ENEMIES -> s.livingEnemies
                 Tgt.WEAKEST_ENEMY -> listOfNotNull(s.livingEnemies.minByOrNull { it.hp })
                 Tgt.RANDOM_ENEMY -> s.livingEnemies.let { if (it.isEmpty()) emptyList() else listOf(it[rand(it.size, Stream.MISC)]) }
@@ -1131,7 +1169,7 @@ class Engine(val content: Content) {
         }
 
         private fun enemyPhase() {
-            player { it.copy(hpLostThisEnemyPhase = 0) }
+            player { it.copy(hpLostThisEnemyPhase = 0, martyrUsed = false) }
             s = s.copy(
                 enemies = s.enemies.map { it.copy(block = 0) },
                 track = s.track.map { it.copy(countdown = it.countdown - 1) },
@@ -1236,6 +1274,19 @@ class Engine(val content: Content) {
                 )
             }
             emit(GameEvent.DamageToPlayer(through, blocked, source))
+            if (through > 0 && !p.martyrUsed) martyr(enemy)
+        }
+
+        /** Martyr: the first time you lose HP in an enemy phase, your Martyr Constants answer, aimed at whoever hurt you. */
+        private fun martyr(attacker: EnemyState) {
+            player { it.copy(martyrUsed = true) }
+            if (p.constantsSilenced) return
+            val triggers = p.constants.mapNotNull { c ->
+                constantSpec(c)?.martyr?.takeIf { it.isNotEmpty() }?.let { c to it }
+            }
+            if (triggers.isEmpty()) return
+            emit(GameEvent.Info("Martyr: " + triggers.joinToString(", ") { name(it.first) }))
+            pushFront(triggers.map { (c, fx) -> Work.Fx(fx, triggerCtx(c).copy(targetEnemy = attacker.uid)) })
         }
 
         private fun blankTopOfFuture() {
@@ -1329,7 +1380,13 @@ class Engine(val content: Content) {
                     constantSpec(c)?.dawn?.takeIf { it.isNotEmpty() }?.let { Work.Fx(it, triggerCtx(c)) }
                 }
             }
-            pushFront(dawnTriggers + Work.Step(TurnStep.DAWN_PREDICT))
+            // Afterimages: last turn's echoes resolve once, at half value.
+            val echoes = p.afterimages
+            if (echoes.isNotEmpty()) {
+                player { it.copy(afterimages = emptyList()) }
+                emit(GameEvent.Info("Afterimage: " + echoes.joinToString(", ") { it.label }))
+            }
+            pushFront(dawnTriggers + echoes.map { Work.Fx(it.effects, it.ctx) } + Work.Step(TurnStep.DAWN_PREDICT))
         }
 
         private fun refillOtherHand() {

@@ -11,6 +11,7 @@ import dcbb.core.model.Face
 import dcbb.core.model.Kind
 import dcbb.core.model.StatusType
 import dcbb.core.model.Tgt
+import dcbb.core.model.halved
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
@@ -51,6 +52,9 @@ object Budget {
      * Splinter, rarely any for the others.
      */
     const val ELSEWHERE_FLEX = 0.15
+
+    /** Martyr: you lose HP in about half your enemy phases, so a Martyr trigger counts half a Dawn or Dusk one. */
+    const val MARTYR_ODDS = 0.5
     private const val HP_LOST_LAST_PHASE = 8.0
     private const val CONSTANT_FACTOR = 2.4
 
@@ -82,6 +86,8 @@ object Budget {
             else -> effects(def.effects, odds)
         }
         def.constant?.let { p += constant(it, odds) }
+        // Afterimage: the echo is worth what it does, at half value and rounded down.
+        if (def.afterimage) p += effects(def.effects.mapNotNull { it.halved() }, odds)
         if (def.retain) p += 2.0
         if (def.eraseAfterPlay) p -= 3.0
         return p
@@ -95,7 +101,7 @@ object Budget {
     fun strikePart(spec: ConstantSpec): Double = (spec.strikeDamage * 2.0 + spec.strikeBlock * 2.4) * CONSTANT_FACTOR
 
     fun constant(spec: ConstantSpec, odds: CondOdds = STANDARD): Double {
-        var perTrigger = effects(spec.dawn, odds) + effects(spec.dusk, odds)
+        var perTrigger = effects(spec.dawn, odds) + effects(spec.dusk, odds) + effects(spec.martyr, odds) * MARTYR_ODDS
         perTrigger += spec.strikeDamage * 2.0 + spec.strikeBlock * 2.4
         spec.onShiftIn?.let { rule ->
             if (rule.forkShifted) perTrigger += 6.0 * SHIFTS_PER_TURN
@@ -106,7 +112,7 @@ object Budget {
 
     fun effect(e: Effect, odds: CondOdds = STANDARD): Double = when (e) {
         is Effect.Damage -> amount(e.amount, odds) * e.hits * when (e.target) {
-            Tgt.CHOSEN_ENEMY -> 2.0
+            Tgt.CHOSEN_ENEMY, Tgt.ATTACKER -> 2.0
             Tgt.WEAKEST_ENEMY -> 1.9
             Tgt.RANDOM_ENEMY -> 1.7
             Tgt.ALL_ENEMIES -> 3.0
@@ -114,11 +120,13 @@ object Budget {
 
         is Effect.Block -> amount(e.amount, odds) * 2.4
         is Effect.GainPlate -> e.n * 5.0
+        is Effect.GainMight -> e.n * 8.0
         is Effect.Draw -> e.n * 6.0
         is Effect.GainEnergy -> amount(e.amount, odds) * 10.0
         is Effect.Foresee -> e.n * 2.0 + if (e.tutor) 8.0 else 0.0
         is Effect.Recall -> e.n * 7.0
         is Effect.Delay -> if (e.n >= 2) 18.0 + 8.0 * (e.n - 2) else 10.0 * e.n
+        is Effect.Accelerate -> e.n * 4.0
         Effect.RemoveIntent -> 14.0
         Effect.Observe -> 4.0
         // All enemies: x1.5, the same ratio as damage (3 vs 2 per point).
@@ -182,6 +190,7 @@ object Budget {
         is Cond.HpBelowPct -> if (c.pct >= 50) EASY else MEDIUM
         is Cond.ConstantsAtLeast -> if (c.n <= 1) EASY else MEDIUM
         Cond.ShiftedThisTurn -> MEDIUM
+        Cond.HurtLastRound -> MEDIUM
     }
 
     private const val EASY = 0.8

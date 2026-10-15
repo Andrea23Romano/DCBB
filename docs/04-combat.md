@@ -242,7 +242,7 @@ The glossary is capped at **25 keywords** at launch. Long-pressing any keyword o
 | **Relic** | Order | Constant. Equipment that modifies your Signature Action or grants a passive. |
 | **Remember N** | Order | Bonus if your Past holds at least N cards of the stated kind. |
 | **Litany** | Order | Bonus if the previous card you played this turn was of the stated kind. |
-| **Martyr** | Order | Triggers the first time you lose HP in each enemy phase. |
+| **Martyr** | Order | Triggers the first time you lose HP in each enemy phase. Martyr cards are Constants; "the enemy that hurt you" is that attacker. |
 | **Calculated** | Convergence | Bonus if this card is Known, meaning you Foresaw it before drawing it. |
 | **Iterate +N** | Convergence | Each time you play this card this combat, its main number grows by N. |
 | **Subroutine** | Convergence | Constant. Runs its effect at the stated time each turn. |
@@ -310,6 +310,9 @@ The Phase 1 prototype had to settle these. The engine and its tests follow this 
 | Glitch and cost changes | Glitch adds a generic pip. A cost reduction removes generic pips first, then colored ones. |
 | The Double copies your last card | It copies the printed damage (or Block), before Attuned and other bonuses. |
 | Choices while a card resolves | Targets, Recall picks and Shift pairs are chosen when you play the card. Foresee is the only choice that pauses a card. |
+| A Scheduled effect or an Afterimage aimed at an enemy that has since fallen | It hits the weakest enemy still standing instead. |
+| Accelerate on something already due this enemy phase (countdown 1) | Not a legal target: nothing comes sooner than that. |
+| Martyr when one intent hits you several times, or several enemies do | Martyr triggers once per enemy phase, right after the intent that first cost you HP. Weak from that same intent already applies. |
 
 ---
 

@@ -3,6 +3,9 @@ package dcbb.core.model
 /** Who an effect hits. CHOSEN_ENEMY uses the target picked when the card is played. */
 enum class Tgt {
     CHOSEN_ENEMY,
+
+    /** Martyr effects: the enemy whose attack hurt you. */
+    ATTACKER,
     RANDOM_ENEMY,
     WEAKEST_ENEMY,
     ALL_ENEMIES,
@@ -29,6 +32,9 @@ sealed interface Cond {
     data class ConstantsAtLeast(val n: Int) : Cond
     data object ShiftedThisTurn : Cond
     data class ParadoxAtLeast(val n: Int) : Cond
+
+    /** You lost HP in the last enemy phase. */
+    data object HurtLastRound : Cond
 }
 
 sealed interface Bonus {
@@ -48,11 +54,17 @@ sealed interface Effect {
     data class Damage(val amount: Amount, val target: Tgt = Tgt.CHOSEN_ENEMY, val hits: Int = 1) : Effect
     data class Block(val amount: Amount) : Effect
     data class GainPlate(val n: Int) : Effect
+
+    /** You gain Might: +1 damage on every hit, per point, for the rest of the combat. */
+    data class GainMight(val n: Int) : Effect
     data class Draw(val n: Int) : Effect
     data class GainEnergy(val color: EnergyColor, val amount: Amount) : Effect
     data class Foresee(val n: Int, val tutor: Boolean = false) : Effect
     data class Recall(val n: Int) : Effect
     data class Delay(val n: Int) : Effect
+
+    /** Bring a Track item [n] rounds closer, never below 1 (docs/04 "Accelerate"). */
+    data class Accelerate(val n: Int) : Effect
     data object RemoveIntent : Effect
     data object Observe : Effect
     data class ApplyStatus(val status: StatusType, val n: Int, val target: Tgt = Tgt.CHOSEN_ENEMY) : Effect
@@ -73,11 +85,41 @@ sealed interface Effect {
 fun Effect.needsChoice(): Boolean = when (this) {
     is Effect.Damage -> target == Tgt.CHOSEN_ENEMY
     is Effect.ApplyStatus -> target == Tgt.CHOSEN_ENEMY
-    is Effect.Delay, Effect.RemoveIntent, Effect.Observe, Effect.ForkCard, is Effect.Recall, is Effect.Shift -> true
+    is Effect.Delay, is Effect.Accelerate, Effect.RemoveIntent, Effect.Observe, Effect.ForkCard, is Effect.Recall, is Effect.Shift -> true
     is Effect.Foresee -> tutor
     is Effect.When -> then.any { it.needsChoice() } || otherwise.any { it.needsChoice() }
     is Effect.Schedule -> effects.any { it.needsChoice() }
     else -> false
+}
+
+/**
+ * Afterimage (docs/04): the effect again at half value, rounded down, or null if nothing is left. Only these
+ * effects can echo; [CardDef] checks that an Afterimage card has no others.
+ */
+fun Effect.halved(): Effect? = when (this) {
+    is Effect.Damage -> amount.halved()?.let { copy(amount = it) }
+    is Effect.Block -> amount.halved()?.let { copy(amount = it) }
+    is Effect.GainEnergy -> amount.halved()?.let { copy(amount = it) }
+    is Effect.GainPlate -> (n / 2).takeIf { it > 0 }?.let { copy(n = it) }
+    is Effect.GainMight -> (n / 2).takeIf { it > 0 }?.let { copy(n = it) }
+    is Effect.Draw -> (n / 2).takeIf { it > 0 }?.let { copy(n = it) }
+    is Effect.ApplyStatus -> (n / 2).takeIf { it > 0 }?.let { copy(n = it) }
+    else -> null
+}
+
+fun Effect.canEcho(): Boolean =
+    this is Effect.Damage || this is Effect.Block || this is Effect.GainEnergy || this is Effect.GainPlate || this is Effect.GainMight ||
+        this is Effect.Draw || this is Effect.ApplyStatus
+
+private fun Amount.halved(): Amount? {
+    val half = bonuses.mapNotNull { b ->
+        when (b) {
+            is Bonus.If -> (b.plus / 2).takeIf { it > 0 }?.let { b.copy(plus = it) }
+            is Bonus.Per -> (b.each / 2).takeIf { it > 0 }?.let { b.copy(each = it, max = b.max / 2) }
+        }
+    }
+    if (base / 2 == 0 && half.isEmpty()) return null
+    return Amount(base / 2, *half.toTypedArray())
 }
 
 /** Small builders so content reads close to the card text. */

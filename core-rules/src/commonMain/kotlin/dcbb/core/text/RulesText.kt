@@ -32,6 +32,7 @@ object RulesText {
         return buildString {
             append(body)
             if (def.elsewhere.isNotEmpty()) append(" Elsewhere: ").append(effects(def.elsewhere).replaceFirstChar { it.lowercase() })
+            if (def.afterimage) append(" Afterimage.")
             if (def.retain) append(" Retain.")
             if (def.eraseAfterPlay) append(" Erase.")
             if (def.unplayable) append(" Unplayable.")
@@ -59,8 +60,9 @@ object RulesText {
             } else if (spec.strikeBlock > 0) {
                 add("your Strike gives ${spec.strikeBlock} Block")
             }
-            if (spec.dawn.isNotEmpty()) add((if (vow != null) "at Dawn, " else "Dawn: ") + clauses(spec.dawn))
-            if (spec.dusk.isNotEmpty()) add((if (vow != null) "at Dusk, " else "Dusk: ") + clauses(spec.dusk))
+            if (spec.dawn.isNotEmpty()) add((if (vow != null) "at Dawn, " else "Dawn: ") + trigger(spec.dawn))
+            if (spec.dusk.isNotEmpty()) add((if (vow != null) "at Dusk, " else "Dusk: ") + trigger(spec.dusk))
+            if (spec.martyr.isNotEmpty()) add((if (vow != null) "the first time you lose HP each enemy phase, " else "Martyr: ") + trigger(spec.martyr))
             spec.onShiftIn?.let { rule ->
                 if (rule.forkShifted) add("whenever you Shift a card into your Present, Fork it")
                 if (rule.firstShiftDiscount > 0) {
@@ -71,6 +73,9 @@ object RulesText {
         if (vow == null) return benefits.joinToString(". ") { cap(it) } + "."
         return "Vow: ${vow.text}. While kept: ${benefits.joinToString(". ")}."
     }
+
+    /** One trigger's effects as one sentence, so it reads as a single event: "Dusk: gain 3 Block and deal 2 to the weakest enemy". */
+    private fun trigger(effects: List<Effect>): String = effects.joinToString(" and ") { clause(it) }
 
     /** Full sentences: "Deal 5. Attuned: +2." */
     fun effects(effects: List<Effect>): String {
@@ -100,11 +105,13 @@ object RulesText {
         is Effect.Damage -> damage(e)
         is Effect.Block -> "gain ${e.amount.base} Block" + bonuses(e.amount, " Block")
         is Effect.GainPlate -> "gain Plate ${e.n}"
+        is Effect.GainMight -> "gain Might ${e.n}"
         is Effect.Draw -> "draw ${e.n}"
         is Effect.GainEnergy -> energy(e)
         is Effect.Foresee -> "Foresee ${e.n}" + if (e.tutor) ". Put one of them into your Present" else ""
         is Effect.Recall -> "Recall ${e.n}"
         is Effect.Delay -> "Delay ${e.n}"
+        is Effect.Accelerate -> "Accelerate ${e.n}"
         Effect.RemoveIntent -> "remove an enemy intent from the Track (not Fixed)"
         Effect.Observe -> "Observe"
         is Effect.ApplyStatus -> "apply ${e.status.label} ${e.n}" + target(e.target)
@@ -163,6 +170,7 @@ object RulesText {
 
     private fun target(t: Tgt): String = when (t) {
         Tgt.CHOSEN_ENEMY -> ""
+        Tgt.ATTACKER -> " to the enemy that hurt you"
         Tgt.RANDOM_ENEMY -> " to a random enemy"
         Tgt.WEAKEST_ENEMY -> " to the weakest enemy"
         Tgt.ALL_ENEMIES -> " to all enemies"
@@ -179,6 +187,7 @@ object RulesText {
         is Cond.ConstantsAtLeast -> "If you have ${c.n}+ Constants"
         Cond.ShiftedThisTurn -> "If you Shifted this turn"
         is Cond.ParadoxAtLeast -> "Paradox ${c.n}+"
+        Cond.HurtLastRound -> "If you lost HP last round"
     }
 
     fun colorName(c: EnergyColor): String = c.name.lowercase().replaceFirstChar { it.uppercase() }

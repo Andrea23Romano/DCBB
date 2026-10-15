@@ -53,6 +53,9 @@ object Glossary {
     val FORECAST = e("Forecast", "The Oracle's Signature Action, once per turn: Foresee 2. The Oracle's first Known card each turn costs 1 less.")
     val SHIFT_SIG = e("Shift (Signature)", "The Splinter's Signature Action, once per turn: swap a card in your Present with one in your Other Hand. If the card you send away has Elsewhere, it acts as it goes.")
     val ELSEWHERE = e("Elsewhere", "When you Shift this card out of your Present, it does this as it goes.")
+    val ACCELERATE = e("Accelerate", "Bring a Track item that many rounds sooner, never below 1. Fixed intents can't be Accelerated.")
+    val AFTERIMAGE = e("Afterimage", "At your next Dawn, the card's effects happen again at half value, rounded down.")
+    val MARTYR = e("Martyr", "The first time you lose HP in each enemy phase, this happens.")
 
     fun status(s: StatusType): Entry = when (s) {
         StatusType.MIGHT -> e("Might", "+1 damage on every hit, per point.")
@@ -87,6 +90,7 @@ object Glossary {
             out += ELSEWHERE
             effects(def.elsewhere, out)
         }
+        if (def.afterimage) out += AFTERIMAGE
         def.constant?.let { constant(it, out) }
         if (def.retain) out += RETAIN
         if (def.eraseAfterPlay) out += ERASE
@@ -132,6 +136,8 @@ object Glossary {
         if (c.strikeDamage > 0 || c.strikeBlock > 0) out += STRIKE
         effects(c.dawn, out)
         effects(c.dusk, out)
+        if (c.martyr.isNotEmpty()) out += MARTYR
+        effects(c.martyr, out)
         c.onShiftIn?.let {
             out += SHIFT
             if (it.forkShifted) out += FORK
@@ -147,6 +153,7 @@ object Glossary {
                     bonuses(e.amount.bonuses, out)
                 }
                 is Effect.GainPlate -> out += status(StatusType.PLATE)
+                is Effect.GainMight -> out += status(StatusType.MIGHT)
                 is Effect.GainEnergy -> bonuses(e.amount.bonuses, out)
                 is Effect.Foresee -> {
                     out += FORESEE
@@ -154,6 +161,7 @@ object Glossary {
                 }
                 is Effect.Recall -> out += RECALL
                 is Effect.Delay -> out += DELAY
+                is Effect.Accelerate -> out += ACCELERATE
                 Effect.Observe -> out += OBSERVE
                 is Effect.ApplyStatus -> out += status(e.status)
                 is Effect.Shift -> out += SHIFT
@@ -203,7 +211,7 @@ object Glossary {
             is Cond.ConstantsAtLeast -> out += CONSTANT
             Cond.ShiftedThisTurn -> out += SHIFT
             is Cond.ParadoxAtLeast -> out += PARADOX
-            is Cond.TargetFaction, is Cond.HpBelowPct -> Unit
+            is Cond.TargetFaction, is Cond.HpBelowPct, Cond.HurtLastRound -> Unit
         }
     }
 }

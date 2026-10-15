@@ -18,6 +18,7 @@ import dcbb.core.state.CombatState
 import dcbb.core.state.Phase
 import dcbb.core.state.TrackKind
 import kotlin.math.max
+import kotlin.math.pow
 
 /**
  * Card values in damage-equivalents: budget points / 2 (docs/08 anchor: 12 points ≈ 6 damage).
@@ -166,10 +167,13 @@ object Eval {
         v += p.future.take(Engine.DRAW_PER_TURN).sumOf { c ->
             if (!c.known) 0.0 else if (CardValues.usesCalculated(engine.content, engine.content.card(c.defId))) 0.6 else 0.2
         }
+        // Afterimages land at the next Dawn, like a Scheduled effect one round out.
+        v += p.afterimages.sumOf { Budget.effects(it.effects) / 2.0 * 0.8 }
         for (item in s.track) {
             if (item.kind != TrackKind.SCHEDULED) continue
             val nonBlock = item.effects.filter { it !is Effect.Block }
-            v += Budget.effects(nonBlock) / 2.0 * 0.7
+            // A little less for every round it still waits, so bringing it sooner (Accelerate) is worth something.
+            v += Budget.effects(nonBlock) / 2.0 * 0.7 * 0.85.pow(item.countdown - 1)
             if (item.countdown > 1) v += Budget.effects(item.effects.filterIsInstance<Effect.Block>()) / 2.0 * 0.5
         }
         return v

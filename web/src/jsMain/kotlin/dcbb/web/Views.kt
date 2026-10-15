@@ -262,14 +262,15 @@ class Views(private val app: App) {
         append("</div></section>")
     }
 
-    /** Your own Scheduled effects on the Track (enemy intents show on the enemies). */
+    /** Your own Scheduled effects on the Track (enemy intents show on the enemies), then Afterimages due at Dawn. */
     private fun yourTrack(st: CombatState): String {
         val mine = st.track.filter { it.kind == TrackKind.SCHEDULED }.sortedWith(compareBy({ it.countdown }, { it.order }))
-        if (mine.isEmpty()) return ""
+        val echoes = st.player.afterimages
+        if (mine.isEmpty() && echoes.isEmpty()) return ""
         val need = pickTrackNeed(st)
         val candidates = if (need == TrackNeed.NONE) emptySet() else engine.trackCandidates(st, need).map { it.id }.toSet()
         return buildString {
-            append("""<section class="mytrack" aria-label="Your Scheduled effects"><span class="label">Scheduled</span>""")
+            append("""<section class="mytrack" aria-label="Your Scheduled effects and Afterimages"><span class="label">Yours</span>""")
             for (item in mine) {
                 val tip = esc(tipText(Glossary.face(dcbb.core.model.Face(CardType.SKILL, item.effects)) + Glossary.SCHEDULE))
                 val body = """${dial(item.countdown)}<span>${esc(item.label)}</span>"""
@@ -279,6 +280,11 @@ class Views(private val app: App) {
                 } else {
                     append("""<span class="chip is-yours" title="$tip">$body</span>""")
                 }
+            }
+            for (a in echoes) {
+                val tip = esc(tipText(Glossary.face(dcbb.core.model.Face(CardType.SKILL, a.effects)) + Glossary.AFTERIMAGE))
+                val text = "Afterimage of ${a.label}: ${RulesText.clauses(a.effects)}"
+                append("""<span class="chip is-yours is-echo" title="$tip"><span class="dial" aria-label="at your next Dawn">☀</span><span>${esc(text)}</span></span>""")
             }
             append("</section>")
         }
@@ -495,7 +501,7 @@ class Views(private val app: App) {
         if (needs != null && needs.track != TrackNeed.NONE) {
             val cands = engine.trackCandidates(st, needs.track)
             when {
-                cands.size > 1 -> append(choiceRow(if (needs.track == TrackNeed.DELAYABLE) "Delay which" else "Which intent", cands.joinToString("") { t ->
+                cands.size > 1 -> append(choiceRow(trackPrompt(needs.track), cands.joinToString("") { t ->
                     choice("track", t.id, pick.track == t.id, "${trackWho(st, t)}: ${t.label} (${t.countdown})")
                 }))
                 cands.isEmpty() -> append("""<p class="muted">No legal Track target: that part of the card does nothing.</p>""")
@@ -555,6 +561,12 @@ class Views(private val app: App) {
             if (pick.shifts.isNotEmpty() || pick.shiftOut != null) append(choice("shift-clear", 0, false, "Clear"))
         }
         append(choiceRow(label, body))
+    }
+
+    private fun trackPrompt(need: TrackNeed) = when (need) {
+        TrackNeed.DELAYABLE -> "Delay which"
+        TrackNeed.ACCELERATABLE -> "Accelerate which"
+        else -> "Which intent"
     }
 
     /** A card you could send away, with what it does as it goes if it has Elsewhere. */

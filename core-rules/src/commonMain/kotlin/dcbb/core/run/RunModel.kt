@@ -86,6 +86,10 @@ data class RunStats(
     val actsCleared: Int = 0,
     /** Where each act began: the run's trajectory, for the Chronicle and the simulator. */
     val acts: List<ActRecord> = emptyList(),
+    /** Every card a reward screen showed, in order (for the simulator's variety report). */
+    val cardsOffered: List<String> = emptyList(),
+    /** The cards you took from reward screens. */
+    val cardsPicked: List<String> = emptyList(),
 )
 
 /** The run as an act began. */

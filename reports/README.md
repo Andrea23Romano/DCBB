@@ -48,6 +48,31 @@ The first baseline raised six findings. Their status after tuning pass 2:
 | 5 | Delay, draw and setup cards look weak | **Partly.** The planner Delays and sets up more, but several cards stay rarely played. See [pass 2](#what-pass-2-found). |
 | 6 | Paradox and Unravel aren't exercised | **Partly.** Runs carry Paradox between fights, and the Splinter now Unravels in about one fight in twenty. See [the run layer](#the-run-layer-three-acts). |
 
+## Content expansion: more cards, three new keywords
+
+Runs repeated themselves. Each operative's rewards drew from 19–21 cards, so a run saw only 17–18 different cards in about 50 offers, and the bot took the same handful almost every run. This pass adds three keywords from [docs/04](../docs/04-combat.md#keywords) and 50 cards ([docs/03](../docs/03-factions-and-operatives.md)).
+
+- **Martyr** (Order): Constants that answer the first HP you lose in each enemy phase. *Cilice* strikes back at the attacker, *Martyr's Vigil* and *Stigmata* give Plate and Might, and *Martyr's Crown* hits every enemy.
+- **Accelerate** (universal): brings a Track item sooner, never below 1. With the Order's Scheduled blows (*Foretold Blow*, *Revelation*, *The Last Hour*) it makes a Prophecy deck.
+- **Afterimage** (universal): the card repeats at half value, rounded down, at your next Dawn.
+- **Cards.** The Order gets 14 new cards, the Convergence and the Errata 10 each, the neutral pool 10, and each era 2. Every card is within ±10% of its budget.
+- **Rules.** A Martyr trigger counts as half a Dawn or Dusk trigger in the budget, and an Afterimage adds the value of its repeat. A Scheduled effect or an Afterimage whose target has fallen hits the weakest enemy instead.
+- **Bot.** The planner now values a Scheduled effect a little less for each round it still waits, so Accelerate is worth something to it.
+
+### What the expansion says
+
+Measured with the same report code on the previous content (`main` before this pass) and on the new one, 200 runs per operative. The new [Card variety](run-latest.md#card-variety) section of the run report has the details.
+
+| Operative | Pool | Different cards per run | Offers already seen that run | Runs that took the most-taken card |
+|---|---|---|---|---|
+| Oracle | 21 → 47 | 17.3 → 28.3 | 64% → 39% | 96% → 76% |
+| Splinter | 21 → 47 | 18.0 → 28.2 | 64% → 39% | 99% → 77% |
+| Vowknight | 19 → 49 | 16.7 → 30.5 | 68% → 41% | 95% → 73% |
+
+1. **A run sees about 65% more different cards**, and repeats fall from about two offers in three to two in five. Across 200 runs the bot takes 45–51 different cards: almost the whole pool.
+2. **No card dominates as before.** The most-taken cards are new rares (*Ensemble Model*, *Multitude*, *The Last Hour*), taken in about three runs in four; before, the top card was in almost every run.
+3. **Balance moved a little.** Run wins are 81% for the Oracle (78% before), 70% for the Splinter (77%) and 90% for the Vowknight (96%). Fights with the fixed starter and mid decks are unchanged. The run bot takes more cards now that more of them score well (decks end at 23–26 cards instead of 23–25) and buys fewer Artifacts (4.3–4.8 instead of 4.9–5.3), so its decks are less focused. A pickier player won't pay that. Rebalancing waits until the card pool is complete.
+
 ## Faction rework: Foresee pays, Elsewhere acts
 
 The Oracle and the Splinter were reworked so that their factions' mechanics pay off in play ([docs/03](../docs/03-factions-and-operatives.md)).
