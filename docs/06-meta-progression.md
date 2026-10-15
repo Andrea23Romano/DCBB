@@ -122,7 +122,7 @@ Entropy is the difficulty ladder. Levels **0–20** are tracked per operative, a
 |---|---|
 | 1 | +1 Elite per act |
 | 2 | Enemies have +5% HP |
-| 3 | −1 starting Foresight |
+| 3 | −1 starting Omen |
 | 4 | Antiquarian prices +15% |
 | 5 | Still Points heal 20% (instead of 30%) |
 | 6 | Act bosses gain a second Fixed move |

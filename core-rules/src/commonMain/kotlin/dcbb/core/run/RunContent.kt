@@ -8,14 +8,14 @@ import dcbb.core.model.Rarity
 /** Run-level rule changes that Artifacts and Ripples switch on. */
 enum class Perk(val text: String) {
     REST_HEAL_AND_INSCRIBE("At Still Points you may both heal and Inscribe"),
-    FORESIGHT_EXTRA_PEEK("Foresight reveals a second Moment of the next step"),
+    OMEN_EXTRA_PEEK("Each Omen also reveals a second Moment of the next step"),
     RELIC_DISCOUNT("Relic cards cost 25% less at the Antiquarian"),
     INSCRIBE_DISCOUNT("Inscribe costs 20 Hours less at the Antiquarian"),
     CONVERGENCE_REWARDS("Convergence cards appear twice as often in card rewards"),
     QUICK_STUDY("Card rewards offer 4 cards"),
 
-    /** Counted per source: two of them give +2 Foresight at each new act. */
-    FORESIGHT_PER_ACT("+1 Foresight at the start of each act"),
+    /** Counted per source: two of them give +2 Omens at each new act. */
+    OMENS_PER_ACT("+1 Omen at the start of each act"),
     ANCHORITE("Your first Rewind each act leaves your Anchor in place"),
     PARADOX_SINK("−2 Paradox at the start of each act, instead of −1"),
 
@@ -85,7 +85,7 @@ sealed interface RunEffect {
     data class LoseHp(val n: Int) : RunEffect
     data class MaxHp(val n: Int) : RunEffect
     data class Paradox(val n: Int) : RunEffect
-    data class Foresight(val n: Int) : RunEffect
+    data class Omens(val n: Int) : RunEffect
     data class Standing(val faction: Faction, val n: Int) : RunEffect
     data class Flag(val id: String) : RunEffect
     data class GainCard(val pool: CardPool) : RunEffect
@@ -125,7 +125,7 @@ enum class EventKind(val label: String) {
 data class EventDef(
     val id: String,
     val title: String,
-    /** What the Moment card shows before Foresight reveals the event. */
+    /** What the Moment card shows before an Omen reveals the event. */
     val teaser: String,
     val kind: EventKind,
     val text: String,

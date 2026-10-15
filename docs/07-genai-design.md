@@ -242,7 +242,7 @@ template:
   choices:
     - { id: hide,   hint: "Hide the scribe",            outcome: "Order -1, Errata +1, gain an Errata card" }
     - { id: report, hint: "Hand the page to the Order", outcome: "Order +1, gain 40 Hours" }
-    - { id: read,   hint: "Read the page yourself",     outcome: "Paradox +2, Foresight +1" }
+    - { id: read,   hint: "Read the page yourself",     outcome: "Paradox +2, Omens +1" }
 callbacks: ["Act I: you spared a Brass Proxy that begged in a dead man's voice"]
 lore: ["order.creed.short", "london_1843.mood"]     # tag-retrieved snippets from the Lore Bible
 style: { voice: order, tone: mythic_bittersweet, max_words: 110 }

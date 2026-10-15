@@ -251,7 +251,7 @@ class App(private val root: Element) {
                 }
             }
             "run-choose" -> if (n != null) runAct(RunAction.Choose(n))
-            "run-foresight" -> runAct(RunAction.Foresight)
+            "run-omen" -> runAct(RunAction.ReadOmen)
             "run-glimpse" -> runAct(RunAction.Glimpse)
             "run-skip" -> runAct(RunAction.Skip)
             "run-done" -> {

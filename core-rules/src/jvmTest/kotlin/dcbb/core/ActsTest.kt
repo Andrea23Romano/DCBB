@@ -163,7 +163,7 @@ class ActsTest {
         val study = s.copy(imprints = listOf("quick_study"))
         val reward = end(study.visit(MomentType.COMBAT, "lone_footpad"), Phase.WON).screen as Screen.Reward
         assertEquals(4, reward.cards.size)
-        assertEquals(1, re.perkCount(s.copy(imprints = listOf("pathfinder")), Perk.FORESIGHT_PER_ACT))
+        assertEquals(1, re.perkCount(s.copy(imprints = listOf("pathfinder")), Perk.OMENS_PER_ACT))
         // Anchorite: the first Rewind of the act keeps the Anchor; the second spends it.
         val anchored = s.copy(imprints = listOf("anchorite"))
         val once = anchored.ok(RunAction.Choose(0)).let { if (it.screen is Screen.Fight) end(it, Phase.WON).ok(RunAction.Skip) else it }

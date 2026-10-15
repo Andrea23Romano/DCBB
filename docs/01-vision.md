@@ -34,7 +34,7 @@ Underneath it all is the truth the game is built on, revealed only at the end: *
 Time manipulation is the core verb at every layer, not a theme skin.
 
 - **In combat:** enemy intents sit on a visible **Track** with countdown clocks. You can Delay them, at the price of **Pressure**, and **Schedule** your own effects onto the same Track ([04](04-combat.md#the-track)).
-- **On the map:** you can see branches ahead with Foresight. The futures you didn't choose can **come back changed**. **Anchors** let you rewind, and your abandoned self lingers as an **Echo** ([05](05-run-structure.md#anchors-and-rewind)).
+- **On the map:** you can see branches ahead with **Omens**. The futures you didn't choose can **come back changed**. **Anchors** let you rewind, and your abandoned self lingers as an **Echo** ([05](05-run-structure.md#anchors-and-rewind)).
 - **In the meta-game:** your runs are branches that persist ([06](06-meta-progression.md#archive-and-echoes)).
 
 ### 2. Every choice branches
@@ -85,12 +85,12 @@ Time manipulation is the core verb at every layer, not a theme skin.
 | Colored energy carries over (cap 8) | **Reservoir** carryover (cap 6), plus **Borrow** up to 2 from next turn (**Debt**, with interest). Energy moves both ways in time. |
 | Basic-attack interplay | One **Signature Action** per operative (Strike, Forecast, Shift), modified by cards, Relics and Artifacts |
 | Talents on level-up | **Imprints**, with faction and deck requirements that make builds intentional |
-| Pick 1 of 3 event cards | The **Weft**: 3 Moments, **Foresight** to peek ahead, **Returning Moments** (skipped branches come back changed), and **Anchors** with Rewind |
+| Pick 1 of 3 event cards | The **Weft**: 3 Moments, **Omens** to peek ahead, **Returning Moments** (skipped branches come back changed), and **Anchors** with Rewind |
 | Weapons and enchantments | **Relics** and other Constants (3 slots), **Artifacts** (out-of-place historical objects), **Inscribe** upgrades |
 | Multi-color classes | Faction operatives plus one mid-run **Defection** that adds a second color, and a story to go with it |
 | Static event text | Designer-authored events narrated by the **Chronicler**, with **Causality Ledger** callbacks across eras |
 | Enemies act every turn | The **Track**: visible countdowns, Delay with **Pressure**, **Fixed** boss moves, **Scheduled** effects, faction-specific intents (Fixed, Predictive, Forked) |
-| Luck-heavy rewards | Foresight previews, **Glimpse** the alternate reward (for Paradox), rarity pity, or **Fork** a card you already own |
+| Luck-heavy rewards | Omen previews, **Glimpse** the alternate reward (for Paradox), rarity pity, or **Fork** a card you already own |
 | A fixed card pool | A **Variant Pool**: your forged Branch Variants can carry over, so your card pool becomes unique |
 | Weekly challenges | **Fixed Points**, daily and weekly, with deterministic mechanics |
 | n/a | **Paradox**, a run-wide push-your-luck meter that ties rewinding, glimpsing and defecting together |

@@ -84,7 +84,6 @@
 | **Fixed Points** | Daily and weekly seeded challenge runs | [06](06-meta-progression.md#fixed-points) |
 | **Forecast** | The Oracle's Signature Action (Foresee 2) | [04](04-combat.md#signature-actions) |
 | **Foresee N** | Keyword: look at the top N cards of your Future; they become Known | [04](04-combat.md#keywords) |
-| **Foresight** | A map resource: reveals Moments' details and one Moment ahead | [05](05-run-structure.md#foresight) |
 | **Forge** | The pipeline that creates Branch Variants (LLM plan, engine validation) | [08](08-card-dsl.md#the-forge) |
 | **Finishing pass** | The human correction, grading and cleanup every AI-assisted image goes through before approval | [12](12-art-pipeline.md#the-finishing-pass) |
 | **Fork** | Keyword: a card with two faces; choose one when played | [04](04-combat.md#keywords) |
@@ -113,6 +112,7 @@
 | **Nexus Point** | A pivotal moment where Weight flows; every mission ends at one | [02](02-world-and-lore.md#nexus-points) |
 | **Ninth Law** | The hidden law of the Weave: there is no right thread. *Spoiler:* revealed in Movement III. | [02](02-world-and-lore.md#the-laws-of-the-weave) |
 | **Observe** | Collapse a Forked intent to its outcome early | [04](04-combat.md#faction-behavior) |
+| **Omens** | A map resource: reading one reveals the Moments' details and one Moment ahead | [05](05-run-structure.md#omens) |
 | **Operative** | A playable class (Vowknight, Oracle, Splinter, ...) | [03](03-factions-and-operatives.md) |
 | **Order of the Unbroken Line** | The Knights Crusaders faction. Energy: Faith ☀. Zone: the Past. | [02](02-world-and-lore.md#the-order-of-the-unbroken-line) |
 | **Other Hand** | The Splinter's 3-card stash held by its Other Self | [03](03-factions-and-operatives.md#the-splinter) |

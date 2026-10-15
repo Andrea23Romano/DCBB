@@ -18,7 +18,7 @@ A **run** is a **mission**: a journey through three eras that ends at a Nexus Po
 - **Starting state:**
   - your operative's starter deck and HP
   - **100 Hours** (the currency)
-  - **2 Foresight** (3 for the Oracle)
+  - **2 Omens** (3 for the Oracle)
   - **Paradox 0**
   - Standing **+1** with your faction and **0** with the others
 
@@ -72,11 +72,11 @@ Example for an 8-step act (24 cards):
   - for combats, the faction sigil
   - threat pips (1–3)
   - a reward hint
-- **Hidden until you spend Foresight:** the exact enemies, the event's identity, and any shop discounts.
+- **Hidden until you read an Omen:** the exact enemies, the event's identity, and any shop discounts.
 
-### Foresight
+### Omens
 
-Foresight is a charge-based resource. Spending 1 Foresight:
+Omens are charges you spend on the map. Reading an Omen:
 
 - reveals the full details of all 3 current Moments
 - reveals one Moment from the next step, which is guaranteed to be dealt
@@ -127,7 +127,7 @@ You can Rewind at any time **outside combat**, or at the moment of **death**.
 | | What happens |
 |---|---|
 | **Restored** | Your state at the Anchor: HP, deck, Hours, Artifacts, Imprints, Standing, Causality Ledger, Era Deck position |
-| **Not restored** | **Paradox +3** (+5 if you are rewinding from death). Anything you revealed with Foresight stays revealed. |
+| **Not restored** | **Paradox +3** (+5 if you are rewinding from death). Anything your Omens revealed stays revealed. |
 | **The cost you meet later** | Your abandoned self becomes an **Echo**, with the deck it had at the moment you rewound. It is shuffled into a later act's Era Deck as an Elite Moment. Defeat it to reclaim **Lost Weight**: choose a card from its deck or an Artifact. |
 
 - **The Anchor is spent** after a Rewind, and unused Anchors don't carry over between acts.
@@ -239,7 +239,7 @@ Imprints are DC's talents, kept and sharpened. XP comes from fights: **10** for 
 |---|---|
 | Thick Skin | +8 max HP. Can be taken more than once. |
 | Quick Study | Card rewards offer 4 cards instead of 3 |
-| Pathfinder | +1 Foresight now and at the start of each act |
+| Pathfinder | +1 Omen now and at the start of each act |
 | Anchorite | Your first Rewind each act leaves your Anchor in place |
 | Long Credit | Borrow limit 3 |
 | Paradox Sink | At each act start, −2 Paradox (instead of −1) |
@@ -269,7 +269,7 @@ Artifacts are **out-of-place artifacts**: objects found in the wrong century. Th
 | **Voynich Folio** | At the start of each act, a random card in your deck gains a permanent Misprint face. |
 | **Library Ember** | When you reshuffle, keep 3 cards of your choice in the Past. |
 | **Clockwork Sparrow** | The first time each combat you Delay an enemy intent, it gains no Pressure. |
-| **Piri Reis Fragment** | +1 Foresight per act. Foresight reveals a second Moment of the next step. |
+| **Piri Reis Fragment** | +1 Omen per act. Each Omen also reveals a second Moment of the next step. |
 | **Gnomon Splinter** | Fixed intents deal 20% less damage to you. |
 | **Lovelace's Notes** | Start of each combat: install a random Subroutine from your deck for free. |
 | **Leonardo's Bearing** | You may use your Signature Action twice per turn. The second use costs 1 generic. |
@@ -293,7 +293,7 @@ Boss Artifacts are strong, and each one has a drawback. They come only from act 
 | **The Thousandfold's Ribbon** | Your Other Hand holds +1 card (no Other Hand? you gain one with 2 cards). +1 Paradox at the start of each combat. |
 | **Babbage's Governor** | Draw 1 more card each turn. −6 max HP. |
 | **The Cavaliere's Heart** | Start each combat with 8 Block and Plate 1. Enemies have 10% more HP. |
-| **Joachim's Prophecy** | +1 Foresight now and at the start of each act, and Foresight reveals a second Moment of the next step. +1 Paradox at the start of each combat. |
+| **Joachim's Prophecy** | +1 Omen now and at the start of each act, and each Omen also reveals a second Moment of the next step. +1 Paradox at the start of each combat. |
 
 ---
 
@@ -307,7 +307,7 @@ Boss Artifacts are strong, and each one has a drawback. They come only from act 
 | Artifact | 120–220 |
 | **Erase from history** (remove a card) | 75, then +25 each time |
 | **Inscribe** a card | 60 |
-| Foresight charge | 40 |
+| Omen | 40 |
 
 Each card, Artifact and service can be bought once per visit. Erasing can't take your deck below 5 cards.
 
@@ -341,7 +341,7 @@ Every faction keeps altars across history.
 | Shrine | Boon when it's **your** faction (choose 1) |
 |---|---|
 | **Order Chapel** | Erase a card from history · gain a Relic card · heal 20% |
-| **Convergence Terminal** | Inscribe 2 cards · +2 Foresight · transform a card into a random card of the same rarity |
+| **Convergence Terminal** | Inscribe 2 cards · +2 Omens · transform a card into a random card of the same rarity |
 | **Errata Seam** | Fork a card (counts toward the 3-per-run limit) · gain 2 Paradox and a rare Errata card · swap a card for a random card from another faction |
 
 At **another faction's** shrine you may:
@@ -411,7 +411,7 @@ choices:
     outcome: { standing: { order: +1 }, hours: 40, ledger: [scribe_reported] }
   - id: read
     hint: "Read the page yourself"
-    outcome: { paradox: +2, foresight: +1, ledger: [read_forbidden_page] }
+    outcome: { paradox: +2, omens: +1, ledger: [read_forbidden_page] }
 authored_text:            # the fallback, and the style reference
   title: "The Copyist"
   scene: "Candle stubs, ink on her cuffs, and the sound of boots on wet cobbles..."
@@ -433,7 +433,7 @@ In a Divergence you **change history**.
 |---|---|---|
 | Burn the notes | `london.notes_burned` | **The Engine Never Built**: Convergence enemies −10% HP this run · **The Order Takes Credit**: Order squads gain +1 Plate · **Ash in the Margins**: your next Anomaly is a Rift |
 | Copy them for the Order | `london.notes_to_order` | **Canon of Engines**: Relic cards −25% at Antiquarians · **Holy Calculation**: Order enemies are Predictive in Act II · **Scriptorium**: Inscribe costs −20 Hours |
-| Give them to the stranger from 2049 | `london.notes_to_stranger` | **Bootstrapped**: Convergence cards appear twice as often in rewards (for other operatives, the Convergence cards they can pay for join their pool), but Proxies gain +1 Might · **Signal Loop**: +1 Foresight per act, +1 Paradox · **A Debt Owed**: MERIDIAN Ascendant cannot be your Nexus champion this run |
+| Give them to the stranger from 2049 | `london.notes_to_stranger` | **Bootstrapped**: Convergence cards appear twice as often in rewards (for other operatives, the Convergence cards they can pay for join their pool), but Proxies gain +1 Might · **Signal Loop**: +1 Omen now and at the start of each act, +1 Paradox · **A Debt Owed**: MERIDIAN Ascendant cannot be your Nexus champion this run |
 | Let history run | `london.notes_untouched` | **As Written**: Order Standing +1 · **The Tear Notices**: +1 Paradox, and the next Cache is upgraded |
 
 **Divergence Report example:**
@@ -502,10 +502,10 @@ The first playable slice ([10](10-roadmap.md#phase-1-status)) builds all three a
 
 | Event | Choices |
 |---|---|
-| The Copyist | Hide her: Order −1, Errata +1, an Errata common card · Report her: Order +1, +40 Hours · Read the page: +2 Paradox, +1 Foresight |
-| A Penny Dreadful | Buy every number: −25 Hours, +1 Foresight · Find the author: +1 Paradox, an uncommon card · Walk on |
+| The Copyist | Hide her: Order −1, Errata +1, an Errata common card · Report her: Order +1, +40 Hours · Read the page: +2 Paradox, +1 Omen |
+| A Penny Dreadful | Buy every number: −25 Hours, +1 Omen · Find the author: +1 Paradox, an uncommon card · Walk on |
 | Babbage's Workshop | Pocket the turning gear: an Artifact, +2 Paradox · Sell the brass: +60 Hours, Convergence −1 · Leave it counting |
-| The Mudlark | Buy the future-minted coin: −40 Hours, a rare card, +1 Paradox · Pay for the patrols: −15 Hours, +1 Foresight · Leave |
+| The Mudlark | Buy the future-minted coin: −40 Hours, a rare card, +1 Paradox · Pay for the patrols: −15 Hours, +1 Omen · Leave |
 | The Night Ward | Work the night shift: lose 6 HP, Inscribe a card, Order +1 · Take laudanum: heal 20%, +1 Paradox · Keep walking |
 
 - **Anomalies:** Fading Street and The Loop, as described in [Services](#anomaly).
@@ -526,7 +526,7 @@ The first playable slice ([10](10-roadmap.md#phase-1-status)) builds all three a
 | Choice | The Cavaliere | Legal Ripples |
 |---|---|---|
 | Fit MERIDIAN's escapement | Predictive: Attack-heavy hands meet Guard and Glitch | **Clockwork Lineage**: Convergence cards twice as often in rewards, Convergence enemies Might 1 · **Perpetual Motion**: Reservoir cap 8 |
-| Seal the Order's relic inside | Fixed hits, and a Vow: 3+ Attacks in your turn give it Might | **The Relic Knight**: Order enemies Plate 1, Relic cards −25% · **Canonized**: Order Standing +1, +1 Foresight |
+| Seal the Order's relic inside | Fixed hits, and a Vow: 3+ Attacks in your turn give it Might | **The Relic Knight**: Order enemies Plate 1, Relic cards −25% · **Canonized**: Order Standing +1, +1 Omen |
 | Fold the misprint into its chest | Forked intents | **Margins in the Machine**: +1 Paradox, a rare card · **The Unwritten Knight**: Errata enemies −10% HP |
 | Leave the chest empty | Its plain rotation | **The Hollow Knight**: era natives −10% HP · **History Holds**: −1 Paradox, heal 15% |
 
@@ -551,7 +551,7 @@ Seven steps: 9 Combats, 2 Elites, 4 Events, an Anomaly, 2 Antiquarians, 2 Still 
 | Choice | Outcome | Legal Ripples |
 |---|---|---|
 | Let Aurel find it, as written | Order +1 | **The Canon Begins**: Order +1, heal 20% · **The Long Shadow**: Fixed intents deal 15% less to you |
-| Touch it yourself | +2 Paradox | **Two Shadows**: +2 Foresight, Foresee +1 · **The Needle Knows You**: start each fight with 6 Block |
+| Touch it yourself | +2 Paradox | **Two Shadows**: +2 Omens, Foresee +1 · **The Needle Knows You**: start each fight with 6 Block |
 | Let it shatter | Errata +1, Order −1 | **A Thousand Shards**: −2 Paradox, a rare card · **Everyone's Time**: +1 Neutral energy each turn |
 | Crate it for the Convergence | Convergence +1, Order −1 | **Matter Moves**: Convergence cards twice as often, Convergence enemies −10% HP · **Calculated Shadow**: start each fight with Foresee 2 |
 
@@ -561,7 +561,7 @@ The Standing changes matter: they decide which champion comes for the Gnomon. **
 
 - **Era scaling.** Later acts reuse the faction squads, so each act makes its fights tougher: Act II enemies have **125% HP and Might 1**, Act III enemies **150% HP and Might 1**. Bosses and your Echo are authored at full strength and don't scale.
 - **Boss rewards.** An act boss gives **90 Hours**, a choice of **1 of 3 boss Artifacts** (taken first), then **1 of 3 rare cards** (each with a 15% chance to be a legendary; thin pools fill up with uncommons). Boss rewards can't be Glimpsed.
-- **A new act** begins with a full heal, −1 Paradox (−2 with Paradox Sink), +1 Foresight for each source that grants it per act, a new Anchor at its first step, and an empty Branch Pool.
+- **A new act** begins with a full heal, −1 Paradox (−2 with Paradox Sink), +1 Omen for each source that grants one per act, a new Anchor at its first step, and an empty Branch Pool.
 - **XP and Imprints** work as in [Imprints](#imprints). The operative Imprints built so far are in [03](03-factions-and-operatives.md); *Plural* waits for Forks.
 - **Standing** works as in [Standing](#standing): apostates meet their own faction's squads, a faction at −2 or worse hunts you with one more fight per act, a friendly faction (+2) opens its altar and discounts its cards, and the lowest Standing among your rivals picks the Nexus champion (ties go to the seed).
 - **Shrines:** your own faction's altar offers its boons ([Shrines](#shrines-and-defection)); Fork, transform and swap boons wait for later systems, so the Errata Seam offers *Stitch yourself tighter* (−2 Paradox) instead. Another faction's altar can be Desecrated.
@@ -570,9 +570,9 @@ The Standing changes matter: they decide which champion comes for the Gnomon. **
 **Time travel on the map.** [Returning Moments](#returning-moments) and [Anchors and Rewind](#anchors-and-rewind) work as described above. The prototype settles these details:
 
 - **Consequences.** Every Act I event has one, written as a follow-up event: the Copyist in a cell, the Notes at auction, the serial's last number, a cold workshop, the mudlark robbed, the ward overflowing. Later acts have a few. Anomalies don't return.
-- **Which Moment a return replaces.** One the dealing rules didn't place and Foresight hasn't revealed. The Moment it displaces is not dealt. A Moment returns once at most.
+- **Which Moment a return replaces.** One the dealing rules didn't place and no Omen has revealed. The Moment it displaces is not dealt. A Moment returns once at most.
 - **Your Anchor.** Steady moves it automatically. A Shrine offers the move, which you can accept on the next step's Weft. A spent Anchor can't be moved, so you Rewind once per act (twice with Anchorite).
-- **Rewind** restores the run as it was at your Anchor, with the same Era Deck and the same random draws. It doesn't restore Paradox or Foresight charges, and Moments you revealed stay revealed. Rewind outside combat asks for confirmation first. When you fall with your Anchor unspent, you choose between Rewinding (+5 Paradox) and ending the run.
+- **Rewind** restores the run as it was at your Anchor, with the same Era Deck and the same random draws. It doesn't restore Paradox or Omens, and Moments you revealed stay revealed. Rewind outside combat asks for confirmation first. When you fall with your Anchor unspent, you choose between Rewinding (+5 Paradox) and ending the run.
 - **The Echo of You** takes the place of an undealt Moment in a later step of the act. With no later step left, it waits for the next act; in Act III it unravels instead. Its HP is 60% of your max HP. It plays two of your old cards per round in a seeded order ([03](03-factions-and-operatives.md#enemy-rosters)). Beating it gives Elite Hours and **Lost Weight**: one card from its deck or an Artifact.
 
 - **Not yet built:** Defection, Forks, the Quick Mission, and the Chronicler's prose (events use their authored text).
@@ -586,7 +586,7 @@ This is a Vowknight run on *The First Hour*, condensed into beats.
 **Act I: London, 1843**
 
 1. **Step 1.** The Moments are a Combat (Gaslight Footpads), an Event (*"The Copyist"*) and an Antiquarian. You take the fight for XP. The skipped Event goes to the Branch Pool.
-2. **Step 3.** You spend 1 Foresight and see that the Elite is a **Pruner**, which would Erase your Future card by card. You choose the Still Point instead.
+2. **Step 3.** You read an Omen and see that the Elite is a **Pruner**, which would Erase your Future card by card. You choose the Still Point instead.
 3. **Step 4.** *"The Copyist"* **returns** as a Consequence: the scribe is now in a cell. You free her: Order −1, Errata +1, and the flag `scribe_hidden`.
 4. **Step 6, the Divergence *The Notes*.** You burn them. The Chronicler selects *The Engine Never Built* and writes a three-sentence alternate history.
 5. **Boss: the Lattice Engine.** With Convergence enemies at −10% HP, it falls on turn 6. You take **Gnomon Splinter**.

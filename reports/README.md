@@ -86,7 +86,7 @@ The Oracle and the Splinter were reworked so that their factions' mechanics pay 
   - It takes a card when one scores well on budget efficiency, rarity and deck shape.
   - At the Antiquarian it Erases a basic card, Inscribes, then buys.
   - At Still Points it heals below 60% HP, Steadies at Paradox 4 or more, and Inscribes otherwise.
-  - It never Glimpses. It spends Foresight only to look at an Elite.
+  - It never Glimpses. It reads Omens only to look at an Elite.
   - It accepts every Anchor a Shrine offers, and always Rewinds when it falls with its Anchor unspent. It never Rewinds otherwise.
   - It picks Imprints from a fixed taste list (each operative's own engine first), and boss Artifacts by how well they fit the operative.
   - It is a baseline for run-level balance, not a strong player.

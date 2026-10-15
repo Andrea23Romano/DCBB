@@ -243,7 +243,7 @@ object FirstHour {
                     RunEffect.GainCard(CardPool(Faction.ERRATA, Rarity.COMMON)), flag("scribe_hidden"),
                 ),
                 choice("report", "Take the page. The Line will judge it.", standing(Faction.ORDER, 1), hours(40), flag("scribe_reported")),
-                choice("read", "Read it first.", paradox(2), RunEffect.Foresight(1), flag("read_forbidden_page")),
+                choice("read", "Read it first.", paradox(2), RunEffect.Omens(1), flag("read_forbidden_page")),
             ),
             consequence = "london.copyist_in_a_cell",
         ),
@@ -265,7 +265,7 @@ object FirstHour {
             "A printer's boy is selling a serial about a knight who steps out of time and into Whitechapel. The woodcut " +
                 "on the cover has your face, and this week's number ends at the door you are about to open.",
             listOf(
-                choice("buy", "Buy every number in print.", hours(-25), RunEffect.Foresight(1)),
+                choice("buy", "Buy every number in print.", hours(-25), RunEffect.Omens(1)),
                 choice("author", "Find out who writes it.", paradox(1), RunEffect.GainCard(CardPool(rarity = Rarity.UNCOMMON)), flag("london.author_sought")),
                 choice("walk", "Walk on."),
             ),
@@ -288,7 +288,7 @@ object FirstHour {
                 "hasn't happened yet. She also knows every patrol on the river.",
             listOf(
                 choice("coin", "Buy the coin.", hours(-40), RunEffect.GainCard(CardPool(rarity = Rarity.RARE)), paradox(1)),
-                choice("patrols", "Pay her for the patrols.", hours(-15), RunEffect.Foresight(1)),
+                choice("patrols", "Pay her for the patrols.", hours(-15), RunEffect.Omens(1)),
                 choice("leave", "Leave her to the tide."),
             ),
             consequence = "london.mudlark_robbed",
@@ -331,7 +331,7 @@ object FirstHour {
             "The serial's last number is out. The knight dies in it, at a door you recognize, on a night with this " +
                 "same fog. The printer's boy has three copies left.",
             listOf(
-                choice("read", "Read the ending.", RunEffect.Foresight(1), paradox(1)),
+                choice("read", "Read the ending.", RunEffect.Omens(1), paradox(1)),
                 choice("burn", "Buy the print run and burn it.", hours(-30), paradox(-1)),
                 choice("walk", "Let the ending stand."),
             ),
@@ -351,7 +351,7 @@ object FirstHour {
             "The mudlark again, thinner, with a bruise on her cheek. Someone took the coin from her, and she knows " +
                 "which lodging house they went into.",
             listOf(
-                choice("give", "Give her money for a room.", hours(-20), RunEffect.Foresight(1), standing(Faction.ERRATA, 1)),
+                choice("give", "Give her money for a room.", hours(-20), RunEffect.Omens(1), standing(Faction.ERRATA, 1)),
                 choice("collect", "Go and get the coin back.", RunEffect.Fight("fleet_street")),
                 choice("leave", "Walk on."),
             ),
@@ -406,7 +406,7 @@ object FirstHour {
                 "for your credentials, then decides it already knows them.",
             listOf(
                 choice("inscribe", "Inscribe two cards.", RunEffect.Pick(Purpose.INSCRIBE, 2), requires = Requirement.OWN_FACTION),
-                choice("foresight", "Download a forecast.", RunEffect.Foresight(2), requires = Requirement.OWN_FACTION),
+                choice("omens", "Download a forecast.", RunEffect.Omens(2), requires = Requirement.OWN_FACTION),
                 choice("desecrate", "Desecrate it.", hours(50), paradox(1), standing(Faction.CONVERGENCE, -1), requires = Requirement.OTHER_FACTION),
                 choice("leave", "Leave it be."),
             ),
@@ -441,8 +441,8 @@ object FirstHour {
         ),
         ArtifactDef(
             "piri_reis_fragment", "Piri Reis Fragment",
-            "+1 Foresight per act. Foresight reveals a second Moment of the next step.", 130,
-            perks = setOf(Perk.FORESIGHT_EXTRA_PEEK), onGain = listOf(RunEffect.Foresight(1)),
+            "+1 Omen per act. Each Omen also reveals a second Moment of the next step.", 130,
+            perks = setOf(Perk.OMEN_EXTRA_PEEK), onGain = listOf(RunEffect.Omens(1)),
         ),
         ArtifactDef(
             "gnomon_splinter", "Gnomon Splinter", "Fixed intents deal 20% less damage to you.", 180,
@@ -490,8 +490,8 @@ object FirstHour {
             perks = setOf(Perk.CONVERGENCE_REWARDS),
         ),
         RippleDef(
-            "signal_loop", "Signal Loop", "+1 Foresight per act, and +1 Paradox.",
-            now = listOf(RunEffect.Foresight(1), RunEffect.Paradox(1)),
+            "signal_loop", "Signal Loop", "+1 Omen now and at the start of each act, and +1 Paradox.",
+            now = listOf(RunEffect.Omens(1), RunEffect.Paradox(1)), perks = setOf(Perk.OMENS_PER_ACT),
         ),
         RippleDef("as_written", "As Written", "Order Standing +1.", now = listOf(RunEffect.Standing(Faction.ORDER, 1))),
         RippleDef(
@@ -533,7 +533,7 @@ object FirstHour {
             "A notebook lies open on a bench: horses, water, a wing, and lines of writing that only make sense in a " +
                 "mirror. Its owner has stepped out to argue with a foundryman.",
             listOf(
-                choice("read", "Read it in a mirror.", RunEffect.Foresight(1), paradox(1), flag("milan.notebook_read")),
+                choice("read", "Read it in a mirror.", RunEffect.Omens(1), paradox(1), flag("milan.notebook_read")),
                 choice("copy", "Copy the page on the wing.", RunEffect.GainCard(CardPool(rarity = Rarity.UNCOMMON)), flag("milan.notebook_copied")),
                 choice("wait", "Close it and wait for him.", RunEffect.HealPct(15), flag("milan.leonardo_met")),
             ),
@@ -566,7 +566,7 @@ object FirstHour {
             listOf(
                 choice("silver", "Pocket the silver.", hours(60), standing(Faction.ORDER, -1), flag("milan.silver_taken")),
                 choice("masque", "Stay for the masque.", RunEffect.HealPct(15)),
-                choice("listen", "Listen to the ambassador.", RunEffect.Foresight(1), flag("milan.french_plans")),
+                choice("listen", "Listen to the ambassador.", RunEffect.Omens(1), flag("milan.french_plans")),
             ),
             consequence = "milan.after_the_banquet",
         ),
@@ -605,7 +605,7 @@ object FirstHour {
             "A fresco on a chapel wall shows tomorrow: the same street, the same light, and you in it, doing something " +
                 "you haven't decided to do yet.",
             listOf(
-                choice("study", "Study it.", RunEffect.Foresight(2), paradox(1)),
+                choice("study", "Study it.", RunEffect.Omens(2), paradox(1)),
                 choice("away", "Look away.", paradox(-1)),
             ),
         ),
@@ -624,7 +624,7 @@ object FirstHour {
             mods = CombatMods(enemyBoosts = listOf(EnemyBoost(StatusType.PLATE, 1, faction = Faction.ORDER))),
             perks = setOf(Perk.RELIC_DISCOUNT),
         ),
-        RippleDef("canonized", "Canonized", "Order Standing +1, and +1 Foresight.", now = listOf(RunEffect.Standing(Faction.ORDER, 1), RunEffect.Foresight(1))),
+        RippleDef("canonized", "Canonized", "Order Standing +1, and +1 Omen.", now = listOf(RunEffect.Standing(Faction.ORDER, 1), RunEffect.Omens(1))),
         RippleDef(
             "margins_in_the_machine", "Margins in the Machine", "+1 Paradox, and a rare card.",
             now = listOf(RunEffect.Paradox(1), RunEffect.GainCard(CardPool(rarity = Rarity.RARE))),
@@ -666,7 +666,7 @@ object FirstHour {
                 "Aurel. He has dreamed of a needle of black glass, and he asks if you have seen it.",
             listOf(
                 choice("vigil", "Keep the vigil with him.", RunEffect.HealPct(15), standing(Faction.ORDER, 1), flag("saltwaste.aurel_befriended")),
-                choice("warn", "Tell him what the needle becomes.", paradox(2), RunEffect.Foresight(1), flag("saltwaste.aurel_warned")),
+                choice("warn", "Tell him what the needle becomes.", paradox(2), RunEffect.Omens(1), flag("saltwaste.aurel_warned")),
                 choice("leave", "Leave him to his prayers."),
             ),
             consequence = "saltwaste.aurel_alone",
@@ -697,7 +697,7 @@ object FirstHour {
                 "its horses. They have seen you, and they haven't drawn.",
             listOf(
                 choice("drink", "Drink, and fill your skins.", RunEffect.HealPct(25)),
-                choice("share", "Share the water with the patrol.", RunEffect.HealPct(10), RunEffect.Foresight(1)),
+                choice("share", "Share the water with the patrol.", RunEffect.HealPct(10), RunEffect.Omens(1)),
                 choice("deep", "Climb down into the dark.", paradox(1), RunEffect.GainArtifact()),
             ),
         ),
@@ -707,7 +707,7 @@ object FirstHour {
                 "different sky.",
             listOf(
                 choice("shard", "Pocket a shard.", RunEffect.GainArtifact(), paradox(2)),
-                choice("map", "Map which way the shards point.", RunEffect.Foresight(2)),
+                choice("map", "Map which way the shards point.", RunEffect.Omens(2)),
                 choice("leave", "Walk around it."),
             ),
         ),
@@ -717,7 +717,7 @@ object FirstHour {
                 "dunes has a crossbow on both of them.",
             listOf(
                 choice("stop", "Stop the crossbowman.", RunEffect.LoseHp(6), RunEffect.GainCard(CardPool(rarity = Rarity.UNCOMMON)), flag("saltwaste.truce_kept")),
-                choice("shout", "Shout a warning.", RunEffect.Foresight(1)),
+                choice("shout", "Shout a warning.", RunEffect.Omens(1)),
                 choice("stay", "Stay out of it.", paradox(1), flag("saltwaste.truce_broken")),
             ),
         ),
@@ -744,8 +744,8 @@ object FirstHour {
         RippleDef("canon_begins", "The Canon Begins", "Order Standing +1, and heal 20% of your max HP.", now = listOf(RunEffect.Standing(Faction.ORDER, 1), RunEffect.HealPct(20))),
         RippleDef("long_shadow", "The Long Shadow", "Fixed intents deal 15% less damage to you.", mods = CombatMods(fixedDamagePct = 85)),
         RippleDef(
-            "two_shadows", "Two Shadows", "+2 Foresight, and your Foresee effects see 1 more card.",
-            now = listOf(RunEffect.Foresight(2)), mods = CombatMods(foreseeBonus = 1),
+            "two_shadows", "Two Shadows", "+2 Omens, and your Foresee effects see 1 more card.",
+            now = listOf(RunEffect.Omens(2)), mods = CombatMods(foreseeBonus = 1),
         ),
         RippleDef(
             "needle_knows_you", "The Needle Knows You", "Start each fight with 6 Block.",
@@ -795,9 +795,9 @@ object FirstHour {
         ),
         ArtifactDef(
             "joachims_prophecy", "Joachim's Prophecy",
-            "+1 Foresight now and at the start of each act, and Foresight reveals a second Moment of the next step. Start each fight with +1 Paradox.", 0,
+            "+1 Omen now and at the start of each act, and each Omen also reveals a second Moment of the next step. Start each fight with +1 Paradox.", 0,
             mods = CombatMods(startEffects = listOf(Effect.GainParadox(1))),
-            perks = setOf(Perk.FORESIGHT_PER_ACT, Perk.FORESIGHT_EXTRA_PEEK), onGain = listOf(RunEffect.Foresight(1)), boss = true,
+            perks = setOf(Perk.OMENS_PER_ACT, Perk.OMEN_EXTRA_PEEK), onGain = listOf(RunEffect.Omens(1)), boss = true,
         ),
     )
 
@@ -808,8 +808,8 @@ object FirstHour {
         ImprintDef("thick_skin", "Thick Skin", "+8 max HP.", onGain = listOf(RunEffect.MaxHp(8)), repeatable = true),
         ImprintDef("quick_study", "Quick Study", "Card rewards offer 4 cards instead of 3.", perks = setOf(Perk.QUICK_STUDY)),
         ImprintDef(
-            "pathfinder", "Pathfinder", "+1 Foresight now and at the start of each act.",
-            perks = setOf(Perk.FORESIGHT_PER_ACT), onGain = listOf(RunEffect.Foresight(1)),
+            "pathfinder", "Pathfinder", "+1 Omen now and at the start of each act.",
+            perks = setOf(Perk.OMENS_PER_ACT), onGain = listOf(RunEffect.Omens(1)),
         ),
         ImprintDef("anchorite", "Anchorite", "Your first Rewind each act leaves your Anchor in place.", perks = setOf(Perk.ANCHORITE)),
         ImprintDef("long_credit", "Long Credit", "You may Borrow 3 a turn instead of 2.", mods = CombatMods(borrowLimit = 3)),

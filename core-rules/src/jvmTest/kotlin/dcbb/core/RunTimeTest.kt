@@ -168,9 +168,9 @@ class RunTimeTest {
     }
 
     @Test
-    fun `Rewind restores the run at the Anchor, costs Paradox, keeps Foresight's reveals and leaves an Echo`() {
+    fun `Rewind restores the run at the Anchor, costs Paradox, keeps what Omens revealed and leaves an Echo`() {
         val s = startRun(seed = 5)
-        var later = s.ok(RunAction.Foresight)
+        var later = s.ok(RunAction.ReadOmen)
         later = end(later.ok(RunAction.Choose(0)).let { st -> if (st.screen is Screen.Fight) st else st.visit(moment(MomentType.COMBAT, "lone_footpad")) }, Phase.WON)
         later = later.ok(RunAction.Choose(0)) // take a card
         assertTrue(later.deck.size > s.deck.size)
@@ -180,7 +180,7 @@ class RunTimeTest {
         assertEquals(s.step, back.step)
         assertEquals(s.screen, back.screen)
         assertEquals(later.paradox + RunEngine.REWIND_PARADOX, back.paradox)
-        assertEquals(later.foresight, back.foresight, "spent Foresight stays spent")
+        assertEquals(later.omens, back.omens, "Omens read stay read")
         assertTrue(back.revealed.containsAll(later.revealed), "what you saw stays seen")
         assertNull(back.anchor)
         assertEquals(1, back.stats.rewinds)

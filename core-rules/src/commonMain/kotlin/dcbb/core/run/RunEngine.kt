@@ -33,8 +33,8 @@ class RunEngine(val rc: RunContent) {
 
     companion object {
         const val START_HOURS = 100
-        const val START_FORESIGHT = 2
-        const val FORECAST_FORESIGHT = 3
+        const val START_OMENS = 2
+        const val FORECAST_OMENS = 3
         const val SKIP_HOURS = 10
         const val REST_HEAL_PCT = 30
         const val STEADY = 2
@@ -52,7 +52,7 @@ class RunEngine(val rc: RunContent) {
         const val ERASE_STEP = 25
         const val INSCRIBE_PRICE = 60
         const val INSCRIBE_DISCOUNT = 20
-        const val FORESIGHT_PRICE = 40
+        const val OMEN_PRICE = 40
         const val CACHE_HOURS = 60
         const val COMBAT_ARTIFACT_PCT = 5
 
@@ -106,7 +106,7 @@ class RunEngine(val rc: RunContent) {
             maxHp = op.maxHp,
             deck = op.starterDeck,
             hours = START_HOURS,
-            foresight = if (op.signature == dcbb.core.model.Signature.FORECAST) FORECAST_FORESIGHT else START_FORESIGHT,
+            omens = if (op.signature == dcbb.core.model.Signature.FORECAST) FORECAST_OMENS else START_OMENS,
             paradox = 0,
             standing = mapOf(op.faction to 1),
             plan = emptyList(),
@@ -241,6 +241,8 @@ class RunEngine(val rc: RunContent) {
             (def.cost.flux == 0 || color == EnergyColor.FLUX)
     }
 
+    private fun omens(n: Int) = if (n == 1) "Omen" else "Omens"
+
     /** Engine-rendered outcome text (docs/05 trust rule). Flags are invisible, so they render as null. */
     fun describe(e: RunEffect): String? = when (e) {
         is RunEffect.Hours -> if (e.n >= 0) "+${e.n} Hours" else "−${-e.n} Hours"
@@ -249,7 +251,7 @@ class RunEngine(val rc: RunContent) {
         is RunEffect.LoseHp -> "Lose ${e.n} HP"
         is RunEffect.MaxHp -> if (e.n >= 0) "+${e.n} max HP" else "−${-e.n} max HP"
         is RunEffect.Paradox -> if (e.n >= 0) "+${e.n} Paradox" else "−${-e.n} Paradox"
-        is RunEffect.Foresight -> if (e.n >= 0) "+${e.n} Foresight" else "−${-e.n} Foresight"
+        is RunEffect.Omens -> if (e.n >= 0) "+${e.n} ${omens(e.n)}" else "−${-e.n} ${omens(-e.n)}"
         is RunEffect.Standing -> "${e.faction.label} Standing ${if (e.n >= 0) "+" else "−"}${kotlin.math.abs(e.n)}"
         is RunEffect.Flag -> null
         is RunEffect.GainCard -> buildString {
@@ -314,7 +316,7 @@ class RunEngine(val rc: RunContent) {
             return Moment(id, type, title, ref, faction, threat, pinned, tear, ambush)
         }
 
-        /** The same Moment under a fresh id (a return, an Echo): ids seed fights and key Foresight. */
+        /** The same Moment under a fresh id (a return, an Echo): ids seed fights and key what Omens reveal. */
         fun renew(m: Moment): Moment {
             val id = s.nextId
             s = s.copy(nextId = id + 1)
@@ -504,7 +506,7 @@ class RunEngine(val rc: RunContent) {
 
         /**
          * Returning Moments (docs/05): each Moment in the Branch Pool returns with a 25% chance; at most one does, and
-         * it takes the place of a dealt Moment that no rule placed and Foresight hasn't revealed.
+         * it takes the place of a dealt Moment that no rule placed and no Omen has revealed.
          */
         private fun withReturn(index: Int, options: List<Moment>): List<Moment> {
             if (s.branchPool.isEmpty()) return options
@@ -608,7 +610,7 @@ class RunEngine(val rc: RunContent) {
         }
 
         /**
-         * The next act (docs/05): a full heal, Paradox −1 (−2 with Paradox Sink), Foresight from what grants it per
+         * The next act (docs/05): a full heal, Paradox −1 (−2 with Paradox Sink), Omens from what grants them per
          * act, a new Anchor at its first step, an empty Branch Pool, and any Echo still waiting.
          */
         private fun nextAct() {
@@ -633,10 +635,10 @@ class RunEngine(val rc: RunContent) {
                 lines += "Paradox −${minOf(relief, s.paradox)}."
                 changeParadox(-relief)
             }
-            val sight = perkCount(s, Perk.FORESIGHT_PER_ACT)
+            val sight = perkCount(s, Perk.OMENS_PER_ACT)
             if (sight > 0) {
-                s = s.copy(foresight = s.foresight + sight)
-                lines += "+$sight Foresight."
+                s = s.copy(omens = s.omens + sight)
+                lines += "+$sight ${omens(sight)}."
             }
             planAct()
             val waiting = s.echoesWaiting
@@ -711,19 +713,19 @@ class RunEngine(val rc: RunContent) {
                 log += "You move your Anchor here."
                 null
             }
-            RunAction.Foresight -> {
-                if (s.foresight <= 0) return "No Foresight left"
-                val peek = if (Perk.FORESIGHT_EXTRA_PEEK in perks(s)) 2 else 1
+            RunAction.ReadOmen -> {
+                if (s.omens <= 0) return "No Omens left"
+                val peek = if (Perk.OMEN_EXTRA_PEEK in perks(s)) 2 else 1
                 val upcoming = if (s.step < era.steps) s.plan[s.step] else emptyList()
                 val next = upcoming.filter { it.id !in s.revealed }.take(peek)
                 val now = w.options.filter { it.id !in s.revealed }
-                if (now.isEmpty() && next.isEmpty()) return "Foresight has nothing left to reveal here"
+                if (now.isEmpty() && next.isEmpty()) return "There is nothing left here for an Omen to reveal"
                 s = s.copy(
-                    foresight = s.foresight - 1,
+                    omens = s.omens - 1,
                     revealed = s.revealed + now.map { it.id } + next.map { it.id },
-                    stats = s.stats.copy(foresightSpent = s.stats.foresightSpent + 1),
+                    stats = s.stats.copy(omensRead = s.stats.omensRead + 1),
                 )
-                log += "Foresight: you see these Moments clearly" + if (next.isNotEmpty()) ", and ${next.size} of the next step" else ""
+                log += "An Omen: you see these Moments clearly" + if (next.isNotEmpty()) ", and ${next.size} of the next step" else ""
                 null
             }
             else -> "Choose a Moment"
@@ -1036,7 +1038,7 @@ class RunEngine(val rc: RunContent) {
                 listOf(
                     ShopItem(ShopKind.ERASE, null, eraseCost(s)),
                     ShopItem(ShopKind.INSCRIBE, null, inscribeCost(s)),
-                    ShopItem(ShopKind.FORESIGHT, null, FORESIGHT_PRICE),
+                    ShopItem(ShopKind.OMEN, null, OMEN_PRICE),
                 )
         }
 
@@ -1062,10 +1064,10 @@ class RunEngine(val rc: RunContent) {
                     s = s.copy(screen = sold)
                     gainArtifact(item.ref!!)
                 }
-                ShopKind.FORESIGHT -> {
+                ShopKind.OMEN -> {
                     spend(item.price)
-                    s = s.copy(foresight = s.foresight + 1, screen = sold)
-                    log += "You buy a Foresight charge."
+                    s = s.copy(omens = s.omens + 1, screen = sold)
+                    log += "You buy an Omen."
                 }
                 ShopKind.ERASE -> {
                     if (s.deck.size <= MIN_DECK) return "Your deck can't go below $MIN_DECK cards"
@@ -1245,7 +1247,7 @@ class RunEngine(val rc: RunContent) {
                 is RunEffect.LoseHp -> s = s.copy(hp = maxOf(1, s.hp - e.n))
                 is RunEffect.MaxHp -> s = s.copy(maxHp = maxOf(1, s.maxHp + e.n), hp = (s.hp + maxOf(0, e.n)).coerceAtMost(s.maxHp + e.n))
                 is RunEffect.Paradox -> changeParadox(e.n)
-                is RunEffect.Foresight -> s = s.copy(foresight = maxOf(0, s.foresight + e.n))
+                is RunEffect.Omens -> s = s.copy(omens = maxOf(0, s.omens + e.n))
                 is RunEffect.Standing -> s = s.copy(
                     standing = s.standing + (e.faction to (s.standingWith(e.faction) + e.n).coerceIn(STANDING_MIN, STANDING_MAX)),
                 )
@@ -1316,7 +1318,7 @@ class RunEngine(val rc: RunContent) {
 
         /**
          * Back to the Anchor. Restored: HP, deck, Hours, Artifacts, Standing, the Ledger, the Era Deck and the Branch
-         * Pool. Not restored: Paradox (+3, or +5 from death), Foresight charges, and whatever Foresight revealed.
+         * Pool. Not restored: Paradox (+3, or +5 from death), Omens, and whatever they revealed.
          * Your abandoned self becomes an Echo in a later step of the act.
          */
         fun rewind(fromDeath: Boolean) {
@@ -1327,7 +1329,7 @@ class RunEngine(val rc: RunContent) {
             val keep = Perk.ANCHORITE in perks(now) && !now.anchorKept
             s = anchor.copy(
                 paradox = now.paradox,
-                foresight = now.foresight,
+                omens = now.omens,
                 revealed = anchor.revealed + now.revealed,
                 nextId = now.nextId,
                 stats = now.stats.copy(
@@ -1414,7 +1416,7 @@ class RunEngine(val rc: RunContent) {
             add("Acts cleared: ${st.actsCleared} · level ${s.level} (${s.xp} XP)" + if (s.imprints.isNotEmpty()) " · Imprints: " + s.imprints.joinToString(", ") { rc.imprint(it).name } else "")
             add("Fights won: ${st.fightRecords.count { it.won }} (${st.elites} elite) · HP lost in fights: ${st.hpLostInFights} · healed: ${st.healed}")
             add("Deck: ${s.deck.size} cards · taken ${st.cardsTaken}, skipped ${st.skipped}, Erased ${st.erased}, Inscribed ${st.inscribed}")
-            add("Hours earned ${st.hoursEarned}, spent ${st.hoursSpent} · Foresight spent ${st.foresightSpent} · Glimpses ${st.glimpses}")
+            add("Hours earned ${st.hoursEarned}, spent ${st.hoursSpent} · Omens read ${st.omensRead} · Glimpses ${st.glimpses}")
             add("Paradox peak ${st.paradoxPeak} · out-of-combat Unravels ${st.unravels}")
             add("Returning Moments dealt ${st.returnsDealt}, taken ${st.returnsTaken} · Rewinds ${st.rewinds} · Echoes fought ${st.echoesFought}")
             if (s.artifacts.isNotEmpty()) add("Artifacts: " + s.artifacts.joinToString(", ") { rc.artifact(it).name })

@@ -35,7 +35,7 @@ enum class Returning(val label: String, val hint: String) {
 /** Your abandoned self after a Rewind: the deck it had when you rewound, at 60% of your max HP. */
 data class EchoSpec(val deck: List<String>, val hp: Int, val fromStep: Int)
 
-/** One card of the Era Deck. The title, type, sigil and threat always show; [ref] stays hidden until Foresight. */
+/** One card of the Era Deck. The title, type, sigil and threat always show; [ref] stays hidden until an Omen reveals it. */
 data class Moment(
     val id: Int,
     val type: MomentType,
@@ -71,7 +71,7 @@ data class RunStats(
     val hoursEarned: Int = 0,
     val hoursSpent: Int = 0,
     val glimpses: Int = 0,
-    val foresightSpent: Int = 0,
+    val omensRead: Int = 0,
     val unravels: Int = 0,
     val paradoxPeak: Int = 0,
     val fightRecords: List<FightRecord> = emptyList(),
@@ -170,7 +170,7 @@ enum class Purpose(val verb: String) {
     INSCRIBE("Inscribe"),
 }
 
-enum class ShopKind { CARD, ARTIFACT, ERASE, INSCRIBE, FORESIGHT }
+enum class ShopKind { CARD, ARTIFACT, ERASE, INSCRIBE, OMEN }
 
 data class ShopItem(val kind: ShopKind, val ref: String?, val price: Int, val sold: Boolean = false)
 
@@ -196,7 +196,7 @@ data class RunState(
     val maxHp: Int,
     val deck: List<String>,
     val hours: Int,
-    val foresight: Int,
+    val omens: Int,
     val paradox: Int,
     val debt: Map<EnergyColor, Int> = emptyMap(),
     val standing: Map<Faction, Int>,
@@ -206,7 +206,7 @@ data class RunState(
     val ripples: List<String> = emptyList(),
     /** The act's Weft: the Moments each step deals (index 0 is step 1). */
     val plan: List<List<Moment>>,
-    /** Moments revealed by Foresight. */
+    /** Moments revealed by Omens. */
     val revealed: Set<Int> = emptySet(),
     val screen: Screen,
     val rng: Rng,
@@ -249,8 +249,8 @@ sealed interface RunAction {
     /** Pick option [index] of the current screen: a Moment, a reward card, a shop item, a rest option, an event option, a deck card. */
     data class Choose(val index: Int) : RunAction
 
-    /** Spend 1 Foresight on the Weft. */
-    data object Foresight : RunAction
+    /** Read an Omen on the Weft: spend one to reveal the Moments on offer and one of the next step. */
+    data object ReadOmen : RunAction
 
     /** See the other branch's card reward too (+1 Paradox). */
     data object Glimpse : RunAction

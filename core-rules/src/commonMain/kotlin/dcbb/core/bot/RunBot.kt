@@ -21,7 +21,7 @@ import kotlin.math.max
 /**
  * A simulated player for whole runs: a combat [Bot] for the fights (the planner by default, a fresh one per fight)
  * and plain heuristics between them. It is a baseline for run-level balance, not a strong player: it never Glimpses,
- * spends Foresight only to look at Elites, and judges cards by budget efficiency and deck shape.
+ * reads Omens only to look at Elites, and judges cards by budget efficiency and deck shape.
  */
 class RunBot(private val seed: Long = 0, private val fightBot: (Long) -> Bot = { PlannerBot(it) }) {
     private var bot: Bot? = null
@@ -55,7 +55,7 @@ class RunBot(private val seed: Long = 0, private val fightBot: (Long) -> Bot = {
         if (s.anchorOffer) return RunAction.SetAnchor
         if (w.options.size == 1) return RunAction.Choose(0)
         val unseenElite = w.options.any { it.type == MomentType.ELITE && it.id !in s.revealed }
-        if (unseenElite && s.foresight > 0) return RunAction.Foresight
+        if (unseenElite && s.omens > 0) return RunAction.ReadOmen
         val hp = hpFrac(s)
         val scored = w.options.mapIndexed { i, m ->
             val v = when (m.type) {
@@ -167,7 +167,7 @@ class RunBot(private val seed: Long = 0, private val fightBot: (Long) -> Bot = {
                     is RunEffect.LoseHp -> -e.n * if (hp < 0.5) 1.0 else 0.4
                     is RunEffect.MaxHp -> e.n * 0.6
                     is RunEffect.Paradox -> -e.n * if (errata) 0.5 else 1.5
-                    is RunEffect.Foresight -> 1.5 * e.n
+                    is RunEffect.Omens -> 1.5 * e.n
                     is RunEffect.GainCard -> if (e.pool.rarity == Rarity.RARE) 6.0 else 3.0
                     is RunEffect.GainArtifact -> 12.0
                     is RunEffect.Pick -> e.count * if (e.purpose == Purpose.INSCRIBE) 5.0 else 3.0

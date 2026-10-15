@@ -7,7 +7,7 @@ import dcbb.core.engine.Replay
  * saves"). The web client copies these codes into bug reports; `sim --replay` plays them back.
  *
  * Format: `r2 <operative> <seed> <era> <action> <action> ...`, where run actions are lowercase:
- * `c<i>` choose option i · `f` spend Foresight · `g` Glimpse · `k` skip a card reward · `n` done / continue / leave ·
+ * `c<i>` choose option i · `f` read an Omen · `g` Glimpse · `k` skip a card reward · `n` done / continue / leave ·
  * `a<i>` take Artifact i · `r` Rewind · `m` move your Anchor here.
  * Fight actions use the combat replay tokens (`E`, `S/…`, `P/…`, `F/…`, see [Replay]).
  */
@@ -38,7 +38,7 @@ data class RunReplay(val operative: String, val seed: Long, val era: String, val
 
         fun encode(a: RunAction): String = when (a) {
             is RunAction.Choose -> "c${a.index}"
-            RunAction.Foresight -> "f"
+            RunAction.ReadOmen -> "f"
             RunAction.Glimpse -> "g"
             RunAction.Skip -> "k"
             RunAction.Done -> "n"
@@ -49,7 +49,7 @@ data class RunReplay(val operative: String, val seed: Long, val era: String, val
         }
 
         fun decode(t: String): RunAction = when {
-            t == "f" -> RunAction.Foresight
+            t == "f" -> RunAction.ReadOmen
             t == "g" -> RunAction.Glimpse
             t == "k" -> RunAction.Skip
             t == "n" -> RunAction.Done

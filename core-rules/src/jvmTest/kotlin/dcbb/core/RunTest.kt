@@ -49,14 +49,14 @@ class RunTest {
     private fun RunState.visit(type: MomentType, ref: String?) = re.visit(this, Moment(9_999, type, "test", ref)).state
 
     @Test
-    fun `a run starts with the starter deck, 100 Hours, Foresight and Standing`() {
+    fun `a run starts with the starter deck, 100 Hours, Omens and Standing`() {
         val s = startRun("oracle")
         val op = content.operative("oracle")
         assertEquals(op.starterDeck, s.deck)
         assertEquals(op.maxHp, s.hp)
         assertEquals(100, s.hours)
-        assertEquals(3, s.foresight, "Forecast operatives start with 3 Foresight")
-        assertEquals(2, startRun("vowknight").foresight)
+        assertEquals(3, s.omens, "Forecast operatives start with 3 Omens")
+        assertEquals(2, startRun("vowknight").omens)
         assertEquals(0, s.paradox)
         assertEquals(1, s.standingWith(Faction.CONVERGENCE))
         assertEquals(3, (s.screen as Screen.Weft).options.size)
@@ -166,12 +166,12 @@ class RunTest {
     }
 
     @Test
-    fun `the Antiquarian sells cards and Foresight, Erases and Inscribes for Hours`() {
+    fun `the Antiquarian sells cards and Omens, Erases and Inscribes for Hours`() {
         val stock = listOf(
             ShopItem(ShopKind.CARD, "order.hold_fast", 45),
             ShopItem(ShopKind.ERASE, null, 75),
             ShopItem(ShopKind.INSCRIBE, null, 60),
-            ShopItem(ShopKind.FORESIGHT, null, 40),
+            ShopItem(ShopKind.OMEN, null, 40),
         )
         val base = startRun().copy(hours = 300)
         var s = base.copy(screen = Screen.Shop(stock))
@@ -197,7 +197,7 @@ class RunTest {
         assertFalse(re.canInscribe(s.deck[i]), "a card is Inscribed once")
 
         s = s.ok(RunAction.Choose(3))
-        assertEquals(base.foresight + 1, s.foresight)
+        assertEquals(base.omens + 1, s.omens)
         assertNotNull(re.apply(s.copy(hours = 0, screen = Screen.Shop(stock)), RunAction.Choose(0)).error, "needs Hours")
         assertTrue(s.ok(RunAction.Done).screen is Screen.Weft)
     }
@@ -234,7 +234,7 @@ class RunTest {
         assertTrue("scribe_hidden" in hid.ledger)
         val read = s.ok(RunAction.Choose(2))
         assertEquals(2, read.paradox)
-        assertEquals(s.foresight + 1, read.foresight)
+        assertEquals(s.omens + 1, read.omens)
     }
 
     @Test
@@ -334,14 +334,14 @@ class RunTest {
     }
 
     @Test
-    fun `Foresight reveals the Moments on offer and one of the next step`() {
+    fun `an Omen reveals the Moments on offer and one of the next step`() {
         val s = startRun()
-        val f = s.ok(RunAction.Foresight)
-        assertEquals(s.foresight - 1, f.foresight)
+        val f = s.ok(RunAction.ReadOmen)
+        assertEquals(s.omens - 1, f.omens)
         val shown = (s.screen as Screen.Weft).options.map { it.id }
         assertTrue(f.revealed.containsAll(shown))
         assertEquals(1, f.revealed.count { id -> s.plan[1].any { it.id == id } })
-        assertNotNull(re.apply(f.copy(foresight = 0), RunAction.Foresight).error)
+        assertNotNull(re.apply(f.copy(omens = 0), RunAction.ReadOmen).error)
     }
 
     @Test

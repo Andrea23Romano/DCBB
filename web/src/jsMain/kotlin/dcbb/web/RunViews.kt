@@ -54,13 +54,13 @@ class RunViews(private val app: App, private val views: Views) {
 
     // ---- the run bar ------------------------------------------------------------------------------------------
 
-    /** Pinned to the top between fights: HP, Hours, Foresight, Paradox, then the run's Artifacts, Anchor and deck. */
+    /** Pinned to the top between fights: HP, Hours, Omens, Paradox, then the run's Artifacts, Anchor and deck. */
     fun runBar(s: RunState): String = buildString {
         val op = content.operative(s.operativeId)
         append("""<section class="runbar" aria-label="Run" style="--fc: var(--${fv(op.faction)})">""")
         append("""<div class="rb-row"><b class="rb-op">${esc(op.name)}</b>""")
         append("""<span class="rb-hp">${views.meter(s.hp, s.maxHp, "Your HP")}<span class="nums"><span><b>${s.hp}</b>/${s.maxHp} HP</span></span></span>""")
-        append("""<span class="nums"><span>Hours <b>${s.hours}</b></span></span><span class="nums"><span>Foresight <b>${s.foresight}</b></span></span>""")
+        append("""<span class="nums"><span>Hours <b>${s.hours}</b></span></span><span class="nums"><span>Omens <b>${s.omens}</b></span></span>""")
         val toNext = re.xpToNext(s)
         append("""<span class="nums" title="${esc(LEVEL_TIP)}"><span>Level <b>${s.level}</b>${if (toNext != null) " · $toNext XP to next" else ""}</span></span>""")
         val cap = re.unravelAt(s)
@@ -76,7 +76,7 @@ class RunViews(private val app: App, private val views: Views) {
 
     /** The run in a line, for the fight screen: what you carry, without repeating what the fight shows. */
     fun fightLine(s: RunState): String =
-        """<div class="fightline"><span class="nums">Level ${s.level}</span><span class="nums">Hours ${s.hours}</span><span class="nums">Foresight ${s.foresight}</span>""" +
+        """<div class="fightline"><span class="nums">Level ${s.level}</span><span class="nums">Hours ${s.hours}</span><span class="nums">Omens ${s.omens}</span>""" +
             carrying(s) + links(s) + "</div>"
 
     /** One button for everything you carry, which opens the list (the fight screen, and run screens on a phone). */
@@ -224,13 +224,13 @@ class RunViews(private val app: App, private val views: Views) {
                     """<button type="button" class="primary" data-act="run-anchor">Move your Anchor here</button></div>""",
             )
         }
-        if (!single) append("""<p class="muted">Each step deals three Moments from the Era Deck. Foresight reveals what they hold, and one Moment of the next step.</p>""")
+        if (!single) append("""<p class="muted">Each step deals three Moments from the Era Deck. An Omen reveals what they hold, and one Moment of the next step.</p>""")
         append("""<div class="moments">""")
         for ((i, m) in w.options.withIndex()) append(moment(s, m, i))
         append("</div>")
         val hidden = w.options.any { it.id !in s.revealed }
         if (hidden || (s.step < re.era(s).steps)) {
-            append("""<div class="btns"><button type="button" data-act="run-foresight"${if (s.foresight <= 0) " disabled" else ""}>Spend Foresight (${s.foresight} left)</button></div>""")
+            append("""<div class="btns"><button type="button" data-act="run-omen"${if (s.omens <= 0) " disabled" else ""}>Read an Omen (${s.omens} left)</button></div>""")
         }
         val peeked = if (s.step < re.era(s).steps) s.plan[s.step].filter { it.id in s.revealed } else emptyList()
         if (peeked.isNotEmpty()) {
@@ -251,7 +251,7 @@ class RunViews(private val app: App, private val views: Views) {
             if (m.ambush && m.returning == null) add("Ambush")
             if (m.echo != null) add("Echo")
         }.joinToString(" · ")
-        val details = if (revealed) details(m) else if (hasHidden(m)) """<span class="m-hidden">Foresight reveals more</span>""" else ""
+        val details = if (revealed) details(m) else if (hasHidden(m)) """<span class="m-hidden">An Omen reveals more</span>""" else ""
         val back = m.returning?.let { ret -> """<span class="m-return" title="${esc(POOL_TIP)}">Returning · ${esc(ret.label)}: ${esc(ret.hint)}</span>""" } ?: ""
         val body = Art.moment(m, content.operative(s.operativeId)) +
             """<span class="m-top"><span class="m-type">${esc(kind)}</span>$threat</span>""" +
@@ -394,7 +394,7 @@ class RunViews(private val app: App, private val views: Views) {
                 ShopKind.ARTIFACT -> re.rc.artifact(item.ref!!).let { "Artifact: ${it.name}" to it.text }
                 ShopKind.ERASE -> "Erase from history" to "Remove a card from your deck. Costs 25 more each time."
                 ShopKind.INSCRIBE -> "Inscribe" to "Upgrade a card (about +30%)."
-                ShopKind.FORESIGHT -> "A Foresight charge" to "Reveal Moments on the Weft."
+                ShopKind.OMEN -> "An Omen" to "Reveal Moments on the Weft."
             }
             val off = item.sold || item.price > s.hours
             append(
@@ -486,7 +486,7 @@ class RunViews(private val app: App, private val views: Views) {
     private fun fallen(s: RunState, f: Screen.Fallen): String {
         val step = s.anchor?.step ?: 0
         return """<section class="block result is-lost"><h2 class="run-title modal-title">${esc(f.title)}</h2>${lines(f.lines)}""" +
-            """<p>Your Anchor still holds. Rewind to step $step: you keep what Foresight showed you, Paradox rises by ${RunEngine.REWIND_DEATH_PARADOX}, """ +
+            """<p>Your Anchor still holds. Rewind to step $step: you keep what your Omens showed you, Paradox rises by ${RunEngine.REWIND_DEATH_PARADOX}, """ +
             """and the self you leave behind becomes an Echo you will meet later in the act.</p>""" +
             """<div class="btns"><button type="button" class="primary" data-act="run-rewind-yes">Rewind to step $step (+${RunEngine.REWIND_DEATH_PARADOX} Paradox)</button>""" +
             """<button type="button" data-act="run-done">Let the run end</button></div></section>"""
@@ -496,7 +496,7 @@ class RunViews(private val app: App, private val views: Views) {
     private fun rewindConfirm(s: RunState): String {
         if (!app.confirmRewind || !re.canRewind(s) || s.screen is Screen.Fallen) return ""
         val step = s.anchor?.step ?: 0
-        return """<div class="notice is-anchor" role="alertdialog"><span>Rewind to your Anchor at step $step? You lose everything since, except what Foresight showed you. """ +
+        return """<div class="notice is-anchor" role="alertdialog"><span>Rewind to your Anchor at step $step? You lose everything since, except what your Omens showed you. """ +
             """Paradox +${RunEngine.REWIND_PARADOX}, your Anchor is spent, and the self you leave behind becomes an Echo.</span>""" +
             """<button type="button" class="primary" data-act="run-rewind-yes">Rewind</button><button type="button" data-act="run-rewind-no">Cancel</button></div>"""
     }
